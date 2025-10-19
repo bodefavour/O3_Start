@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 
@@ -42,6 +43,7 @@ const benefitCards = [
 ];
 
 export const RegisterBusiness = (): JSX.Element => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     businessName: "",
     businessEmail: "",
@@ -55,6 +57,7 @@ export const RegisterBusiness = (): JSX.Element => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
+    navigate("/verify");
   };
 
   const handleChange = (
