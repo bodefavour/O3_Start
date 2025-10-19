@@ -1,7 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 
 export const MainHeaderSection = (): JSX.Element => {
+  const navigate = useNavigate();
+
   return (
     <header className="flex w-full items-center justify-between px-[138px] py-5 bg-[#e879f9]">
       <div className="inline-flex items-center gap-1 relative flex-[0_0_auto]">
@@ -13,7 +16,10 @@ export const MainHeaderSection = (): JSX.Element => {
       </div>
 
       <div className="gap-[17px] inline-flex items-center relative flex-[0_0_auto]">
-        <Button className="h-auto inline-flex items-center justify-center gap-2 p-2.5 relative flex-[0_0_auto] bg-[#00c48c] hover:bg-[#00b37d] rounded-xl">
+        <Button
+          onClick={() => navigate("/register")}
+          className="h-auto inline-flex items-center justify-center gap-2 p-2.5 relative flex-[0_0_auto] bg-[#00c48c] hover:bg-[#00b37d] rounded-xl"
+        >
           <div className="relative w-fit mt-[-1.00px] [font-family:'Inter',Helvetica] font-normal text-black text-2xl tracking-[0] leading-[normal]">
             Get Started
           </div>
