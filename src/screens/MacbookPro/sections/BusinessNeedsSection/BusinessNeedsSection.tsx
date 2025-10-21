@@ -53,11 +53,10 @@ export const BusinessNeedsSection = (): JSX.Element => {
                 </p>
               </div>
               <Badge
-                className={`w-fit rounded-full px-4 py-[6px] text-xs font-semibold uppercase tracking-wide ${
-                  currency.type === "Stablecoin"
+                className={`w-fit rounded-full px-4 py-[6px] text-xs font-semibold uppercase tracking-wide ${currency.type === "Stablecoin"
                     ? "bg-[#e0fff5] text-[#047857]"
                     : "bg-[#e6f0ff] text-[#1d4ed8]"
-                }`}
+                  }`}
               >
                 {currency.type}
               </Badge>
