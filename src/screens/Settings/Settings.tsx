@@ -72,7 +72,7 @@ export const Settings = () => {
                 </header>
             )}
         >
-            <main className="flex flex-col gap-6 px-4 py-6 sm:px-8 lg:flex-row lg:gap-10">
+            <main className="flex flex-col gap-6 py-6 lg:flex-row lg:gap-10">
                 <aside className="w-full max-w-xs rounded-2xl border border-[#d1d5db] bg-white p-4 sm:p-6">
                     <nav className="flex flex-col gap-2">
                         {sections.map((section) => (

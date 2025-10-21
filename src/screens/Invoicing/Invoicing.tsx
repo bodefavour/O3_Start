@@ -150,7 +150,7 @@ export const Invoicing = () => {
                 </header>
             )}
         >
-            <main className="space-y-8 px-4 py-6 sm:px-8">
+            <main className="space-y-8 py-6">
                 <section>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
