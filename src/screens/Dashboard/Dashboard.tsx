@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { BalanceCards } from "./components/BalanceCards";
@@ -13,6 +13,19 @@ export const Dashboard = () => {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 640;
+      setIsMobileView(isMobile);
+      setIsSidebarCollapsed(isMobile);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleNavigation = (item: string) => {
     setActiveMenuItem(item);
@@ -58,10 +71,21 @@ export const Dashboard = () => {
         onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
       />
 
+      {!isSidebarCollapsed && isMobileView && (
+        <div
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm sm:hidden"
+          onClick={() => setIsSidebarCollapsed(true)}
+        />
+      )}
+
       {/* Main Content */}
       <div className="flex-1 min-w-0 overflow-auto">
         {/* Header */}
-        <DashboardHeader />
+        <DashboardHeader
+          onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+          isSidebarCollapsed={isSidebarCollapsed}
+          isMobileView={isMobileView}
+        />
 
         {/* Dashboard Content */}
         <div className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">

@@ -48,8 +48,10 @@ export const Sidebar = ({
 
   return (
     <div
-      className={`flex min-h-screen flex-shrink-0 flex-col bg-[#0b1f3a] transition-all duration-300 ${collapsed ? "w-16" : "w-[176px]"
-        }`}
+      className={`flex min-h-screen flex-shrink-0 flex-col overflow-hidden bg-[#0b1f3a] transition-all duration-300 ${collapsed
+        ? "w-16 max-sm:w-0 max-sm:-translate-x-full max-sm:pointer-events-none max-sm:opacity-0"
+        : "w-[176px] max-sm:w-[240px] max-sm:translate-x-0 max-sm:pointer-events-auto max-sm:opacity-100"
+        } max-sm:fixed max-sm:left-0 max-sm:top-0 max-sm:z-40 max-sm:h-full max-sm:shadow-xl max-sm:transition-transform`}
     >
       {/* Logo/Brand */}
       <div className="px-3 pt-4 pb-3">
