@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { BalanceCards } from "./components/BalanceCards";

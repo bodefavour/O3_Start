@@ -9,6 +9,7 @@ import { SendMoneyModal } from "./components/SendMoneyModal";
 import { ReceiveMoneyModal } from "./components/ReceiveMoneyModal.tsx";
 import { SwapCurrenciesModal } from "./components/SwapCurrenciesModal";
 import { TransactionHistory } from "./components/TransactionHistory";
+import { useResponsiveSidebar } from "../../hooks/useResponsiveSidebar";
 
 type TabType = "stablecoins" | "local" | "history";
 
@@ -69,10 +70,19 @@ export const Wallet = () => {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
+  const {
+    isSidebarCollapsed,
+    isMobileView,
+    toggleSidebar,
+    closeSidebar,
+  } = useResponsiveSidebar();
 
   const handleNavigation = (item: string) => {
     setActiveMenuItem(item);
     console.log(`Navigating to: ${item}`);
+    if (isMobileView) {
+      closeSidebar();
+    }
   };
 
   const handleAddWallet = () => {
@@ -121,14 +131,31 @@ export const Wallet = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#f5f5f5]">
+    <div className="flex min-h-screen bg-[#f5f5f5]">
       {/* Sidebar */}
-      <Sidebar activeItem={activeMenuItem} onNavigate={handleNavigation} />
+      <Sidebar
+        activeItem={activeMenuItem}
+        onNavigate={handleNavigation}
+        collapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
+      />
+
+      {!isSidebarCollapsed && isMobileView && (
+        <div
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm sm:hidden"
+          onClick={closeSidebar}
+        />
+      )}
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <WalletHeader onAddWallet={handleAddWallet} />
+        <WalletHeader
+          onAddWallet={handleAddWallet}
+          onToggleSidebar={toggleSidebar}
+          isSidebarCollapsed={isSidebarCollapsed}
+          isMobileView={isMobileView}
+        />
 
         {/* Wallet Content */}
         <div className="p-8">
