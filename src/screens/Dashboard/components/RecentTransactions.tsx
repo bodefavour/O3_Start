@@ -1,3 +1,4 @@
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { Card, CardContent } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Separator } from "../../../components/ui/separator";
@@ -53,58 +54,59 @@ const transactions = [
 export const RecentTransactions = () => {
   return (
     <div className="mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="[font-family:'Inter',Helvetica] font-semibold text-[#0b1f3a] text-lg">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="[font-family:'Inter',Helvetica] text-lg font-semibold text-[#0b1f3a]">
           Recent Transactions
         </h3>
-        <button className="[font-family:'Inter',Helvetica] font-medium text-[#00c48c] text-sm hover:underline">
+        <button className="w-fit [font-family:'Inter',Helvetica] text-sm font-medium text-[#00c48c] hover:underline">
           View All
         </button>
       </div>
 
-      <Card className="bg-white border-[#e5e7eb] rounded-xl">
+      <Card className="rounded-xl border-[#e5e7eb] bg-white">
         <CardContent className="p-0">
           {transactions.map((transaction, index) => (
             <div key={transaction.id}>
-              <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3 p-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${transaction.isIncoming
-                        ? "bg-[#00c48c]/10"
-                        : "bg-red-50"
-                      }`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                      transaction.isIncoming ? "bg-[#00c48c]/10" : "bg-red-50"
+                    }`}
                   >
-                    <span className="text-lg">
-                      {transaction.isIncoming ? "↓" : "↑"}
-                    </span>
+                    {transaction.isIncoming ? (
+                      <ArrowDownLeft className="h-5 w-5 text-[#00c48c]" />
+                    ) : (
+                      <ArrowUpRight className="h-5 w-5 text-[#b91c1c]" />
+                    )}
                   </div>
                   <div>
-                    <p className="[font-family:'Inter',Helvetica] font-semibold text-[#0b1f3a] text-sm">
+                    <p className="[font-family:'Inter',Helvetica] text-sm font-semibold text-[#0b1f3a]">
                       {transaction.company}
                     </p>
-                    <p className="[font-family:'Inter',Helvetica] font-normal text-[#0b1f3a]/60 text-xs">
+                    <p className="[font-family:'Inter',Helvetica] text-xs font-normal text-[#0b1f3a]/60">
                       {transaction.type} • {transaction.time}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <p
-                    className={`[font-family:'Inter',Helvetica] font-semibold text-sm ${transaction.isIncoming
-                        ? "text-[#00c48c]"
-                        : "text-[#0b1f3a]"
-                      }`}
+                    className={`[font-family:'Inter',Helvetica] text-sm font-semibold ${
+                      transaction.isIncoming ? "text-[#00c48c]" : "text-[#0b1f3a]"
+                    }`}
                   >
                     {transaction.amount}
                   </p>
                   <Badge
                     className={`
-                      ${transaction.status === "Completed"
-                        ? "bg-[#00c48c] hover:bg-[#00b37d]"
-                        : "bg-[#fbbf24] hover:bg-[#f59e0b]"
+                      ${
+                        transaction.status === "Completed"
+                          ? "bg-[#00c48c] hover:bg-[#00b37d]"
+                          : "bg-[#fbbf24] hover:bg-[#f59e0b]"
                       }
-                      text-[#0b1f3a] px-3 py-1
-                      [font-family:'Inter',Helvetica] font-medium text-xs
+                      px-3 py-1 text-[#0b1f3a]
+                      [font-family:'Inter',Helvetica] text-xs font-medium
                     `}
                   >
                     {transaction.status}
