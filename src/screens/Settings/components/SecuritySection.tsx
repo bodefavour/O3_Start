@@ -108,7 +108,7 @@ export const SecuritySection = () => (
                     </p>
                 </div>
                 <div className="space-y-3">
-                    {[ 
+                    {[
                         { device: "MacBook Pro", location: "Lagos, Nigeria", lastActive: "2024-01-15 14:30", status: "Active", statusClass: "bg-[#e6f9f2] text-[#0f766e]" },
                         { device: "iPhone 15", location: "Lagos, Nigeria", lastActive: "2024-01-15 12:15", status: "Inactive", statusClass: "bg-[#fee2e2] text-[#b91c1c]" },
                         { device: "Chrome Browser", location: "Nairobi, Kenya", lastActive: "2024-01-14 09:45", status: "Inactive", statusClass: "bg-[#fee2e2] text-[#b91c1c]" },

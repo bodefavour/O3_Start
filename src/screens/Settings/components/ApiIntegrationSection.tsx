@@ -81,11 +81,10 @@ export const ApiIntegrationSection = () => (
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span
-                                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                                            endpoint.status === "Active"
+                                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${endpoint.status === "Active"
                                                 ? "bg-[#e6f9f2] text-[#047857]"
                                                 : "bg-[#fee2e2] text-[#b91c1c]"
-                                        }`}
+                                            }`}
                                     >
                                         {endpoint.status}
                                     </span>
