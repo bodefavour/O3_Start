@@ -2,7 +2,7 @@ import { Card, CardContent } from "../../../components/ui/card";
 
 export const PortfolioSummary = () => {
   return (
-    <div className="flex gap-4 mb-6">
+    <div className="grid gap-4 md:grid-cols-2">
       {/* Total Portfolio Value Card */}
       <Card className="flex-1 bg-[#0b1f3a] border-none rounded-xl">
         <CardContent className="p-6">
@@ -26,7 +26,7 @@ export const PortfolioSummary = () => {
       </Card>
 
       {/* Active Wallets Card */}
-      <Card className="flex-1 bg-white border border-[#e5e7eb] rounded-xl">
+  <Card className="flex-1 bg-white border border-[#e5e7eb] rounded-xl">
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div>
