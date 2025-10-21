@@ -167,132 +167,132 @@ export const Payroll = () => {
             )}
         >
             <main className="space-y-8 px-4 py-6 sm:px-8">
-                    <section>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                                    Total Employees
-                                </p>
-                                <div className="mt-3 flex items-center justify-between">
-                                    <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        {metrics.totalEmployees}
-                                    </span>
-                                    <Badge className="rounded-lg bg-[#e5f5f1] text-[#0f766e]">
-                                        <Users className="mr-1 h-4 w-4" />
-                                        Team
-                                    </Badge>
-                                </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                                    Monthly Payroll
-                                </p>
-                                <div className="mt-3 flex items-center justify-between">
-                                    <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        ${metrics.monthlyPayroll.toLocaleString()}
-                                    </span>
-                                    <Badge className="rounded-lg bg-[#e6f9f2] text-[#0f766e]">
-                                        <DollarSign className="mr-1 h-4 w-4" />
-                                        Payroll
-                                    </Badge>
-                                </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                                    Pending Payments
-                                </p>
-                                <div className="mt-3 flex items-center justify-between">
-                                    <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        {metrics.pendingPayments}
-                                    </span>
-                                    <Badge className="rounded-lg bg-[#f0f9ff] text-[#1d4ed8]">
-                                        <Clock className="mr-1 h-4 w-4" />
-                                        Pending
-                                    </Badge>
-                                </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                                    Total Paid (YTD)
-                                </p>
-                                <div className="mt-3 flex items-center justify-between">
-                                    <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        ${metrics.totalPaidYTD.toLocaleString()}
-                                    </span>
-                                    <Badge className="rounded-lg bg-[#fee2e2] text-[#b91c1c]">
-                                        <PiggyBank className="mr-1 h-4 w-4" />
-                                        YTD
-                                    </Badge>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6">
-                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                            <div className="flex flex-1 flex-wrap gap-3">
-                                <div className="relative flex-1 min-w-[220px]">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9ca3af]" />
-                                    <input
-                                        type="text"
-                                        placeholder="search employees..."
-                                        value={searchTerm}
-                                        onChange={(event) => setSearchTerm(event.target.value)}
-                                        className="w-full rounded-xl border border-[#d1d5db] bg-[#f9fafb] py-2 pl-9 pr-4 text-sm text-[#0b1f3a] placeholder:text-[#9ca3af] focus:outline-none"
-                                    />
-                                </div>
-                                <select
-                                    value={departmentFilter}
-                                    onChange={(event) =>
-                                        setDepartmentFilter(event.target.value as DepartmentFilter)
-                                    }
-                                    className="h-10 rounded-xl border border-[#d1d5db] bg-white px-4 text-sm text-[#0b1f3a] focus:outline-none"
-                                >
-                                    {departments.map((option) => (
-                                        <option key={option} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select>
-                                <Button
-                                    variant="outline"
-                                    className="h-10 rounded-xl border-[#d1d5db] bg-white px-4 text-sm text-[#0b1f3a] hover:bg-gray-50"
-                                >
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Export
-                                </Button>
+                <section>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
+                                Total Employees
+                            </p>
+                            <div className="mt-3 flex items-center justify-between">
+                                <span className="text-3xl font-semibold text-[#0b1f3a]">
+                                    {metrics.totalEmployees}
+                                </span>
+                                <Badge className="rounded-lg bg-[#e5f5f1] text-[#0f766e]">
+                                    <Users className="mr-1 h-4 w-4" />
+                                    Team
+                                </Badge>
                             </div>
                         </div>
 
-                        <div className="mt-6 grid gap-6 md:grid-cols-2">
-                            {filteredEmployees.map((employee) => (
-                                <EmployeeCard
-                                    key={employee.id}
-                                    name={employee.name}
-                                    role={employee.role}
-                                    department={employee.department}
-                                    salary={employee.salaryDisplay}
-                                    status={employee.status}
-                                    employeeId={employee.employeeId}
-                                    joinedDate={employee.joinedDate}
-                                    email={employee.email}
-                                    phone={employee.phone}
-                                    avatarColor={employee.avatarColor}
+                        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
+                                Monthly Payroll
+                            </p>
+                            <div className="mt-3 flex items-center justify-between">
+                                <span className="text-3xl font-semibold text-[#0b1f3a]">
+                                    ${metrics.monthlyPayroll.toLocaleString()}
+                                </span>
+                                <Badge className="rounded-lg bg-[#e6f9f2] text-[#0f766e]">
+                                    <DollarSign className="mr-1 h-4 w-4" />
+                                    Payroll
+                                </Badge>
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
+                                Pending Payments
+                            </p>
+                            <div className="mt-3 flex items-center justify-between">
+                                <span className="text-3xl font-semibold text-[#0b1f3a]">
+                                    {metrics.pendingPayments}
+                                </span>
+                                <Badge className="rounded-lg bg-[#f0f9ff] text-[#1d4ed8]">
+                                    <Clock className="mr-1 h-4 w-4" />
+                                    Pending
+                                </Badge>
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
+                                Total Paid (YTD)
+                            </p>
+                            <div className="mt-3 flex items-center justify-between">
+                                <span className="text-3xl font-semibold text-[#0b1f3a]">
+                                    ${metrics.totalPaidYTD.toLocaleString()}
+                                </span>
+                                <Badge className="rounded-lg bg-[#fee2e2] text-[#b91c1c]">
+                                    <PiggyBank className="mr-1 h-4 w-4" />
+                                    YTD
+                                </Badge>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div className="flex flex-1 flex-wrap gap-3">
+                            <div className="relative flex-1 min-w-[220px]">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9ca3af]" />
+                                <input
+                                    type="text"
+                                    placeholder="search employees..."
+                                    value={searchTerm}
+                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                    className="w-full rounded-xl border border-[#d1d5db] bg-[#f9fafb] py-2 pl-9 pr-4 text-sm text-[#0b1f3a] placeholder:text-[#9ca3af] focus:outline-none"
                                 />
-                            ))}
-                            {filteredEmployees.length === 0 && (
-                                <div className="col-span-full rounded-2xl border border-dashed border-[#d1d5db] bg-[#f9fafb] p-10 text-center">
-                                    <h3 className="text-lg font-semibold text-[#0b1f3a]">No employees found</h3>
-                                    <p className="mt-1 text-sm text-[#6b7280]">
-                                        Try adjusting your search or filters to see more results.
-                                    </p>
-                                </div>
-                            )}
+                            </div>
+                            <select
+                                value={departmentFilter}
+                                onChange={(event) =>
+                                    setDepartmentFilter(event.target.value as DepartmentFilter)
+                                }
+                                className="h-10 rounded-xl border border-[#d1d5db] bg-white px-4 text-sm text-[#0b1f3a] focus:outline-none"
+                            >
+                                {departments.map((option) => (
+                                    <option key={option} value={option}>
+                                        {option}
+                                    </option>
+                                ))}
+                            </select>
+                            <Button
+                                variant="outline"
+                                className="h-10 rounded-xl border-[#d1d5db] bg-white px-4 text-sm text-[#0b1f3a] hover:bg-gray-50"
+                            >
+                                <Download className="mr-2 h-4 w-4" />
+                                Export
+                            </Button>
                         </div>
-                    </section>
+                    </div>
+
+                    <div className="mt-6 grid gap-6 md:grid-cols-2">
+                        {filteredEmployees.map((employee) => (
+                            <EmployeeCard
+                                key={employee.id}
+                                name={employee.name}
+                                role={employee.role}
+                                department={employee.department}
+                                salary={employee.salaryDisplay}
+                                status={employee.status}
+                                employeeId={employee.employeeId}
+                                joinedDate={employee.joinedDate}
+                                email={employee.email}
+                                phone={employee.phone}
+                                avatarColor={employee.avatarColor}
+                            />
+                        ))}
+                        {filteredEmployees.length === 0 && (
+                            <div className="col-span-full rounded-2xl border border-dashed border-[#d1d5db] bg-[#f9fafb] p-10 text-center">
+                                <h3 className="text-lg font-semibold text-[#0b1f3a]">No employees found</h3>
+                                <p className="mt-1 text-sm text-[#6b7280]">
+                                    Try adjusting your search or filters to see more results.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </section>
             </main>
         </DashboardShell>
     );

@@ -151,167 +151,167 @@ export const Invoicing = () => {
             )}
         >
             <main className="space-y-8 px-4 py-6 sm:px-8">
-                    <section>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                                    Total Invoices
-                                </p>
-                                <div className="mt-3 flex items-end justify-between">
-                                    <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        {metrics.totalInvoices}
-                                    </span>
-                                    <Badge className="rounded-lg bg-[#e5f5f1] text-[#0f766e]">
-                                        <ArrowDownToLine className="mr-1 h-4 w-4" />
-                                        Manage
-                                    </Badge>
-                                </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                                    Paid Amount
-                                </p>
-                                <div className="mt-3 flex items-end justify-between">
-                                    <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        ${metrics.paidAmount.toLocaleString()}
-                                    </span>
-                                    <Badge className="rounded-lg bg-[#e6f9f2] text-[#0f766e]">
-                                        ✓
-                                    </Badge>
-                                </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                                    Pending Amount
-                                </p>
-                                <div className="mt-3 flex items-end justify-between">
-                                    <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        ${metrics.pendingAmount.toLocaleString()}
-                                    </span>
-                                    <Badge className="rounded-lg bg-[#f0f9ff] text-[#1d4ed8]">
-                                        ⏱
-                                    </Badge>
-                                </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-                                    Overdue Amount
-                                </p>
-                                <div className="mt-3 flex items-end justify-between">
-                                    <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        ${metrics.overdueAmount.toLocaleString()}
-                                    </span>
-                                    <Badge className="rounded-lg bg-[#fee2e2] text-[#b91c1c]">
-                                        !
-                                    </Badge>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6">
-                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                            <div className="flex flex-1 gap-3">
-                                <div className="relative flex-1">
-                                    <input
-                                        type="text"
-                                        placeholder="search invoices"
-                                        value={searchTerm}
-                                        onChange={(event) => setSearchTerm(event.target.value)}
-                                        className="w-full rounded-xl border border-[#d1d5db] bg-[#f9fafb] px-4 py-2 text-sm text-[#0b1f3a] placeholder:text-[#9ca3af] focus:outline-none"
-                                    />
-                                </div>
-                                <select
-                                    value={statusFilter}
-                                    onChange={(event) =>
-                                        setStatusFilter(event.target.value as StatusFilter)
-                                    }
-                                    className="w-40 rounded-xl border border-[#d1d5db] bg-white px-4 py-2 text-sm text-[#0b1f3a] focus:outline-none"
-                                >
-                                    {statusOptions.map((option) => (
-                                        <option key={option} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select>
-                                <Button
-                                    variant="outline"
-                                    className="rounded-xl border-[#d1d5db] bg-white px-4 py-2 text-sm text-[#0b1f3a]"
-                                >
-                                    Export
-                                </Button>
+                <section>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
+                                Total Invoices
+                            </p>
+                            <div className="mt-3 flex items-end justify-between">
+                                <span className="text-3xl font-semibold text-[#0b1f3a]">
+                                    {metrics.totalInvoices}
+                                </span>
+                                <Badge className="rounded-lg bg-[#e5f5f1] text-[#0f766e]">
+                                    <ArrowDownToLine className="mr-1 h-4 w-4" />
+                                    Manage
+                                </Badge>
                             </div>
                         </div>
 
-                        <div className="mt-6 overflow-x-auto">
-                            <table className="min-w-full text-left text-sm text-[#0b1f3a]">
-                                <thead>
-                                    <tr className="border-b border-[#e5e7eb] text-xs uppercase text-[#6b7280]">
-                                        <th className="py-3 pl-4 pr-4">Invoice</th>
-                                        <th className="py-3 pr-4">Client</th>
-                                        <th className="py-3 pr-4">Amount</th>
-                                        <th className="py-3 pr-4">Status</th>
-                                        <th className="py-3 pr-4">Date</th>
-                                        <th className="py-3 pr-4">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredInvoices.map((invoice) => (
-                                        <tr key={invoice.id} className="border-b border-[#f1f5f9]">
-                                            <td className="py-4 pl-4 pr-4">
-                                                <div className="flex items-start gap-3">
-                                                    <input type="checkbox" className="mt-1" />
-                                                    <div>
-                                                        <p className="font-semibold">{invoice.number}</p>
-                                                        <p className="text-xs text-[#6b7280]">{invoice.title}</p>
-                                                    </div>
+                        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
+                                Paid Amount
+                            </p>
+                            <div className="mt-3 flex items-end justify-between">
+                                <span className="text-3xl font-semibold text-[#0b1f3a]">
+                                    ${metrics.paidAmount.toLocaleString()}
+                                </span>
+                                <Badge className="rounded-lg bg-[#e6f9f2] text-[#0f766e]">
+                                    ✓
+                                </Badge>
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
+                                Pending Amount
+                            </p>
+                            <div className="mt-3 flex items-end justify-between">
+                                <span className="text-3xl font-semibold text-[#0b1f3a]">
+                                    ${metrics.pendingAmount.toLocaleString()}
+                                </span>
+                                <Badge className="rounded-lg bg-[#f0f9ff] text-[#1d4ed8]">
+                                    ⏱
+                                </Badge>
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
+                                Overdue Amount
+                            </p>
+                            <div className="mt-3 flex items-end justify-between">
+                                <span className="text-3xl font-semibold text-[#0b1f3a]">
+                                    ${metrics.overdueAmount.toLocaleString()}
+                                </span>
+                                <Badge className="rounded-lg bg-[#fee2e2] text-[#b91c1c]">
+                                    !
+                                </Badge>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div className="flex flex-1 gap-3">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    placeholder="search invoices"
+                                    value={searchTerm}
+                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                    className="w-full rounded-xl border border-[#d1d5db] bg-[#f9fafb] px-4 py-2 text-sm text-[#0b1f3a] placeholder:text-[#9ca3af] focus:outline-none"
+                                />
+                            </div>
+                            <select
+                                value={statusFilter}
+                                onChange={(event) =>
+                                    setStatusFilter(event.target.value as StatusFilter)
+                                }
+                                className="w-40 rounded-xl border border-[#d1d5db] bg-white px-4 py-2 text-sm text-[#0b1f3a] focus:outline-none"
+                            >
+                                {statusOptions.map((option) => (
+                                    <option key={option} value={option}>
+                                        {option}
+                                    </option>
+                                ))}
+                            </select>
+                            <Button
+                                variant="outline"
+                                className="rounded-xl border-[#d1d5db] bg-white px-4 py-2 text-sm text-[#0b1f3a]"
+                            >
+                                Export
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 overflow-x-auto">
+                        <table className="min-w-full text-left text-sm text-[#0b1f3a]">
+                            <thead>
+                                <tr className="border-b border-[#e5e7eb] text-xs uppercase text-[#6b7280]">
+                                    <th className="py-3 pl-4 pr-4">Invoice</th>
+                                    <th className="py-3 pr-4">Client</th>
+                                    <th className="py-3 pr-4">Amount</th>
+                                    <th className="py-3 pr-4">Status</th>
+                                    <th className="py-3 pr-4">Date</th>
+                                    <th className="py-3 pr-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredInvoices.map((invoice) => (
+                                    <tr key={invoice.id} className="border-b border-[#f1f5f9]">
+                                        <td className="py-4 pl-4 pr-4">
+                                            <div className="flex items-start gap-3">
+                                                <input type="checkbox" className="mt-1" />
+                                                <div>
+                                                    <p className="font-semibold">{invoice.number}</p>
+                                                    <p className="text-xs text-[#6b7280]">{invoice.title}</p>
                                                 </div>
-                                            </td>
-                                            <td className="py-4 pr-4">
-                                                <p className="font-semibold">{invoice.client}</p>
-                                            </td>
-                                            <td className="py-4 pr-4">
-                                                <p className="font-semibold">{invoice.amount}</p>
-                                            </td>
-                                            <td className="py-4 pr-4">
-                                                <span
-                                                    className={`inline-flex items-center rounded-xl px-3 py-1 text-xs font-semibold ${statusConfig[invoice.status]}`}
+                                            </div>
+                                        </td>
+                                        <td className="py-4 pr-4">
+                                            <p className="font-semibold">{invoice.client}</p>
+                                        </td>
+                                        <td className="py-4 pr-4">
+                                            <p className="font-semibold">{invoice.amount}</p>
+                                        </td>
+                                        <td className="py-4 pr-4">
+                                            <span
+                                                className={`inline-flex items-center rounded-xl px-3 py-1 text-xs font-semibold ${statusConfig[invoice.status]}`}
+                                            >
+                                                {invoice.status}
+                                            </span>
+                                        </td>
+                                        <td className="py-4 pr-4">
+                                            <p>{invoice.date}</p>
+                                        </td>
+                                        <td className="py-4 pr-4">
+                                            <div className="flex items-center gap-3 text-[#1d4ed8]">
+                                                <button type="button" aria-label="View invoice">
+                                                    <Eye className="h-4 w-4" />
+                                                </button>
+                                                <button type="button" aria-label="Edit invoice">
+                                                    <PencilLine className="h-4 w-4" />
+                                                </button>
+                                                <button type="button" aria-label="Download invoice">
+                                                    <ArrowDownToLine className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    aria-label="Delete invoice"
+                                                    className="text-[#b91c1c]"
                                                 >
-                                                    {invoice.status}
-                                                </span>
-                                            </td>
-                                            <td className="py-4 pr-4">
-                                                <p>{invoice.date}</p>
-                                            </td>
-                                            <td className="py-4 pr-4">
-                                                <div className="flex items-center gap-3 text-[#1d4ed8]">
-                                                    <button type="button" aria-label="View invoice">
-                                                        <Eye className="h-4 w-4" />
-                                                    </button>
-                                                    <button type="button" aria-label="Edit invoice">
-                                                        <PencilLine className="h-4 w-4" />
-                                                    </button>
-                                                    <button type="button" aria-label="Download invoice">
-                                                        <ArrowDownToLine className="h-4 w-4" />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        aria-label="Delete invoice"
-                                                        className="text-[#b91c1c]"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </main>
         </DashboardShell>
     );
