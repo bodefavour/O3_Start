@@ -1,16 +1,20 @@
+import { ReactNode, useState } from "react";
+import { Copy, CopyCheck, Settings2 } from "lucide-react";
 import { Card, CardContent } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { useState } from "react";
 
 interface WalletCardProps {
-  icon: string;
+  icon: ReactNode;
   name: string;
   symbol: string;
   balance: string;
   usdValue: string;
   address: string;
   type: "stablecoin" | "local";
+  onSendMoney?: () => void;
+  onReceiveMoney?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const WalletCard = ({
@@ -21,6 +25,9 @@ export const WalletCard = ({
   usdValue,
   address,
   type,
+  onSendMoney,
+  onReceiveMoney,
+  onOpenSettings,
 }: WalletCardProps) => {
   const [copied, setCopied] = useState(false);
 
@@ -37,7 +44,7 @@ export const WalletCard = ({
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#00c48c]/10 rounded-full flex items-center justify-center">
-              <span className="text-xl">{icon}</span>
+              {icon}
             </div>
             <div>
               <h3 className="[font-family:'Inter',Helvetica] font-semibold text-[#0b1f3a] text-base">
@@ -72,35 +79,44 @@ export const WalletCard = ({
             Wallet Address
           </p>
           <div className="flex items-center justify-between gap-2">
-            <p className="[font-family:'Inter',Helvetica] font-mono text-[#0b1f3a] text-xs truncate flex-1">
+            <p className="font-mono text-[#0b1f3a] text-xs truncate flex-1">
               {address}
             </p>
             <button
               onClick={handleCopy}
-              className="flex-shrink-0 w-6 h-6 flex items-center justify-center hover:bg-white rounded transition-colors"
+              className="flex-shrink-0 w-7 h-7 flex items-center justify-center hover:bg-white rounded transition-colors"
               title="Copy address"
             >
-              <span className="text-sm">{copied ? "✓" : "📋"}</span>
+              {copied ? (
+                <CopyCheck className="w-4 h-4 text-[#00c48c]" />
+              ) : (
+                <Copy className="w-4 h-4 text-[#0b1f3a]" />
+              )}
             </button>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          <Button className="flex-1 bg-[#00c48c] hover:bg-[#00b37d] text-black font-semibold py-2 rounded-lg">
+          <Button
+            onClick={onSendMoney}
+            className="flex-1 bg-[#00c48c] hover:bg-[#00b37d] text-[#0b1f3a] font-semibold py-2 rounded-lg"
+          >
             Send Money
           </Button>
           <Button
             variant="outline"
+            onClick={onReceiveMoney}
             className="flex-1 bg-white hover:bg-gray-50 border-[#e5e7eb] text-[#0b1f3a] font-semibold py-2 rounded-lg"
           >
             Receive
           </Button>
           <Button
             variant="outline"
+            onClick={onOpenSettings}
             className="w-10 h-10 p-0 bg-white hover:bg-gray-50 border-[#e5e7eb] rounded-lg"
           >
-            <span className="text-lg">⚙️</span>
+            <Settings2 className="w-4 h-4 text-[#0b1f3a]" />
           </Button>
         </div>
       </CardContent>

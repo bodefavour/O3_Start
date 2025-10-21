@@ -1,4 +1,13 @@
 import { useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Wallet as WalletIcon,
+  CreditCard,
+  FileText,
+  Users,
+  BarChart3,
+  Settings,
+} from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Separator } from "../../../components/ui/separator";
 
@@ -8,13 +17,13 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { id: "dashboard", label: "Dashboard", icon: "▶", path: "/dashboard" },
-  { id: "wallet", label: "Wallet", icon: "💳", path: "/wallet" },
-  { id: "payments", label: "Payments", icon: "💸", path: "/payments" },
-  { id: "invoicing", label: "Invoicing", icon: "📄", path: "/invoicing" },
-  { id: "payroll", label: "Payroll", icon: "💰", path: "/payroll" },
-  { id: "analytics", label: "Analytics", icon: "📊", path: "/analytics" },
-  { id: "settings", label: "Settings", icon: "⚙️", path: "/settings" },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+  { id: "wallet", label: "Wallet", icon: WalletIcon, path: "/wallet" },
+  { id: "payments", label: "Payments", icon: CreditCard, path: "/payments" },
+  { id: "invoicing", label: "Invoicing", icon: FileText, path: "/invoicing" },
+  { id: "payroll", label: "Payroll", icon: Users, path: "/payroll" },
+  { id: "analytics", label: "Analytics", icon: BarChart3, path: "/analytics" },
+  { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
 ];
 
 export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
@@ -24,7 +33,7 @@ export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
     if (onNavigate) {
       onNavigate(item.id);
     }
-    // Navigate to the route
+
     navigate(item.path);
   };
 
@@ -49,13 +58,17 @@ export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
             className={`
               w-full h-[38px] justify-start gap-2 px-4 py-2
               ${activeItem === item.id
-                ? "bg-[#00c48c] hover:bg-[#00b37d] text-black"
+                ? "bg-[#00c48c] hover:bg-[#00b37d] text-[#0b1f3a]"
                 : "bg-transparent hover:bg-white/10 text-white"
               }
               rounded-lg [font-family:'Inter',Helvetica] font-normal text-sm
             `}
           >
-            <span className="text-base">{item.icon}</span>
+            <item.icon
+              className={`w-4 h-4 ${
+                activeItem === item.id ? "text-[#0b1f3a]" : "text-white"
+              }`}
+            />
             {item.label}
           </Button>
         ))}
