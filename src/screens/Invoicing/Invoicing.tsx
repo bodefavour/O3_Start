@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { ArrowDownToLine, Eye, PencilLine, Trash2 } from "lucide-react";
+import { ArrowDownToLine, Eye, Menu, PencilLine, Trash2, X } from "lucide-react";
 import { Sidebar } from "../Dashboard/components/Sidebar";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
+import { useResponsiveSidebar } from "../../hooks/useResponsiveSidebar";
 
 interface Invoice {
     id: string;
@@ -83,6 +84,12 @@ export const Invoicing = () => {
     const [activeMenuItem, setActiveMenuItem] = useState("invoicing");
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("All Status");
     const [searchTerm, setSearchTerm] = useState("");
+    const {
+        isSidebarCollapsed,
+        isMobileView,
+        toggleSidebar,
+        closeSidebar,
+    } = useResponsiveSidebar();
 
     const filteredInvoices = useMemo(() => {
         return invoices.filter((invoice) => {
@@ -118,18 +125,47 @@ export const Invoicing = () => {
 
     const handleNavigate = (item: string) => {
         setActiveMenuItem(item);
+        if (isMobileView) {
+            closeSidebar();
+        }
     };
 
     return (
-        <div className="flex h-screen bg-[#f5f5f5]">
-            <Sidebar activeItem={activeMenuItem} onNavigate={handleNavigate} />
+        <div className="flex min-h-screen bg-[#f5f5f5]">
+            <Sidebar
+                activeItem={activeMenuItem}
+                onNavigate={handleNavigate}
+                collapsed={isSidebarCollapsed}
+                onToggleCollapse={toggleSidebar}
+            />
+
+            {!isSidebarCollapsed && isMobileView && (
+                <div
+                    className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm sm:hidden"
+                    onClick={closeSidebar}
+                />
+            )}
+
             <div className="flex-1 overflow-y-auto">
-                <header className="flex items-center justify-between border-b border-[#e5e7eb] bg-white px-8 py-6">
-                    <div>
-                        <h1 className="text-2xl font-semibold text-[#0b1f3a]">Invoicing</h1>
-                        <p className="mt-1 text-sm text-[#6b7280]">
-                            Manage your invoices and payments
-                        </p>
+                <header className="flex items-center justify-between gap-4 border-b border-[#e5e7eb] bg-white px-4 py-6 sm:px-8">
+                    <div className="flex items-start gap-3">
+                        {toggleSidebar && isMobileView && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={toggleSidebar}
+                                className="rounded-lg border border-[#0b1f3a]/15 bg-white/70 text-[#0b1f3a] hover:bg-white sm:hidden"
+                                aria-label={isSidebarCollapsed ? "Open navigation" : "Close navigation"}
+                            >
+                                {isSidebarCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
+                            </Button>
+                        )}
+                        <div>
+                            <h1 className="text-2xl font-semibold text-[#0b1f3a]">Invoicing</h1>
+                            <p className="mt-1 text-sm text-[#6b7280]">
+                                Manage your invoices and payments
+                            </p>
+                        </div>
                     </div>
                     <Button className="rounded-xl bg-[#00c48c] px-6 py-3 text-sm font-semibold text-white hover:bg-[#00b37d]">
                         + Create Invoice
