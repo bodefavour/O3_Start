@@ -57,7 +57,9 @@ export const DashboardShell = ({
                 <div className="flex h-full flex-col overflow-hidden">
                     {renderHeader && (
                         <div className="flex-shrink-0">
-                            {renderHeader({ toggleSidebar, isSidebarCollapsed, isMobileView })}
+                            <div className="mx-auto w-full max-w-6xl px-3 sm:px-6 lg:px-8">
+                                {renderHeader({ toggleSidebar, isSidebarCollapsed, isMobileView })}
+                            </div>
                         </div>
                     )}
                     <div className="flex-1 overflow-y-auto">
