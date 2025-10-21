@@ -5,6 +5,9 @@ import { PortfolioSummary } from "./components/PortfolioSummary";
 import { WalletTabs } from "./components/WalletTabs";
 import { WalletCard } from "./components/WalletCard";
 import { QuickActionsSection } from "./components/QuickActionsSection";
+import { SendMoneyModal } from "./components/SendMoneyModal";
+import { ReceiveMoneyModal } from "./components/ReceiveMoneyModal.tsx";
+import { SwapCurrenciesModal } from "./components/SwapCurrenciesModal";
 import { TransactionHistory } from "./components/TransactionHistory";
 
 type TabType = "stablecoins" | "local" | "history";
@@ -63,6 +66,9 @@ const localCurrencyWallets = [
 export const Wallet = () => {
   const [activeMenuItem, setActiveMenuItem] = useState("wallet");
   const [activeTab, setActiveTab] = useState<TabType>("stablecoins");
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
 
   const handleNavigation = (item: string) => {
     setActiveMenuItem(item);
@@ -72,6 +78,42 @@ export const Wallet = () => {
   const handleAddWallet = () => {
     console.log("Add new wallet");
     // Add wallet modal/flow here
+  };
+
+  const handleSendMoney = () => {
+    setIsSendModalOpen(true);
+  };
+
+  const handleCloseSendMoney = () => {
+    setIsSendModalOpen(false);
+  };
+
+  const handleReceiveMoney = () => {
+    setIsReceiveModalOpen(true);
+  };
+
+  const handleCloseReceiveMoney = () => {
+    setIsReceiveModalOpen(false);
+  };
+
+  const handleSwapCurrencies = () => {
+    setIsSwapModalOpen(true);
+  };
+
+  const handleCloseSwapCurrencies = () => {
+    setIsSwapModalOpen(false);
+  };
+
+  const handleSendModalContinue = (payload: {
+    recipientAddress: string;
+    amount: number;
+    priority: "standard" | "fast";
+    note: string;
+    fee: number;
+    feeLabel: string;
+    total: number;
+  }) => {
+    console.log("Send money payload", payload);
   };
 
   const handleTabChange = (tab: TabType) => {
@@ -116,12 +158,31 @@ export const Wallet = () => {
           {activeTab === "history" && <TransactionHistory />}
 
           {/* Quick Actions - Only show when not on history tab */}
-          {activeTab !== "history" && <QuickActionsSection />}
+          {activeTab !== "history" && (
+            <QuickActionsSection
+              onSendMoney={handleSendMoney}
+              onReceiveMoney={handleReceiveMoney}
+              onSwapCurrencies={handleSwapCurrencies}
+            />
+          )}
 
           {/* Transaction History - Show on Stablecoins and Local tabs */}
           {activeTab !== "history" && <TransactionHistory />}
         </div>
       </div>
+      <SendMoneyModal
+        isOpen={isSendModalOpen}
+        onClose={handleCloseSendMoney}
+        onContinue={handleSendModalContinue}
+      />
+      <ReceiveMoneyModal
+        isOpen={isReceiveModalOpen}
+        onClose={handleCloseReceiveMoney}
+      />
+      <SwapCurrenciesModal
+        isOpen={isSwapModalOpen}
+        onClose={handleCloseSwapCurrencies}
+      />
     </div>
   );
 };
