@@ -48,7 +48,7 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#f5f5f5]">
+    <div className="flex min-h-screen flex-col bg-[#f5f5f5] md:flex-row">
       {/* Sidebar */}
       <Sidebar activeItem={activeMenuItem} onNavigate={handleNavigation} />
 
@@ -58,7 +58,7 @@ export const Dashboard = () => {
         <DashboardHeader />
 
         {/* Dashboard Content */}
-        <div className="p-8">
+        <div className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {/* Balance Cards */}
           <BalanceCards />
 
@@ -70,7 +70,7 @@ export const Dashboard = () => {
           />
 
           {/* Two Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Transaction Analytics */}
             <TransactionAnalytics />
 

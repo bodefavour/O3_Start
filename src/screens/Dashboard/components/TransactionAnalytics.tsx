@@ -10,21 +10,21 @@ const weeklyData = [
 export const TransactionAnalytics = () => {
   return (
     <div className="mt-6">
-      <h3 className="[font-family:'Inter',Helvetica] font-semibold text-[#0b1f3a] text-lg mb-4">
+      <h3 className="mb-4 [font-family:'Inter',Helvetica] text-lg font-semibold text-[#0b1f3a]">
         Transaction Analytics
       </h3>
-      <Card className="bg-white border-[#e5e7eb] rounded-xl">
-        <CardContent className="p-6">
-          <div className="flex items-end justify-between h-[200px] gap-8">
+      <Card className="rounded-xl border-[#e5e7eb] bg-white">
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex h-48 items-end justify-between gap-4 sm:h-[200px] sm:gap-8">
             {weeklyData.map((data, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center gap-3">
-                <div className="w-full flex items-end justify-center flex-1">
+              <div key={index} className="flex flex-1 flex-col items-center gap-3">
+                <div className="flex w-full flex-1 items-end justify-center">
                   <div
-                    className="w-full bg-[#00c48c] rounded-t-lg"
+                    className="w-full rounded-t-lg bg-[#00c48c]"
                     style={{ height: data.height }}
                   />
                 </div>
-                <span className="[font-family:'Inter',Helvetica] font-medium text-[#0b1f3a]/60 text-sm">
+                <span className="[font-family:'Inter',Helvetica] text-xs font-medium text-[#0b1f3a]/60 sm:text-sm">
                   {data.week}
                 </span>
               </div>

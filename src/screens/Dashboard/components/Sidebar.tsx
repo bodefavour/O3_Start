@@ -38,9 +38,9 @@ export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
   };
 
   return (
-    <div className="w-[176px] h-screen bg-[#0b1f3a] flex flex-col">
+    <div className="flex w-full flex-col bg-[#0b1f3a] md:h-screen md:w-[176px]">
       {/* Logo/Brand */}
-      <div className="p-4 pt-5">
+      <div className="px-4 pb-3 pt-5">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-[#00c48c] rounded" />
           <span className="[font-family:'Inter',Helvetica] font-semibold text-white text-sm">
@@ -50,13 +50,13 @@ export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
       </div>
 
       {/* Menu Items */}
-      <div className="flex flex-col gap-2 p-4">
+      <div className="flex flex-col gap-2 px-4 pb-4">
         {menuItems.map((item) => (
           <Button
             key={item.id}
             onClick={() => handleMenuClick(item)}
             className={`
-              w-full h-[38px] justify-start gap-2 px-4 py-2
+              w-full h-[42px] justify-start gap-2 px-4 py-2
               ${activeItem === item.id
                 ? "bg-[#00c48c] hover:bg-[#00b37d] text-[#0b1f3a]"
                 : "bg-transparent hover:bg-white/10 text-white"
@@ -77,7 +77,7 @@ export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
       <div className="flex-1" />
 
       {/* User Profile Section */}
-      <div className="p-4">
+      <div className="px-4 pb-5">
         <Separator className="bg-white/20 mb-4" />
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-[#00c48c] rounded-full flex items-center justify-center">

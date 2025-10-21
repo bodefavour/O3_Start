@@ -11,12 +11,12 @@ export const MacbookPro = (): JSX.Element => {
 
       <FeaturesSection />
 
-      <section className="w-full bg-white px-4 py-16">
+      <section className="w-full bg-white px-4 py-12 sm:py-16">
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-3 text-center">
-          <h2 className="text-3xl font-extrabold text-[#0b1f3a] md:text-4xl">
+          <h2 className="text-2xl font-extrabold text-[#0b1f3a] sm:text-3xl md:text-4xl">
             Everything Your Business Needs
           </h2>
-          <p className="text-base font-semibold text-[#1f3a5c] md:text-lg">
+          <p className="text-sm font-semibold text-[#1f3a5c] sm:text-base md:text-lg">
             Powerful features designed for modern businesses operating across borders.
           </p>
         </div>
@@ -24,8 +24,8 @@ export const MacbookPro = (): JSX.Element => {
 
       <HeaderSection />
 
-      <section className="flex w-full flex-col items-center px-4 pb-12">
-        <h2 className="mb-6 text-3xl font-extrabold text-[#0b1f3a] md:text-4xl">
+      <section className="flex w-full flex-col items-center px-4 pb-10 sm:pb-12">
+        <h2 className="mb-4 text-2xl font-extrabold text-[#0b1f3a] sm:mb-6 sm:text-3xl md:text-4xl">
           Multi-Currency Support
         </h2>
       </section>
