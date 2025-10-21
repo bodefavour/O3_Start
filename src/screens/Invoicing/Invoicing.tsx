@@ -213,9 +213,9 @@ export const Invoicing = () => {
                 </section>
 
                 <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div className="flex flex-1 gap-3">
-                            <div className="relative flex-1">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+                        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+                            <div className="relative w-full sm:flex-1">
                                 <input
                                     type="text"
                                     placeholder="search invoices"
@@ -229,7 +229,7 @@ export const Invoicing = () => {
                                 onChange={(event) =>
                                     setStatusFilter(event.target.value as StatusFilter)
                                 }
-                                className="w-40 rounded-xl border border-[#d1d5db] bg-white px-4 py-2 text-sm text-[#0b1f3a] focus:outline-none"
+                                className="w-full rounded-xl border border-[#d1d5db] bg-white px-4 py-2 text-sm text-[#0b1f3a] focus:outline-none sm:w-48"
                             >
                                 {statusOptions.map((option) => (
                                     <option key={option} value={option}>
@@ -239,7 +239,7 @@ export const Invoicing = () => {
                             </select>
                             <Button
                                 variant="outline"
-                                className="rounded-xl border-[#d1d5db] bg-white px-4 py-2 text-sm text-[#0b1f3a]"
+                                className="w-full rounded-xl border-[#d1d5db] bg-white px-4 py-2 text-sm text-[#0b1f3a] sm:w-auto"
                             >
                                 Export
                             </Button>

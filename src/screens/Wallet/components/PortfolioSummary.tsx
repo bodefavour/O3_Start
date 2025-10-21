@@ -4,7 +4,7 @@ export const PortfolioSummary = () => {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {/* Total Portfolio Value Card */}
-      <Card className="flex-1 bg-[#0b1f3a] border-none rounded-xl">
+      <Card className="w-full rounded-xl border-none bg-[#0b1f3a]">
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div>
@@ -26,7 +26,7 @@ export const PortfolioSummary = () => {
       </Card>
 
       {/* Active Wallets Card */}
-      <Card className="flex-1 bg-white border border-[#e5e7eb] rounded-xl">
+      <Card className="w-full rounded-xl border border-[#e5e7eb] bg-white">
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div>
@@ -37,7 +37,7 @@ export const PortfolioSummary = () => {
                 7
               </h2>
               <p className="[font-family:'Inter',Helvetica] font-normal text-[#0b1f3a]/60 text-xs mt-1">
-                3 Stablecoins4 Local
+                3 Stablecoins · 4 Local
               </p>
             </div>
             <div className="w-8 h-8 bg-[#00c48c]/10 rounded-lg flex items-center justify-center">
