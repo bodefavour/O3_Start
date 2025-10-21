@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sidebar } from "../Dashboard/components/Sidebar";
+import { DashboardShell } from "../../components/layout/DashboardShell";
 import { WalletHeader } from "./components/WalletHeader";
 import { PortfolioSummary } from "./components/PortfolioSummary";
 import { WalletTabs } from "./components/WalletTabs";
@@ -9,7 +9,6 @@ import { SendMoneyModal } from "./components/SendMoneyModal";
 import { ReceiveMoneyModal } from "./components/ReceiveMoneyModal.tsx";
 import { SwapCurrenciesModal } from "./components/SwapCurrenciesModal";
 import { TransactionHistory } from "./components/TransactionHistory";
-import { useResponsiveSidebar } from "../../hooks/useResponsiveSidebar";
 
 type TabType = "stablecoins" | "local" | "history";
 
@@ -70,19 +69,10 @@ export const Wallet = () => {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
-  const {
-    isSidebarCollapsed,
-    isMobileView,
-    toggleSidebar,
-    closeSidebar,
-  } = useResponsiveSidebar();
 
   const handleNavigation = (item: string) => {
     setActiveMenuItem(item);
     console.log(`Navigating to: ${item}`);
-    if (isMobileView) {
-      closeSidebar();
-    }
   };
 
   const handleAddWallet = () => {
@@ -131,43 +121,26 @@ export const Wallet = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f5f5f5]">
-      {/* Sidebar */}
-      <Sidebar
+    <>
+      <DashboardShell
         activeItem={activeMenuItem}
         onNavigate={handleNavigation}
-        collapsed={isSidebarCollapsed}
-        onToggleCollapse={toggleSidebar}
-      />
-
-      {!isSidebarCollapsed && isMobileView && (
-        <div
-          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm sm:hidden"
-          onClick={closeSidebar}
-        />
-      )}
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        {/* Header */}
-        <WalletHeader
-          onAddWallet={handleAddWallet}
-          onToggleSidebar={toggleSidebar}
-          isSidebarCollapsed={isSidebarCollapsed}
-          isMobileView={isMobileView}
-        />
-
-        {/* Wallet Content */}
-        <div className="p-8">
-          {/* Portfolio Summary */}
+        renderHeader={({ toggleSidebar, isSidebarCollapsed, isMobileView }) => (
+          <WalletHeader
+            onAddWallet={handleAddWallet}
+            onToggleSidebar={toggleSidebar}
+            isSidebarCollapsed={isSidebarCollapsed}
+            isMobileView={isMobileView}
+          />
+        )}
+      >
+        <div className="space-y-6 px-4 py-6 sm:px-6 lg:px-8">
           <PortfolioSummary />
 
-          {/* Tabs */}
           <WalletTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
-          {/* Wallet Cards Grid */}
           {activeTab === "stablecoins" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {stablecoinWallets.map((wallet, index) => (
                 <WalletCard key={index} {...wallet} />
               ))}
@@ -175,7 +148,7 @@ export const Wallet = () => {
           )}
 
           {activeTab === "local" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {localCurrencyWallets.map((wallet, index) => (
                 <WalletCard key={index} {...wallet} />
               ))}
@@ -184,7 +157,6 @@ export const Wallet = () => {
 
           {activeTab === "history" && <TransactionHistory />}
 
-          {/* Quick Actions - Only show when not on history tab */}
           {activeTab !== "history" && (
             <QuickActionsSection
               onSendMoney={handleSendMoney}
@@ -193,10 +165,9 @@ export const Wallet = () => {
             />
           )}
 
-          {/* Transaction History - Show on Stablecoins and Local tabs */}
           {activeTab !== "history" && <TransactionHistory />}
         </div>
-      </div>
+      </DashboardShell>
       <SendMoneyModal
         isOpen={isSendModalOpen}
         onClose={handleCloseSendMoney}
@@ -210,6 +181,6 @@ export const Wallet = () => {
         isOpen={isSwapModalOpen}
         onClose={handleCloseSwapCurrencies}
       />
-    </div>
+    </>
   );
 };
