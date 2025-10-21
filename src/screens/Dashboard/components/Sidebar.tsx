@@ -7,6 +7,8 @@ import {
   Users,
   BarChart3,
   Settings,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Separator } from "../../../components/ui/separator";
@@ -14,6 +16,8 @@ import { Separator } from "../../../components/ui/separator";
 interface SidebarProps {
   activeItem: string;
   onNavigate?: (item: string) => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 const menuItems = [
@@ -26,7 +30,12 @@ const menuItems = [
   { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
 ];
 
-export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
+export const Sidebar = ({
+  activeItem,
+  onNavigate,
+  collapsed = false,
+  onToggleCollapse,
+}: SidebarProps) => {
   const navigate = useNavigate();
 
   const handleMenuClick = (item: typeof menuItems[0]) => {
@@ -38,25 +47,46 @@ export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
   };
 
   return (
-    <div className="flex w-full flex-col bg-[#0b1f3a] md:h-screen md:w-[176px]">
+    <div
+      className={`flex h-screen flex-shrink-0 flex-col bg-[#0b1f3a] transition-all duration-300 ${
+        collapsed ? "w-16" : "w-[176px]"
+      }`}
+    >
       {/* Logo/Brand */}
-      <div className="px-4 pb-3 pt-5">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-[#00c48c] rounded" />
-          <span className="[font-family:'Inter',Helvetica] font-semibold text-white text-sm">
-            BorderlessPay
-          </span>
+      <div className="px-3 pt-4 pb-3">
+        <div
+          className={`flex items-center ${collapsed ? "justify-center" : "justify-between"}`}
+        >
+          <div className={`flex items-center ${collapsed ? "gap-0" : "gap-2"}`}>
+            <div className="h-6 w-6 rounded bg-[#00c48c]" />
+            {!collapsed && (
+              <span className="[font-family:'Inter',Helvetica] text-sm font-semibold text-white">
+                BorderlessPay
+              </span>
+            )}
+          </div>
+          {onToggleCollapse && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleCollapse}
+              className="ml-2 h-8 w-8 rounded-lg border border-white/10 bg-white/10 text-white hover:bg-white/20"
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Menu Items */}
-      <div className="flex flex-col gap-2 px-4 pb-4">
+      <div className={`flex flex-col gap-2 pb-4 ${collapsed ? "px-2" : "px-4"}`}>
         {menuItems.map((item) => (
           <Button
             key={item.id}
             onClick={() => handleMenuClick(item)}
             className={`
-              w-full h-[42px] justify-start gap-2 px-4 py-2
+              w-full h-[42px] ${collapsed ? "justify-center px-2" : "justify-start px-4"} gap-2 py-2
               ${activeItem === item.id
                 ? "bg-[#00c48c] hover:bg-[#00b37d] text-[#0b1f3a]"
                 : "bg-transparent hover:bg-white/10 text-white"
@@ -68,7 +98,7 @@ export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
               className={`w-4 h-4 ${activeItem === item.id ? "text-[#0b1f3a]" : "text-white"
                 }`}
             />
-            {item.label}
+            {!collapsed && item.label}
           </Button>
         ))}
       </div>
@@ -77,22 +107,24 @@ export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
       <div className="flex-1" />
 
       {/* User Profile Section */}
-      <div className="px-4 pb-5">
-        <Separator className="bg-white/20 mb-4" />
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#00c48c] rounded-full flex items-center justify-center">
-            <span className="[font-family:'Inter',Helvetica] font-semibold text-[#0b1f3a] text-sm">
+      <div className="px-3 pb-5">
+        <Separator className="mb-4 bg-white/20" />
+        <div className={`flex items-center ${collapsed ? "justify-center" : "gap-2"}`}>
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#00c48c]">
+            <span className="[font-family:'Inter',Helvetica] text-sm font-semibold text-[#0b1f3a]">
               OV
             </span>
           </div>
-          <div className="flex flex-col">
-            <div className="[font-family:'Inter',Helvetica] font-medium text-white text-xs">
-              Oba Vincent
+          {!collapsed && (
+            <div className="flex flex-col">
+              <div className="[font-family:'Inter',Helvetica] text-xs font-medium text-white">
+                Oba Vincent
+              </div>
+              <div className="[font-family:'Inter',Helvetica] text-[10px] font-normal text-white/60">
+                Premium Account
+              </div>
             </div>
-            <div className="[font-family:'Inter',Helvetica] font-normal text-white/60 text-[10px]">
-              Premium Account
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

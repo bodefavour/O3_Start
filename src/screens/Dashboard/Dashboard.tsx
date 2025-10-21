@@ -12,6 +12,7 @@ export const Dashboard = () => {
   const [activeMenuItem, setActiveMenuItem] = useState("dashboard");
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleNavigation = (item: string) => {
     setActiveMenuItem(item);
@@ -48,12 +49,17 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f5f5f5] md:flex-row">
+    <div className="flex min-h-screen bg-[#f5f5f5]">
       {/* Sidebar */}
-      <Sidebar activeItem={activeMenuItem} onNavigate={handleNavigation} />
+      <Sidebar
+        activeItem={activeMenuItem}
+        onNavigate={handleNavigation}
+        collapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+      />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 min-w-0 overflow-auto">
         {/* Header */}
         <DashboardHeader />
 

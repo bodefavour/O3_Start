@@ -70,9 +70,8 @@ export const RecentTransactions = () => {
               <div className="flex flex-col gap-3 p-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3">
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                      transaction.isIncoming ? "bg-[#00c48c]/10" : "bg-red-50"
-                    }`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.isIncoming ? "bg-[#00c48c]/10" : "bg-red-50"
+                      }`}
                   >
                     {transaction.isIncoming ? (
                       <ArrowDownLeft className="h-5 w-5 text-[#00c48c]" />
@@ -92,18 +91,16 @@ export const RecentTransactions = () => {
 
                 <div className="flex items-center gap-3 sm:gap-4">
                   <p
-                    className={`[font-family:'Inter',Helvetica] text-sm font-semibold ${
-                      transaction.isIncoming ? "text-[#00c48c]" : "text-[#0b1f3a]"
-                    }`}
+                    className={`[font-family:'Inter',Helvetica] text-sm font-semibold ${transaction.isIncoming ? "text-[#00c48c]" : "text-[#0b1f3a]"
+                      }`}
                   >
                     {transaction.amount}
                   </p>
                   <Badge
                     className={`
-                      ${
-                        transaction.status === "Completed"
-                          ? "bg-[#00c48c] hover:bg-[#00b37d]"
-                          : "bg-[#fbbf24] hover:bg-[#f59e0b]"
+                      ${transaction.status === "Completed"
+                        ? "bg-[#00c48c] hover:bg-[#00b37d]"
+                        : "bg-[#fbbf24] hover:bg-[#f59e0b]"
                       }
                       px-3 py-1 text-[#0b1f3a]
                       [font-family:'Inter',Helvetica] text-xs font-medium
