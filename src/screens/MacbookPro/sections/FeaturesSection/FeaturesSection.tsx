@@ -1,68 +1,48 @@
-import React from "react";
-
 const statistics = [
   {
     value: "24+",
     label: "Countries",
-    left: "left-[446px]",
   },
   {
     value: "<2s",
     label: "Transfer Time",
-    left: "left-[658px]",
   },
   {
     value: "90%",
-    label: "Free Savings",
-    left: "left-[918px]",
+    label: "Fee Savings",
   },
 ];
 
 export const FeaturesSection = (): JSX.Element => {
   return (
-    <section className="relative w-full h-[449px] bg-[#0b1f3a] overflow-hidden">
-      <img
-        className="left-[calc(50.00%_-_180px)] w-[361px] h-[380px] absolute top-[calc(50.00%_-_190px)] object-cover"
-        alt="Image"
-        src="/image-1.png"
-      />
+    <section className="relative w-full overflow-hidden bg-gradient-to-br from-[#010f1f] via-[#062a4f] to-[#0b3f69] py-20 text-white">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-[-10%] top-[-20%] h-[320px] w-[320px] rounded-full bg-[#00c48c]/30 blur-[140px]" />
+        <div className="absolute right-[-5%] bottom-[-15%] h-[360px] w-[360px] rounded-full bg-[#00c48c]/20 blur-[140px]" />
+        <div className="absolute inset-0 bg-[url('/hero-map.png')] bg-cover bg-center opacity-10" />
+      </div>
 
-      <img
-        className="right-5 w-[394px] h-[394px] absolute top-[calc(50.00%_-_190px)] object-cover"
-        alt="Image"
-        src="/image-2.png"
-      />
+      <div className="relative mx-auto flex w-full max-w-4xl flex-col items-center gap-6 px-6 text-center">
+        <h1 className="text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+          Bank Beyond <span className="text-[#00c48c]">Borders</span>
+        </h1>
+        <p className="max-w-2xl text-base font-medium text-[#d7e6ff] md:text-lg">
+          Fast, transparent, and low-cost cross-border payments for African businesses.
+          Send money globally, instantly.
+        </p>
 
-      <img
-        className="left-5 w-[295px] h-[382px] absolute top-[calc(50.00%_-_190px)] object-cover"
-        alt="Image"
-        src="/image-3.png"
-      />
-
-      <h1 className="absolute top-[90px] left-[calc(50.00%_-_333px)] [font-family:'Inter',Helvetica] font-extrabold text-transparent text-[64px] tracking-[0] leading-[normal]">
-        <span className="text-white">Bank Beyond </span>
-        <span className="text-[#00c48c]">Borders</span>
-      </h1>
-
-      <div className="absolute top-[152px] left-[1212px] w-[300px] h-[300px] bg-[#00c48cbf] rounded-[150px] blur-[100px]" />
-
-      <p className="absolute top-[179px] left-[calc(50.00%_-_350px)] [font-family:'Inter',Helvetica] font-extrabold text-white text-2xl text-center tracking-[0] leading-[normal]">
-        Fast, transparent, and low-cost cross-border payments for <br />
-        African businesses. Send money globally, instantly.
-      </p>
-
-      {statistics.map((stat, index) => (
-        <div
-          key={index}
-          className={`absolute top-[312px] ${stat.left} [font-family:'Inter',Helvetica] font-normal text-transparent text-2xl text-center tracking-[0] leading-[normal]`}
-        >
-          <span className="font-extrabold text-[#00c48c]">
-            {stat.value}
-            <br />
-          </span>
-          <span className="font-medium text-white">{stat.label}</span>
+        <div className="mt-6 grid w-full gap-6 sm:grid-cols-3">
+          {statistics.map((stat) => (
+            <div
+              key={stat.label}
+              className="flex flex-col items-center rounded-2xl border border-white/20 bg-white/5 px-6 py-5 backdrop-blur"
+            >
+              <span className="text-3xl font-extrabold text-[#00c48c]">{stat.value}</span>
+              <span className="text-sm font-semibold text-white/90">{stat.label}</span>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </section>
   );
 };
