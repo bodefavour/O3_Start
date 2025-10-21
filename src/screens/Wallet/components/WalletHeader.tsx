@@ -16,7 +16,7 @@ export const WalletHeader = ({
 }: WalletHeaderProps) => {
   return (
     <div className="w-full bg-gradient-to-r from-[#c4d9e0] to-[#e5e7eb] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3">
           {onToggleSidebar && isMobileView && (
             <Button
@@ -38,13 +38,15 @@ export const WalletHeader = ({
             </p>
           </div>
         </div>
-        <Button
-          onClick={onAddWallet}
-          className="rounded-lg bg-[#00c48c] px-5 py-2 text-sm font-semibold text-black hover:bg-[#00b37d] sm:px-6 sm:py-3"
-        >
-          <span className="mr-2 text-xl">+</span>
-          Wallet
-        </Button>
+        <div className="flex flex-1 items-start justify-end sm:flex-none">
+          <Button
+            onClick={onAddWallet}
+            className="w-full rounded-lg bg-[#00c48c] px-5 py-2 text-sm font-semibold text-black hover:bg-[#00b37d] sm:w-auto sm:px-6 sm:py-3"
+          >
+            <span className="mr-2 text-xl">+</span>
+            Wallet
+          </Button>
+        </div>
       </div>
     </div>
   );

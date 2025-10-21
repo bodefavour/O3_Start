@@ -80,11 +80,10 @@ export const Settings = () => {
                                 key={section.id}
                                 variant={activeSection === section.id ? "default" : "outline"}
                                 onClick={() => setActiveSection(section.id)}
-                                className={`w-full justify-start rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                                    activeSection === section.id
+                                className={`w-full justify-start rounded-xl px-4 py-2 text-sm font-semibold transition ${activeSection === section.id
                                         ? "bg-[#00c48c] text-[#0b1f3a] hover:bg-[#00b37d]"
                                         : "border-[#d1d5db] bg-white text-[#0b1f3a] hover:bg-gray-50"
-                                }`}
+                                    }`}
                             >
                                 {section.label}
                             </Button>
