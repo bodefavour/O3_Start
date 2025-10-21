@@ -19,7 +19,6 @@ export const FeaturesSection = (): JSX.Element => {
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-[-10%] top-[-20%] h-[320px] w-[320px] rounded-full bg-[#00c48c]/30 blur-[140px]" />
         <div className="absolute right-[-5%] bottom-[-15%] h-[360px] w-[360px] rounded-full bg-[#00c48c]/20 blur-[140px]" />
-        <div className="absolute inset-0 bg-[url('/hero-map.png')] bg-cover bg-center opacity-10" />
       </div>
 
       <div className="relative mx-auto flex w-full max-w-4xl flex-col items-center gap-6 px-6 text-center">

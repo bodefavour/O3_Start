@@ -1,47 +1,62 @@
-import React from "react";
 import { Badge } from "../../../../components/ui/badge";
 import { Card, CardContent } from "../../../../components/ui/card";
 
-const currencies = [
+const features = [
   {
-    code: "KES",
-    name: "Kenyan Shilling",
+    title: "Global Reach",
+    description:
+      "Send money to 50+ countries instantly with stablecoins and local currencies.",
   },
   {
-    code: "GHS",
-    name: "Ghanaian Cedi",
+    title: "Bank-Grade Security",
+    description:
+      "Blockchain-powered transactions with enterprise-level compliance and KYC.",
   },
   {
-    code: "ZAR",
-    name: "South African Rand",
+    title: "Instant Transfers",
+    description:
+      "Sub-second transaction speeds powered by Hedera's distributed ledger.",
+  },
+  {
+    title: "Low Fees",
+    description:
+      "Save up to 90% on traditional banking fees for international transfers.",
+  },
+  {
+    title: "Real-Time Analytics",
+    description:
+      "Track your business finances with powerful insights and reporting tools.",
+  },
+  {
+    title: "24/7 Operations",
+    description:
+      "Process payments any time, any day - no banking hours restrictions.",
   },
 ];
 
 export const HeaderSection = (): JSX.Element => {
   return (
-    <section className="flex items-center justify-center gap-8 w-full">
-      {currencies.map((currency, index) => (
-        <Card
-          key={index}
-          className="w-[300px] rounded-xl border border-[#00000040] cursor-pointer hover:shadow-md transition-shadow"
-        >
-          <CardContent className="flex items-center justify-between p-2.5">
-            <div className="inline-flex flex-col items-start gap-2">
-              <h3 className="[font-family:'Inter',Helvetica] font-extrabold text-[#003c43bf] text-2xl tracking-[0] leading-[normal]">
-                {currency.code}
+    <section className="w-full px-4 pb-16">
+      <div className="mx-auto grid w-full max-w-5xl gap-6 md:grid-cols-2">
+        {features.map((feature) => (
+          <Card
+            key={feature.title}
+            className="h-full rounded-2xl border border-[#00c48c33] bg-white shadow-sm transition-shadow hover:shadow-md"
+          >
+            <CardContent className="flex h-full flex-col gap-3 p-6">
+              <Badge className="w-fit rounded-full bg-[#e0fff5] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#047857]">
+                Feature
+              </Badge>
+              <h3 className="text-lg font-bold text-[#0b1f3a]">
+                {feature.title}
               </h3>
-              <p className="[font-family:'Inter',Helvetica] font-extrabold text-[#003c43bf] text-sm tracking-[0] leading-[normal]">
-                {currency.name}
+              <p className="text-sm font-medium text-[#365476]">
+                {feature.description}
               </p>
-            </div>
-            <Badge className="bg-[#00c48c40] hover:bg-[#00c48c40] px-2.5 py-[5px] rounded-xl">
-              <span className="[font-family:'Inter',Helvetica] font-medium text-[#003c43bf] text-base tracking-[0] leading-[normal] whitespace-nowrap">
-                Local
-              </span>
-            </Badge>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </section>
   );
 };
