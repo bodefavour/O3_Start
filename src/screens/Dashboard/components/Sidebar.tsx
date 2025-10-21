@@ -65,9 +65,8 @@ export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
             `}
           >
             <item.icon
-              className={`w-4 h-4 ${
-                activeItem === item.id ? "text-[#0b1f3a]" : "text-white"
-              }`}
+              className={`w-4 h-4 ${activeItem === item.id ? "text-[#0b1f3a]" : "text-white"
+                }`}
             />
             {item.label}
           </Button>
