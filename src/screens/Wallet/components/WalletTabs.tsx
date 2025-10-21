@@ -14,10 +14,9 @@ export const WalletTabs = ({ activeTab, onTabChange }: WalletTabsProps) => {
         onClick={() => onTabChange("stablecoins")}
         className={`
           px-6 py-2 rounded-lg [font-family:'Inter',Helvetica] font-medium text-sm
-          ${
-            activeTab === "stablecoins"
-              ? "bg-[#0b1f3a] text-white hover:bg-[#0b1f3a]/90"
-              : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
+          ${activeTab === "stablecoins"
+            ? "bg-[#0b1f3a] text-white hover:bg-[#0b1f3a]/90"
+            : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
           }
         `}
       >
@@ -27,10 +26,9 @@ export const WalletTabs = ({ activeTab, onTabChange }: WalletTabsProps) => {
         onClick={() => onTabChange("local")}
         className={`
           px-6 py-2 rounded-lg [font-family:'Inter',Helvetica] font-medium text-sm
-          ${
-            activeTab === "local"
-              ? "bg-[#0b1f3a] text-white hover:bg-[#0b1f3a]/90"
-              : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
+          ${activeTab === "local"
+            ? "bg-[#0b1f3a] text-white hover:bg-[#0b1f3a]/90"
+            : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
           }
         `}
       >
@@ -40,10 +38,9 @@ export const WalletTabs = ({ activeTab, onTabChange }: WalletTabsProps) => {
         onClick={() => onTabChange("history")}
         className={`
           px-6 py-2 rounded-lg [font-family:'Inter',Helvetica] font-medium text-sm
-          ${
-            activeTab === "history"
-              ? "bg-[#0b1f3a] text-white hover:bg-[#0b1f3a]/90"
-              : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
+          ${activeTab === "history"
+            ? "bg-[#0b1f3a] text-white hover:bg-[#0b1f3a]/90"
+            : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
           }
         `}
       >

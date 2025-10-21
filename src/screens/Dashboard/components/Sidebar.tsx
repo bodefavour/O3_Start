@@ -48,10 +48,9 @@ export const Sidebar = ({ activeItem, onNavigate }: SidebarProps) => {
             onClick={() => handleMenuClick(item)}
             className={`
               w-full h-[38px] justify-start gap-2 px-4 py-2
-              ${
-                activeItem === item.id
-                  ? "bg-[#00c48c] hover:bg-[#00b37d] text-black"
-                  : "bg-transparent hover:bg-white/10 text-white"
+              ${activeItem === item.id
+                ? "bg-[#00c48c] hover:bg-[#00b37d] text-black"
+                : "bg-transparent hover:bg-white/10 text-white"
               }
               rounded-lg [font-family:'Inter',Helvetica] font-normal text-sm
             `}

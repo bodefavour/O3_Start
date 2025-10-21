@@ -69,11 +69,10 @@ export const RecentTransactions = () => {
               <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      transaction.isIncoming
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${transaction.isIncoming
                         ? "bg-[#00c48c]/10"
                         : "bg-red-50"
-                    }`}
+                      }`}
                   >
                     <span className="text-lg">
                       {transaction.isIncoming ? "↓" : "↑"}
@@ -91,20 +90,18 @@ export const RecentTransactions = () => {
 
                 <div className="flex items-center gap-4">
                   <p
-                    className={`[font-family:'Inter',Helvetica] font-semibold text-sm ${
-                      transaction.isIncoming
+                    className={`[font-family:'Inter',Helvetica] font-semibold text-sm ${transaction.isIncoming
                         ? "text-[#00c48c]"
                         : "text-[#0b1f3a]"
-                    }`}
+                      }`}
                   >
                     {transaction.amount}
                   </p>
                   <Badge
                     className={`
-                      ${
-                        transaction.status === "Completed"
-                          ? "bg-[#00c48c] hover:bg-[#00b37d]"
-                          : "bg-[#fbbf24] hover:bg-[#f59e0b]"
+                      ${transaction.status === "Completed"
+                        ? "bg-[#00c48c] hover:bg-[#00b37d]"
+                        : "bg-[#fbbf24] hover:bg-[#f59e0b]"
                       }
                       text-[#0b1f3a] px-3 py-1
                       [font-family:'Inter',Helvetica] font-medium text-xs

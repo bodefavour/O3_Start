@@ -83,10 +83,9 @@ export const TransactionHistory = () => {
             onClick={() => setFilter("all")}
             className={`
               px-4 py-1.5 rounded-full text-xs font-medium
-              ${
-                filter === "all"
-                  ? "bg-[#00c48c] text-black hover:bg-[#00b37d]"
-                  : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
+              ${filter === "all"
+                ? "bg-[#00c48c] text-black hover:bg-[#00b37d]"
+                : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
               }
             `}
           >
@@ -96,10 +95,9 @@ export const TransactionHistory = () => {
             onClick={() => setFilter("sent")}
             className={`
               px-4 py-1.5 rounded-full text-xs font-medium
-              ${
-                filter === "sent"
-                  ? "bg-[#00c48c] text-black hover:bg-[#00b37d]"
-                  : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
+              ${filter === "sent"
+                ? "bg-[#00c48c] text-black hover:bg-[#00b37d]"
+                : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
               }
             `}
           >
@@ -109,10 +107,9 @@ export const TransactionHistory = () => {
             onClick={() => setFilter("received")}
             className={`
               px-4 py-1.5 rounded-full text-xs font-medium
-              ${
-                filter === "received"
-                  ? "bg-[#00c48c] text-black hover:bg-[#00b37d]"
-                  : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
+              ${filter === "received"
+                ? "bg-[#00c48c] text-black hover:bg-[#00b37d]"
+                : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
               }
             `}
           >
@@ -122,10 +119,9 @@ export const TransactionHistory = () => {
             onClick={() => setFilter("swapped")}
             className={`
               px-4 py-1.5 rounded-full text-xs font-medium
-              ${
-                filter === "swapped"
-                  ? "bg-[#00c48c] text-black hover:bg-[#00b37d]"
-                  : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
+              ${filter === "swapped"
+                ? "bg-[#00c48c] text-black hover:bg-[#00b37d]"
+                : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
               }
             `}
           >
@@ -140,30 +136,28 @@ export const TransactionHistory = () => {
           {filteredTransactions.map((transaction, index) => (
             <div
               key={transaction.id}
-              className={`p-4 hover:bg-gray-50 transition-colors ${
-                index !== filteredTransactions.length - 1
+              className={`p-4 hover:bg-gray-50 transition-colors ${index !== filteredTransactions.length - 1
                   ? "border-b border-[#e5e7eb]"
                   : ""
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3 flex-1">
                   {/* Icon */}
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      transaction.type === "received"
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${transaction.type === "received"
                         ? "bg-[#00c48c]/10"
                         : transaction.type === "sent"
-                        ? "bg-red-50"
-                        : "bg-blue-50"
-                    }`}
+                          ? "bg-red-50"
+                          : "bg-blue-50"
+                      }`}
                   >
                     <span className="text-lg">
                       {transaction.type === "received"
                         ? "↓"
                         : transaction.type === "sent"
-                        ? "↑"
-                        : "🔄"}
+                          ? "↑"
+                          : "🔄"}
                     </span>
                   </div>
 
@@ -174,11 +168,10 @@ export const TransactionHistory = () => {
                         {transaction.name}
                       </p>
                       <p
-                        className={`[font-family:'Inter',Helvetica] font-semibold text-sm flex-shrink-0 ${
-                          transaction.amount.startsWith("+")
+                        className={`[font-family:'Inter',Helvetica] font-semibold text-sm flex-shrink-0 ${transaction.amount.startsWith("+")
                             ? "text-[#00c48c]"
                             : "text-[#0b1f3a]"
-                        }`}
+                          }`}
                       >
                         {transaction.amount}
                       </p>
@@ -187,11 +180,10 @@ export const TransactionHistory = () => {
                     <p className="[font-family:'Inter',Helvetica] font-normal text-[#0b1f3a]/60 text-xs mb-1">
                       {transaction.date}{" "}
                       <Badge
-                        className={`ml-2 ${
-                          transaction.status === "completed"
+                        className={`ml-2 ${transaction.status === "completed"
                             ? "bg-[#00c48c]/20 text-[#00c48c] hover:bg-[#00c48c]/30"
                             : "bg-red-100 text-red-600 hover:bg-red-200"
-                        } px-2 py-0.5 text-[10px] font-medium`}
+                          } px-2 py-0.5 text-[10px] font-medium`}
                       >
                         {transaction.status === "completed"
                           ? "completed"
