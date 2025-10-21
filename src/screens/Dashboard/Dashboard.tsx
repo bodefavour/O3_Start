@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { BalanceCards } from "./components/BalanceCards";
@@ -7,25 +6,18 @@ import { TransactionAnalytics } from "./components/TransactionAnalytics";
 import { RecentTransactions } from "./components/RecentTransactions";
 import { SendMoneyModal } from "../Wallet/components/SendMoneyModal";
 import { ReceiveMoneyModal } from "../Wallet/components/ReceiveMoneyModal.tsx";
+import { useResponsiveSidebar } from "../../hooks/useResponsiveSidebar";
 
 export const Dashboard = () => {
   const [activeMenuItem, setActiveMenuItem] = useState("dashboard");
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isMobileView, setIsMobileView] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const isMobile = window.innerWidth < 640;
-      setIsMobileView(isMobile);
-      setIsSidebarCollapsed(isMobile);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const {
+    isSidebarCollapsed,
+    isMobileView,
+    toggleSidebar,
+    closeSidebar,
+  } = useResponsiveSidebar();
 
   const handleNavigation = (item: string) => {
     setActiveMenuItem(item);
@@ -68,13 +60,13 @@ export const Dashboard = () => {
         activeItem={activeMenuItem}
         onNavigate={handleNavigation}
         collapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+        onToggleCollapse={toggleSidebar}
       />
 
       {!isSidebarCollapsed && isMobileView && (
         <div
           className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm sm:hidden"
-          onClick={() => setIsSidebarCollapsed(true)}
+          onClick={closeSidebar}
         />
       )}
 
@@ -82,7 +74,7 @@ export const Dashboard = () => {
       <div className="flex-1 min-w-0 overflow-auto">
         {/* Header */}
         <DashboardHeader
-          onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+          onToggleSidebar={toggleSidebar}
           isSidebarCollapsed={isSidebarCollapsed}
           isMobileView={isMobileView}
         />
