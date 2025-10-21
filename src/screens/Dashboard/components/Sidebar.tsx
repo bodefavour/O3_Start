@@ -48,7 +48,7 @@ export const Sidebar = ({
 
   return (
     <div
-      className={`flex h-screen flex-shrink-0 flex-col bg-[#0b1f3a] transition-all duration-300 ${collapsed ? "w-16" : "w-[176px]"
+      className={`flex min-h-screen flex-shrink-0 flex-col bg-[#0b1f3a] transition-all duration-300 ${collapsed ? "w-16" : "w-[176px]"
         }`}
     >
       {/* Logo/Brand */}
