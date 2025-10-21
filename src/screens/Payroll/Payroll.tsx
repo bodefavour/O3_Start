@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
 import { Users, DollarSign, Clock, PiggyBank, Search, Download, Menu, X } from "lucide-react";
-import { Sidebar } from "../Dashboard/components/Sidebar";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { EmployeeCard } from "./components/EmployeeCard";
-import { useResponsiveSidebar } from "../../hooks/useResponsiveSidebar";
+import { DashboardShell } from "../../components/layout/DashboardShell";
 
 interface Employee {
     id: string;
@@ -101,13 +100,6 @@ export const Payroll = () => {
     const [activeMenuItem, setActiveMenuItem] = useState("payroll");
     const [searchTerm, setSearchTerm] = useState("");
     const [departmentFilter, setDepartmentFilter] = useState<DepartmentFilter>("All Department");
-    const {
-        isSidebarCollapsed,
-        isMobileView,
-        toggleSidebar,
-        closeSidebar,
-    } = useResponsiveSidebar();
-
     const metrics = useMemo(() => {
         const totalEmployees = employees.length;
         const monthlyPayroll = employees.reduce((sum, employee) => sum + employee.salaryAmount, 0);
@@ -136,31 +128,16 @@ export const Payroll = () => {
 
     const handleNavigate = (item: string) => {
         setActiveMenuItem(item);
-        if (isMobileView) {
-            closeSidebar();
-        }
     };
 
     return (
-        <div className="flex min-h-screen bg-[#f5f5f5]">
-            <Sidebar
-                activeItem={activeMenuItem}
-                onNavigate={handleNavigate}
-                collapsed={isSidebarCollapsed}
-                onToggleCollapse={toggleSidebar}
-            />
-
-            {!isSidebarCollapsed && isMobileView && (
-                <div
-                    className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm sm:hidden"
-                    onClick={closeSidebar}
-                />
-            )}
-
-            <div className="flex-1 overflow-y-auto">
+        <DashboardShell
+            activeItem={activeMenuItem}
+            onNavigate={handleNavigate}
+            renderHeader={({ toggleSidebar, isSidebarCollapsed, isMobileView }) => (
                 <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e5e7eb] bg-white px-4 py-6 sm:px-8">
                     <div className="flex items-start gap-3">
-                        {toggleSidebar && isMobileView && (
+                        {isMobileView && (
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -187,8 +164,9 @@ export const Payroll = () => {
                         </Button>
                     </div>
                 </header>
-
-                <main className="space-y-8 px-8 py-8">
+            )}
+        >
+            <main className="space-y-8 px-4 py-6 sm:px-8">
                     <section>
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                             <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
@@ -315,8 +293,7 @@ export const Payroll = () => {
                             )}
                         </div>
                     </section>
-                </main>
-            </div>
-        </div>
+            </main>
+        </DashboardShell>
     );
 };
