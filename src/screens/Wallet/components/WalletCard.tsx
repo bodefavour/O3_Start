@@ -38,7 +38,7 @@ export const WalletCard = ({
   };
 
   return (
-    <Card className="bg-white border border-[#e5e7eb] rounded-xl overflow-hidden">
+    <Card className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
       <CardContent className="p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
@@ -97,24 +97,24 @@ export const WalletCard = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             onClick={onSendMoney}
-            className="flex-1 bg-[#00c48c] hover:bg-[#00b37d] text-[#0b1f3a] font-semibold py-2 rounded-lg"
+            className="flex-1 min-w-[140px] rounded-lg bg-[#00c48c] py-2 font-semibold text-[#0b1f3a] hover:bg-[#00b37d]"
           >
             Send Money
           </Button>
           <Button
             variant="outline"
             onClick={onReceiveMoney}
-            className="flex-1 bg-white hover:bg-gray-50 border-[#e5e7eb] text-[#0b1f3a] font-semibold py-2 rounded-lg"
+            className="flex-1 min-w-[140px] rounded-lg border-[#e5e7eb] bg-white py-2 font-semibold text-[#0b1f3a] hover:bg-gray-50"
           >
             Receive
           </Button>
           <Button
             variant="outline"
             onClick={onOpenSettings}
-            className="w-10 h-10 p-0 bg-white hover:bg-gray-50 border-[#e5e7eb] rounded-lg"
+            className="h-10 w-full rounded-lg border-[#e5e7eb] bg-white p-0 hover:bg-gray-50 sm:w-10"
           >
             <Settings2 className="w-4 h-4 text-[#0b1f3a]" />
           </Button>

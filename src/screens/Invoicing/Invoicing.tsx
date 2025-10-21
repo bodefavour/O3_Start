@@ -196,7 +196,7 @@ export const Invoicing = () => {
                                 </p>
                                 <div className="mt-3 flex items-end justify-between">
                                     <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        ${metrics.paidAmount.toLocaleString()} USD
+                                        ${metrics.paidAmount.toLocaleString()}
                                     </span>
                                     <Badge className="rounded-lg bg-[#e6f9f2] text-[#0f766e]">
                                         ✓
@@ -210,7 +210,7 @@ export const Invoicing = () => {
                                 </p>
                                 <div className="mt-3 flex items-end justify-between">
                                     <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        ${metrics.pendingAmount.toLocaleString()} USD
+                                        ${metrics.pendingAmount.toLocaleString()}
                                     </span>
                                     <Badge className="rounded-lg bg-[#f0f9ff] text-[#1d4ed8]">
                                         ⏱
@@ -224,7 +224,7 @@ export const Invoicing = () => {
                                 </p>
                                 <div className="mt-3 flex items-end justify-between">
                                     <span className="text-3xl font-semibold text-[#0b1f3a]">
-                                        ${metrics.overdueAmount.toLocaleString()} USD
+                                        ${metrics.overdueAmount.toLocaleString()}
                                     </span>
                                     <Badge className="rounded-lg bg-[#fee2e2] text-[#b91c1c]">
                                         !

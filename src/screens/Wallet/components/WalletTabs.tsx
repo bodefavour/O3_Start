@@ -9,11 +9,11 @@ interface WalletTabsProps {
 
 export const WalletTabs = ({ activeTab, onTabChange }: WalletTabsProps) => {
   return (
-    <div className="flex gap-2 mb-6">
+    <div className="mb-6 flex flex-wrap gap-2">
       <Button
         onClick={() => onTabChange("stablecoins")}
         className={`
-          px-6 py-2 rounded-lg [font-family:'Inter',Helvetica] font-medium text-sm
+          w-full px-6 py-2 rounded-lg [font-family:'Inter',Helvetica] font-medium text-sm sm:w-auto
           ${activeTab === "stablecoins"
             ? "bg-[#0b1f3a] text-white hover:bg-[#0b1f3a]/90"
             : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
@@ -25,7 +25,7 @@ export const WalletTabs = ({ activeTab, onTabChange }: WalletTabsProps) => {
       <Button
         onClick={() => onTabChange("local")}
         className={`
-          px-6 py-2 rounded-lg [font-family:'Inter',Helvetica] font-medium text-sm
+          w-full px-6 py-2 rounded-lg [font-family:'Inter',Helvetica] font-medium text-sm sm:w-auto
           ${activeTab === "local"
             ? "bg-[#0b1f3a] text-white hover:bg-[#0b1f3a]/90"
             : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"
@@ -37,7 +37,7 @@ export const WalletTabs = ({ activeTab, onTabChange }: WalletTabsProps) => {
       <Button
         onClick={() => onTabChange("history")}
         className={`
-          px-6 py-2 rounded-lg [font-family:'Inter',Helvetica] font-medium text-sm
+          w-full px-6 py-2 rounded-lg [font-family:'Inter',Helvetica] font-medium text-sm sm:w-auto
           ${activeTab === "history"
             ? "bg-[#0b1f3a] text-white hover:bg-[#0b1f3a]/90"
             : "bg-white text-[#0b1f3a] border border-[#e5e7eb] hover:bg-gray-50"

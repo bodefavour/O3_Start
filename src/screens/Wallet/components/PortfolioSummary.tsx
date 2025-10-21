@@ -26,7 +26,7 @@ export const PortfolioSummary = () => {
       </Card>
 
       {/* Active Wallets Card */}
-  <Card className="flex-1 bg-white border border-[#e5e7eb] rounded-xl">
+      <Card className="flex-1 bg-white border border-[#e5e7eb] rounded-xl">
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div>
