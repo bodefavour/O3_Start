@@ -4,28 +4,24 @@ import { Separator } from "../../../../components/ui/separator";
 
 export const MultiCurrencySupportSection = (): JSX.Element => {
   return (
-    <section className="relative w-full flex flex-col items-center bg-[#0b1f3a] py-[50px]">
-      <h2 className="h-auto w-full max-w-[595px] px-4 [font-family:'Inter',Helvetica] font-extrabold text-white text-5xl text-center tracking-[0] leading-[normal]">
-        Ready to Transform Your <br />
-        Business Banking?
+    <section className="relative flex w-full flex-col items-center bg-[#0b1f3a] px-4 py-14 sm:py-[50px]">
+      <h2 className="w-full max-w-xl text-center text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl">
+        Ready to Transform Your <span className="block sm:inline">Business Banking?</span>
       </h2>
 
-      <p className="h-auto w-full max-w-[769px] px-4 mt-6 [font-family:'Inter',Helvetica] font-extrabold text-white text-2xl text-center tracking-[0] leading-[normal]">
-        Join thousands of African SMEs already banking without borders
+      <p className="mt-4 w-full max-w-2xl text-center text-sm font-semibold text-white sm:mt-6 sm:text-base md:text-lg">
+        Join thousands of African SMEs already banking without borders.
       </p>
 
-      <Button className="h-auto mt-[75px] gap-3 px-2.5 py-[5px] bg-[#00c48c] hover:bg-[#00c48c]/90 rounded-lg">
-        <span className="[font-family:'Inter',Helvetica] font-normal text-white text-sm text-center tracking-[0] leading-[normal]">
-          Open Your Account
-        </span>
-        <ArrowRightIcon className="w-6 h-6" />
+      <Button className="mt-10 flex h-auto items-center gap-3 rounded-lg bg-[#00c48c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#00c48c]/90 sm:mt-[75px]">
+        Open Your Account
+        <ArrowRightIcon className="h-5 w-5 sm:h-6 sm:w-6" />
       </Button>
 
-      <Separator className="w-full mt-[191px] bg-white/20" />
+      <Separator className="mt-16 w-full bg-white/20 sm:mt-[191px]" />
 
-      <footer className="h-auto w-full max-w-[541px] px-4 mt-[25px] [font-family:'Inter',Helvetica] font-normal text-white text-sm text-center tracking-[0] leading-[normal]">
-        © 2025 BorderlessPay. Powered by blockchain technology. Bank beyond
-        borders.
+      <footer className="mt-6 w-full max-w-xl text-center text-xs font-medium text-white sm:mt-[25px] sm:text-sm">
+        © 2025 BorderlessPay. Powered by blockchain technology. Bank beyond borders.
       </footer>
     </section>
   );

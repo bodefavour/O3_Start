@@ -36,7 +36,7 @@ const currencies = [
 
 export const BusinessNeedsSection = (): JSX.Element => {
   return (
-    <section className="w-full px-4 pb-20">
+    <section className="w-full px-4 pb-14 sm:pb-20">
       <div className="mx-auto grid w-full max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {currencies.map((currency) => (
           <Card
@@ -45,7 +45,7 @@ export const BusinessNeedsSection = (): JSX.Element => {
           >
             <CardContent className="flex flex-col gap-3 p-5">
               <div>
-                <h3 className="text-xl font-extrabold text-[#0b1f3a]">
+                <h3 className="text-lg font-extrabold text-[#0b1f3a] sm:text-xl">
                   {currency.code}
                 </h3>
                 <p className="text-sm font-semibold text-[#1f3a5c]">
@@ -53,10 +53,11 @@ export const BusinessNeedsSection = (): JSX.Element => {
                 </p>
               </div>
               <Badge
-                className={`w-fit rounded-full px-4 py-[6px] text-xs font-semibold uppercase tracking-wide ${currency.type === "Stablecoin"
+                className={`w-fit rounded-full px-4 py-[6px] text-[10px] font-semibold uppercase tracking-wide sm:text-xs ${
+                  currency.type === "Stablecoin"
                     ? "bg-[#e0fff5] text-[#047857]"
                     : "bg-[#e6f0ff] text-[#1d4ed8]"
-                  }`}
+                }`}
               >
                 {currency.type}
               </Badge>
