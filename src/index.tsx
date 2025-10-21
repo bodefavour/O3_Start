@@ -21,7 +21,7 @@ createRoot(document.getElementById("app") as HTMLElement).render(
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/invoicing" element={<Invoicing />} />
         <Route path="/payroll" element={<Payroll />} />
-  <Route path="/settings" element={<Settings />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
