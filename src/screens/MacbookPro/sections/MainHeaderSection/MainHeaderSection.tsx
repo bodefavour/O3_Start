@@ -23,6 +23,7 @@ export const MainHeaderSection = (): JSX.Element => {
           </Button>
           <Button
             variant="outline"
+            onClick={() => navigate("/signin")}
             className="w-full rounded-xl border border-[#0b1f3a] px-4 py-2 text-sm font-semibold text-[#0b1f3a] hover:bg-[#0b1f3a]/5 sm:w-auto"
           >
             Sign In

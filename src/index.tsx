@@ -9,6 +9,7 @@ import { Wallet } from "./screens/Wallet";
 import { Invoicing } from "./screens/Invoicing";
 import { Payroll } from "./screens/Payroll";
 import { Settings } from "./screens/Settings";
+import { SignIn } from "./screens/SignIn";
 
 createRoot(document.getElementById("app") as HTMLElement).render(
   <StrictMode>
@@ -18,6 +19,7 @@ createRoot(document.getElementById("app") as HTMLElement).render(
         <Route path="/register" element={<RegisterBusiness />} />
         <Route path="/verify" element={<VerifyBusiness />} />
         <Route path="/dashboard" element={<Dashboard />} />
+  <Route path="/signin" element={<SignIn />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/invoicing" element={<Invoicing />} />
         <Route path="/payroll" element={<Payroll />} />
