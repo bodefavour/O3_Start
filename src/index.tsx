@@ -10,6 +10,7 @@ import { Invoicing } from "./screens/Invoicing";
 import { Payroll } from "./screens/Payroll";
 import { Settings } from "./screens/Settings";
 import { SignIn } from "./screens/SignIn";
+import { Analytics } from "./screens/Analytics";
 
 createRoot(document.getElementById("app") as HTMLElement).render(
   <StrictMode>
