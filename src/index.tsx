@@ -22,6 +22,7 @@ createRoot(document.getElementById("app") as HTMLElement).render(
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/wallet" element={<Wallet />} />
+        <Route path="/analytics" element={<Analytics />} />
         <Route path="/invoicing" element={<Invoicing />} />
         <Route path="/payroll" element={<Payroll />} />
         <Route path="/settings" element={<Settings />} />
