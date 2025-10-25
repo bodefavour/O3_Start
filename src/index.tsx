@@ -10,7 +10,6 @@ import { Invoicing } from "./screens/Invoicing";
 import { Payroll } from "./screens/Payroll";
 import { Settings } from "./screens/Settings";
 import { SignIn } from "./screens/SignIn";
-import { Analytics } from "./screens/Analytics";
 
 createRoot(document.getElementById("app") as HTMLElement).render(
   <StrictMode>
@@ -22,7 +21,6 @@ createRoot(document.getElementById("app") as HTMLElement).render(
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/wallet" element={<Wallet />} />
-        <Route path="/analytics" element={<Analytics />} />
         <Route path="/invoicing" element={<Invoicing />} />
         <Route path="/payroll" element={<Payroll />} />
         <Route path="/settings" element={<Settings />} />
