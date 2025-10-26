@@ -187,6 +187,8 @@ export default function WalletPage() {
         if (!userId || userLoading) return;
 
         async function fetchData() {
+            if (!userId) return; // Type guard for async function
+            
             try {
                 setLoadingData(true);
                 const [walletsRes, transactionsRes] = await Promise.all([
