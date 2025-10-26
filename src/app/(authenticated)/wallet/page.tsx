@@ -193,7 +193,7 @@ export default function WalletPage() {
                     walletApi.getAll(userId),
                     transactionApi.getAll(userId, { limit: 20 }),
                 ]);
-                
+
                 setWallets(walletsRes.wallets || []);
                 setTransactions(transactionsRes.transactions || []);
             } catch (error) {
@@ -222,12 +222,12 @@ export default function WalletPage() {
     const formatTransaction = (transaction: any) => {
         // Format date
         const date = new Date(transaction.createdAt);
-        const formattedDate = date.toLocaleDateString('en-US', { 
-            month: 'short', 
+        const formattedDate = date.toLocaleDateString('en-US', {
+            month: 'short',
             day: 'numeric',
             hour: 'numeric',
             minute: '2-digit',
-            hour12: true 
+            hour12: true
         });
 
         // Get transaction name/description
@@ -247,7 +247,7 @@ export default function WalletPage() {
         const displayAmount = `${sign}${parseFloat(transaction.amount).toLocaleString()} ${transaction.currency}`;
 
         // Format fee
-        const displayFee = transaction.networkFee 
+        const displayFee = transaction.networkFee
             ? `Fee:$${parseFloat(transaction.networkFee).toFixed(2)}`
             : null;
 
@@ -1063,12 +1063,12 @@ export default function WalletPage() {
                                         {filteredTransactions.map((transaction) => {
                                             // Format date
                                             const date = new Date(transaction.createdAt);
-                                            const formattedDate = date.toLocaleDateString('en-US', { 
-                                                month: 'short', 
+                                            const formattedDate = date.toLocaleDateString('en-US', {
+                                                month: 'short',
                                                 day: 'numeric',
                                                 hour: 'numeric',
                                                 minute: '2-digit',
-                                                hour12: true 
+                                                hour12: true
                                             });
 
                                             // Get transaction name/description
@@ -1088,7 +1088,7 @@ export default function WalletPage() {
                                             const displayAmount = `${sign}${parseFloat(transaction.amount).toLocaleString()} ${transaction.currency}`;
 
                                             // Format fee
-                                            const displayFee = transaction.networkFee 
+                                            const displayFee = transaction.networkFee
                                                 ? `Fee:$${parseFloat(transaction.networkFee).toFixed(2)}`
                                                 : null;
 
@@ -1099,13 +1099,12 @@ export default function WalletPage() {
                                                 >
                                                     <div className="flex items-center gap-4">
                                                         <div
-                                                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                                                                transaction.type === "incoming"
+                                                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
                                                                     ? "bg-green-100"
                                                                     : transaction.type === "outgoing"
-                                                                    ? "bg-red-100"
-                                                                    : "bg-blue-100"
-                                                            }`}
+                                                                        ? "bg-red-100"
+                                                                        : "bg-blue-100"
+                                                                }`}
                                                         >
                                                             {transaction.type === "incoming" ? (
                                                                 <ArrowDownLeft className="h-5 w-5 text-green-600" />
@@ -1122,15 +1121,14 @@ export default function WalletPage() {
                                                             <p className="text-sm text-gray-600">
                                                                 {formattedDate}{" "}
                                                                 <span
-                                                                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                                                                        transaction.status === "completed"
+                                                                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
                                                                             ? "bg-[#00c48c]/10 text-[#00c48c]"
                                                                             : transaction.status === "failed"
-                                                                            ? "bg-red-100 text-red-600"
-                                                                            : transaction.status === "pending"
-                                                                            ? "bg-yellow-100 text-yellow-600"
-                                                                            : "bg-gray-100 text-gray-600"
-                                                                    }`}
+                                                                                ? "bg-red-100 text-red-600"
+                                                                                : transaction.status === "pending"
+                                                                                    ? "bg-yellow-100 text-yellow-600"
+                                                                                    : "bg-gray-100 text-gray-600"
+                                                                        }`}
                                                                 >
                                                                     {transaction.status}
                                                                 </span>
@@ -1144,11 +1142,10 @@ export default function WalletPage() {
                                                     </div>
                                                     <div className="text-right">
                                                         <p
-                                                            className={`font-bold ${
-                                                                transaction.type === "incoming"
+                                                            className={`font-bold ${transaction.type === "incoming"
                                                                     ? "text-green-600"
                                                                     : "text-gray-900"
-                                                            }`}
+                                                                }`}
                                                         >
                                                             {displayAmount}
                                                         </p>
