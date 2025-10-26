@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/contexts";
+import { toast } from "sonner";
 import {
     Globe,
     Shield,
@@ -79,7 +79,6 @@ const features = [
 
 export default function RegisterPage() {
     const router = useRouter();
-    const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         businessName: "",
@@ -109,7 +108,7 @@ export default function RegisterPage() {
             !formData.businessType ||
             !formData.phoneNumber
         ) {
-            showToast("Please fill in all required fields", "error");
+            toast.error("Please fill in all required fields");
             setLoading(false);
             return;
         }
@@ -117,7 +116,7 @@ export default function RegisterPage() {
         // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.businessEmail)) {
-            showToast("Please enter a valid email address", "error");
+            toast.error("Please enter a valid email address");
             setLoading(false);
             return;
         }
@@ -127,9 +126,8 @@ export default function RegisterPage() {
             // For now, simulate API call
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            showToast(
-                "Registration successful! Redirecting to verification...",
-                "success"
+            toast.success(
+                "Registration successful! Redirecting to verification..."
             );
 
             // Store business data temporarily (in production, this would be in backend)
@@ -140,7 +138,7 @@ export default function RegisterPage() {
                 router.push("/verify");
             }, 1500);
         } catch (error) {
-            showToast("Registration failed. Please try again.", "error");
+            toast.error(`Registration failed: ${error}`);
         } finally {
             setLoading(false);
         }

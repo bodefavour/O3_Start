@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/contexts";
+import { useAuthContext } from "@/contexts/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { ReceiveModal } from "@/components/wallet/ReceiveModal";
 import { SendModal } from "@/components/wallet/SendModal";
+import { SignInButton } from "@/components/thirdweb/signin-form";
 
 // Mock data - will be replaced with real API calls
 const mockTransactions = [
@@ -77,12 +78,24 @@ const weeklyData = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, logout, isAuthenticated } = useUser();
-  const [balance, setBalance] = useState("67,980.76");
-  const [monthlyVolume, setMonthlyVolume] = useState("186,450");
+  const { isAuthenticated } = useAuthContext();
+
+  const balance = "67,980.76";
+  const monthlyVolume = "186,450";
   const [loading, setLoading] = useState(true);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/signin");
+      return;
+    }
+
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, [isAuthenticated, router]);
 
   // Mock wallet data for modals
   const defaultWallet = {
@@ -93,26 +106,25 @@ export default function DashboardPage() {
     name: "USD Coin",
   };
 
-  useEffect(() => {
-    // Check authentication
-    if (!isAuthenticated) {
-      router.push("/signin");
-      return;
-    }
+  // useEffect(() => {
+  //   // Check authentication
+  //   if (!isAuthenticated) {
+  //     router.push("/signin");
+  //     return;
+  //   }
 
-    // Simulate loading data
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+  //   // Simulate loading data
+  //   setTimeout(() => {
+  //     setLoading(false);
+  //   }, 1000);
 
-    // TODO: Fetch real data from Hedera
-    // fetchWalletBalance();
-    // fetchMonthlyVolume();
-    // fetchTransactions();
-  }, [isAuthenticated, router]);
+  //   // TODO: Fetch real data from Hedera
+  //   // fetchWalletBalance();
+  //   // fetchMonthlyVolume();
+  //   // fetchTransactions();
+  // }, [isAuthenticated, router]);
 
   const handleLogout = () => {
-    logout();
     router.push("/");
   };
 
@@ -212,11 +224,11 @@ export default function DashboardPage() {
           <div className="border-t border-white/10 p-4">
             <div className="flex items-center gap-3 rounded-lg bg-white/5 p-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00c48c] text-sm font-bold text-white">
-                {user?.businessName?.charAt(0) || "U"}
+                {"U"}
               </div>
               <div className="flex-1 overflow-hidden">
                 <p className="truncate text-sm font-semibold">
-                  {user?.businessName || "User"}
+                  {"User"}
                 </p>
                 <p className="truncate text-xs text-gray-400">Premium Account</p>
               </div>
@@ -236,13 +248,14 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="ml-64 flex-1">
         {/* Header */}
-        <header className="border-b border-gray-200 bg-white px-8 py-6">
+        <header className="flex items-center justify-between border-b border-gray-200 bg-white px-8 py-6">
           <div>
             <h1 className="text-2xl font-bold text-[#0b1f3a]">Dashboard</h1>
             <p className="text-sm text-gray-600">
               Welcome back to BorderlessPay
             </p>
           </div>
+          <SignInButton />
         </header>
 
         <div className="p-8">
@@ -422,7 +435,7 @@ export default function DashboardPage() {
         onClose={handleCloseSendModal}
         currency={defaultWallet.currency}
         currencySymbol={defaultWallet.symbol}
-        walletAddress={defaultWallet.address}
+        // walletAddress={defaultWallet.address}
         availableBalance={defaultWallet.balance}
         walletName={defaultWallet.name}
       />

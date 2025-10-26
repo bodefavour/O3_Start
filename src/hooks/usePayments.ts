@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser, useToast } from '@/contexts';
+import { useUser, useToast } from '@/contexts/auth-provider';
 import type { Payment, PaginatedResponse } from '@/lib/web3/types';
 
 export function usePayments() {

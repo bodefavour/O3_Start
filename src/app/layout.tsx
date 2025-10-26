@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import { ThirdwebProvider } from "thirdweb/react";
 import { Toaster } from "@/components/ui/sonner";
-import { UserProvider, ToastProvider } from "@/contexts";
+import { AuthProvider } from "@/contexts/auth-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,14 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        <UserProvider>
-          <ToastProvider>
-            <ThirdwebProvider>
-              {children}
-              <Toaster position="top-center" />
-            </ThirdwebProvider>
-          </ToastProvider>
-        </UserProvider>
+        <ThirdwebProvider>
+          <AuthProvider>
+            {children}
+            <Toaster position="top-center" />
+          </AuthProvider>
+        </ThirdwebProvider>
       </body>
     </html>
   );

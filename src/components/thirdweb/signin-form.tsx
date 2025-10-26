@@ -6,6 +6,7 @@ import { User } from "lucide-react";
 import { useActiveAccount } from "thirdweb/react";
 import { truncateAddress, generateColorFromAddress } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import router from "next/router";
 
 interface SignInButtonProps {
   label?: string;
@@ -20,20 +21,20 @@ const SignInButton: React.FC<SignInButtonProps> = ({
   connectButtonStyle = {
     fontSize: "0.875rem sm:text-base",
     fontWeight: "normal",
-    color: "var(--primary)",
-    backgroundColor: "var(--background)",
-    border: "2px solid var(--border)",
+    color: "#ffffff",
+    backgroundColor: "#00c48c",
+    border: "2px solid #00c48c",
     height: "2.25rem",
     minWidth: "auto",
   },
   detailsButtonStyle = {
     fontSize: "0.875rem sm:text-base",
     fontWeight: "semibold",
-    color: "hsl(var(--primary-foreground))",
+    color: "#ffffff",
     background:
-      "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))",
-    border: "1px solid hsl(var(--border))",
-    borderRadius: "var(--radius)",
+      "bg-gradient-to-br from-[#0a1929] via-[#0d2d47] to-[#0a4d3c] py-10 px-4",
+    border: "1px solid #00c48c",
+    borderRadius: "1rem",
     height: "2.25rem",
     transition: "all 0.3s ease",
     minWidth: "auto",
@@ -47,11 +48,10 @@ const SignInButton: React.FC<SignInButtonProps> = ({
   const wallets = [
     inAppWallet({
       auth: {
-        options: ["google", "email", "passkey", "phone", "facebook", "apple"],
+        options: ["google", "email", "passkey"],
       },
       hidePrivateKeyExport: false,
     }),
-    createWallet("io.metamask"),
     createWallet("com.hashpack.wallet"),
   ];
 
@@ -61,20 +61,25 @@ const SignInButton: React.FC<SignInButtonProps> = ({
     <ConnectButton
       client={thirdwebClient}
       wallets={wallets}
+      onConnect={(_wallet) => {
+        router.push("/dashboard");
+      }}
       theme={lightTheme({
         colors: {
           modalBg:
-            "linear-gradient(to bottom, var(--background), var(--muted)) !important;",
-          borderColor: "var(--border)",
-          accentText: "var(--primary)",
-          separatorLine: "var(--muted)",
-          tertiaryBg: "var(--muted)",
-          skeletonBg: "var(--muted-foreground)",
-          primaryText: "var(--foreground)",
-          secondaryText: "var(--muted-foreground)",
+            "linear-gradient(to bottom right, #0a1929, #0d2d47, #0a4d3c)",
+          borderColor: "#4f666a",
+          accentText: "#00c48c",
+          accentButtonBg: "#00c48c",
+          separatorLine: "#00c48c33",
+          tertiaryBg: "#0d2439",
+          skeletonBg: "#4f666a",
+          primaryText: "#ffffff",
+          secondaryText: "#ffffff99",
           selectedTextColor: "var(--primary)",
           inputAutofillBg: "var(--background)",
           secondaryButtonBg: "var(--muted)",
+          secondaryButtonText: "#fff",
         },
       })}
       connectButton={{
@@ -82,7 +87,7 @@ const SignInButton: React.FC<SignInButtonProps> = ({
         style: connectButtonStyle,
       }}
       connectModal={{
-        size: "wide",
+        size: "compact",
         title: "Welcome",
         titleIcon: "/favicon/favicon.svg",
         showThirdwebBranding: false,
@@ -140,6 +145,9 @@ const SignInForm: React.FC<SignInButtonProps> = () => {
       <ConnectEmbed
         client={thirdwebClient}
         wallets={wallets}
+        onConnect={(_wallet) => {
+          router.push("/dashboard");
+        }}
         modalSize="compact"
         termsOfServiceUrl="/terms"
         privacyPolicyUrl="/privacy"

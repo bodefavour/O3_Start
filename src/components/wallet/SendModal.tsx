@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/contexts";
+import { toast } from "sonner";
 
 interface SendModalProps {
     isOpen: boolean;
@@ -17,12 +17,10 @@ interface SendModalProps {
 export function SendModal({
     isOpen,
     onClose,
-    currency,
     currencySymbol,
     availableBalance,
     walletName,
 }: SendModalProps) {
-    const { showToast } = useToast();
     const [step, setStep] = useState(1); // 1: Details, 2: Review, 3: Success
     const [recipientAddress, setRecipientAddress] = useState("");
     const [amount, setAmount] = useState("");
@@ -36,7 +34,7 @@ export function SendModal({
 
     const handleContinue = () => {
         if (!recipientAddress || !amount) {
-            showToast("Please fill in all required fields", "error");
+            toast.error("Please fill in all required fields");
             return;
         }
         setStep(2);
@@ -48,7 +46,7 @@ export function SendModal({
 
     const handleSendNow = () => {
         // TODO: Implement actual send transaction
-        showToast("Transaction sent successfully!", "success");
+        toast.success("Transaction sent successfully!");
         setStep(3);
         setTimeout(() => {
             onClose();
@@ -94,10 +92,10 @@ export function SendModal({
                         <div className="flex items-center gap-2">
                             <div
                                 className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${step === 1
+                                    ? "bg-[#00c48c] text-white"
+                                    : step > 1
                                         ? "bg-[#00c48c] text-white"
-                                        : step > 1
-                                            ? "bg-[#00c48c] text-white"
-                                            : "bg-gray-300 text-gray-600"
+                                        : "bg-gray-300 text-gray-600"
                                     }`}
                             >
                                 1
@@ -109,10 +107,10 @@ export function SendModal({
                         <div className="flex items-center gap-2">
                             <div
                                 className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${step === 2
+                                    ? "bg-[#00c48c] text-white"
+                                    : step > 2
                                         ? "bg-[#00c48c] text-white"
-                                        : step > 2
-                                            ? "bg-[#00c48c] text-white"
-                                            : "bg-gray-300 text-gray-600"
+                                        : "bg-gray-300 text-gray-600"
                                     }`}
                             >
                                 2
@@ -123,8 +121,8 @@ export function SendModal({
                         {/* Step 3 */}
                         <div
                             className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${step === 3
-                                    ? "bg-[#00c48c] text-white"
-                                    : "bg-gray-300 text-gray-600"
+                                ? "bg-[#00c48c] text-white"
+                                : "bg-gray-300 text-gray-600"
                                 }`}
                         >
                             3
@@ -182,8 +180,8 @@ export function SendModal({
                                     {/* Standard */}
                                     <label
                                         className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors ${priority === "standard"
-                                                ? "border-[#00c48c] bg-[#00c48c]/5"
-                                                : "border-gray-300 hover:border-gray-400"
+                                            ? "border-[#00c48c] bg-[#00c48c]/5"
+                                            : "border-gray-300 hover:border-gray-400"
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
@@ -206,8 +204,8 @@ export function SendModal({
                                     {/* Fast */}
                                     <label
                                         className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors ${priority === "fast"
-                                                ? "border-[#00c48c] bg-[#00c48c]/5"
-                                                : "border-gray-300 hover:border-gray-400"
+                                            ? "border-[#00c48c] bg-[#00c48c]/5"
+                                            : "border-gray-300 hover:border-gray-400"
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
