@@ -176,12 +176,90 @@ export default function WalletPage() {
         name: string;
     } | null>(null);
 
-    const totalPortfolioValue = [...mockWallets, ...mockLocalWallets].reduce(
-        (sum, wallet) => sum + parseFloat(wallet.balanceUSD.replace(/,/g, "")),
+    // Real data from API
+    const { userId, loading: userLoading } = useCurrentUser();
+    const [wallets, setWallets] = useState<any[]>([]);
+    const [transactions, setTransactions] = useState<any[]>([]);
+    const [loadingData, setLoadingData] = useState(true);
+
+    // Fetch real data
+    useEffect(() => {
+        if (!userId || userLoading) return;
+
+        async function fetchData() {
+            try {
+                setLoadingData(true);
+                const [walletsRes, transactionsRes] = await Promise.all([
+                    walletApi.getAll(userId),
+                    transactionApi.getAll(userId, { limit: 20 }),
+                ]);
+                
+                setWallets(walletsRes.wallets || []);
+                setTransactions(transactionsRes.transactions || []);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showToast('Failed to load wallet data', 'error');
+            } finally {
+                setLoadingData(false);
+            }
+        }
+
+        fetchData();
+    }, [userId, userLoading]);
+
+    // Separate stablecoins and local currencies
+    const stablecoins = wallets.filter(w => w.type === 'stablecoin');
+    const localCurrencies = wallets.filter(w => w.type === 'local_currency');
+
+    const totalPortfolioValue = wallets.reduce(
+        (sum, wallet) => sum + parseFloat(wallet.balance || '0'),
         0
     );
 
-    const totalWallets = mockWallets.length + mockLocalWallets.length; useEffect(() => {
+    const totalWallets = wallets.length;
+
+    // Helper function to format transaction display
+    const formatTransaction = (transaction: any) => {
+        // Format date
+        const date = new Date(transaction.createdAt);
+        const formattedDate = date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true 
+        });
+
+        // Get transaction name/description
+        let transactionName = '';
+        if (transaction.note) {
+            transactionName = transaction.note;
+        } else if (transaction.type === 'swap') {
+            transactionName = `Swapped to ${transaction.metadata?.toCurrency || 'currency'}`;
+        } else if (transaction.type === 'incoming') {
+            transactionName = transaction.fromAddress?.substring(0, 20) || 'Incoming Payment';
+        } else {
+            transactionName = transaction.toAddress?.substring(0, 20) || 'Outgoing Payment';
+        }
+
+        // Format amount with sign
+        const sign = transaction.type === 'incoming' ? '+' : '-';
+        const displayAmount = `${sign}${parseFloat(transaction.amount).toLocaleString()} ${transaction.currency}`;
+
+        // Format fee
+        const displayFee = transaction.networkFee 
+            ? `Fee:$${parseFloat(transaction.networkFee).toFixed(2)}`
+            : null;
+
+        return {
+            formattedDate,
+            transactionName,
+            displayAmount,
+            displayFee,
+        };
+    };
+
+    useEffect(() => {
         if (!isAuthenticated) {
             router.push("/signin");
             return;
@@ -234,7 +312,7 @@ export default function WalletPage() {
         setSwapModalOpen(false);
     };
 
-    const filteredTransactions = mockTransactions.filter((tx) => {
+    const filteredTransactions = transactions.filter((tx) => {
         if (filterStatus === "all") return true;
         if (filterStatus === "sent") return tx.type === "outgoing";
         if (filterStatus === "received") return tx.type === "incoming";
@@ -242,7 +320,7 @@ export default function WalletPage() {
         return true;
     });
 
-    if (loading) {
+    if (loading || userLoading || loadingData) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-gray-50">
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#00c48c] border-t-transparent" />
@@ -384,7 +462,7 @@ export default function WalletPage() {
                                     {totalWallets}
                                 </div>
                                 <p className="text-xs text-gray-600">
-                                    {mockWallets.length} Stablecoins • {mockLocalWallets.length} Local
+                                    {stablecoins.length} Stablecoins • {localCurrencies.length} Local
                                 </p>
                             </CardContent>
                         </Card>
@@ -424,13 +502,13 @@ export default function WalletPage() {
                     {/* Stablecoins Tab */}
                     {activeTab === "stablecoins" && (
                         <div className="space-y-4">
-                            {mockWallets.map((wallet) => (
+                            {stablecoins.map((wallet) => (
                                 <Card key={wallet.id} className="overflow-hidden">
                                     <CardContent className="p-6">
                                         <div className="mb-4 flex items-start justify-between">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-2xl">
-                                                    {wallet.icon}
+                                                    {wallet.symbol === 'USDC' ? '💵' : wallet.symbol === 'USDT' ? '💲' : '🏦'}
                                                 </div>
                                                 <div>
                                                     <h3 className="text-lg font-bold text-[#0b1f3a]">
@@ -447,10 +525,10 @@ export default function WalletPage() {
                                         <div className="mb-4">
                                             <p className="text-sm font-medium text-gray-600">Balance</p>
                                             <p className="text-2xl font-bold text-[#0b1f3a]">
-                                                {wallet.balance} {wallet.symbol}
+                                                {parseFloat(wallet.balance).toLocaleString()} {wallet.symbol}
                                             </p>
                                             <p className="text-sm text-gray-600">
-                                                ≈ ${wallet.balanceUSD} USD
+                                                ≈ ${parseFloat(wallet.balance).toLocaleString()} USD
                                             </p>
                                         </div>
 
@@ -665,38 +743,35 @@ export default function WalletPage() {
                     {/* Local Currencies Tab */}
                     {activeTab === "local" && (
                         <div className="space-y-4">
-                            {mockLocalWallets.map((wallet) => (
+                            {localCurrencies.map((wallet) => (
                                 <Card key={wallet.id} className="overflow-hidden">
                                     <CardContent className="p-6">
                                         <div className="mb-4 flex items-start justify-between">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-2xl">
-                                                    {wallet.icon}
+                                                    {wallet.symbol === 'NGN' ? '🇳🇬' : wallet.symbol === 'KES' ? '🇰🇪' : '🇬🇭'}
                                                 </div>
                                                 <div>
                                                     <h3 className="text-lg font-bold text-[#0b1f3a]">
-                                                        {wallet.name}
+                                                        {wallet.symbol}
                                                     </h3>
-                                                    <p className="text-sm text-gray-600">{wallet.fullName}</p>
+                                                    <p className="text-sm text-gray-600">{wallet.name}</p>
                                                 </div>
                                             </div>
                                             <span
-                                                className={`rounded-full px-3 py-1 text-xs font-semibold ${wallet.badgeColor === "green"
-                                                    ? "bg-[#00c48c]/10 text-[#00c48c]"
-                                                    : "bg-red-100 text-red-600"
-                                                    }`}
+                                                className="rounded-full bg-[#00c48c]/10 px-3 py-1 text-xs font-semibold text-[#00c48c]"
                                             >
-                                                {wallet.badge}
+                                                {wallet.type}
                                             </span>
                                         </div>
 
                                         <div className="mb-4">
                                             <p className="text-sm font-medium text-gray-600">Balance</p>
                                             <p className="text-2xl font-bold text-[#0b1f3a]">
-                                                {wallet.name} {wallet.balance}
+                                                {wallet.symbol} {parseFloat(wallet.balance).toLocaleString()}
                                             </p>
                                             <p className="text-sm text-gray-600">
-                                                ≈ ${wallet.balanceUSD} USD
+                                                ≈ ${parseFloat(wallet.balance).toLocaleString()} USD
                                             </p>
                                         </div>
 
@@ -985,69 +1060,107 @@ export default function WalletPage() {
                             <Card>
                                 <CardContent className="p-0">
                                     <div className="divide-y divide-gray-100">
-                                        {filteredTransactions.map((transaction) => (
-                                            <div
-                                                key={transaction.id}
-                                                className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div
-                                                        className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
-                                                            ? "bg-green-100"
-                                                            : transaction.type === "outgoing"
-                                                                ? "bg-red-100"
-                                                                : "bg-blue-100"
+                                        {filteredTransactions.map((transaction) => {
+                                            // Format date
+                                            const date = new Date(transaction.createdAt);
+                                            const formattedDate = date.toLocaleDateString('en-US', { 
+                                                month: 'short', 
+                                                day: 'numeric',
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true 
+                                            });
+
+                                            // Get transaction name/description
+                                            let transactionName = '';
+                                            if (transaction.note) {
+                                                transactionName = transaction.note;
+                                            } else if (transaction.type === 'swap') {
+                                                transactionName = `Swapped to ${transaction.metadata?.toCurrency || 'currency'}`;
+                                            } else if (transaction.type === 'incoming') {
+                                                transactionName = transaction.fromAddress?.substring(0, 20) || 'Incoming Payment';
+                                            } else {
+                                                transactionName = transaction.toAddress?.substring(0, 20) || 'Outgoing Payment';
+                                            }
+
+                                            // Format amount with sign
+                                            const sign = transaction.type === 'incoming' ? '+' : '-';
+                                            const displayAmount = `${sign}${parseFloat(transaction.amount).toLocaleString()} ${transaction.currency}`;
+
+                                            // Format fee
+                                            const displayFee = transaction.networkFee 
+                                                ? `Fee:$${parseFloat(transaction.networkFee).toFixed(2)}`
+                                                : null;
+
+                                            return (
+                                                <div
+                                                    key={transaction.id}
+                                                    className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div
+                                                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                                                                transaction.type === "incoming"
+                                                                    ? "bg-green-100"
+                                                                    : transaction.type === "outgoing"
+                                                                    ? "bg-red-100"
+                                                                    : "bg-blue-100"
                                                             }`}
-                                                    >
-                                                        {transaction.type === "incoming" ? (
-                                                            <ArrowDownLeft className="h-5 w-5 text-green-600" />
-                                                        ) : transaction.type === "outgoing" ? (
-                                                            <ArrowUpRight className="h-5 w-5 text-red-600" />
-                                                        ) : (
-                                                            <TrendingUp className="h-5 w-5 text-blue-600" />
+                                                        >
+                                                            {transaction.type === "incoming" ? (
+                                                                <ArrowDownLeft className="h-5 w-5 text-green-600" />
+                                                            ) : transaction.type === "outgoing" ? (
+                                                                <ArrowUpRight className="h-5 w-5 text-red-600" />
+                                                            ) : (
+                                                                <Repeat className="h-5 w-5 text-blue-600" />
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-[#0b1f3a]">
+                                                                {transactionName}
+                                                            </p>
+                                                            <p className="text-sm text-gray-600">
+                                                                {formattedDate}{" "}
+                                                                <span
+                                                                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                                                        transaction.status === "completed"
+                                                                            ? "bg-[#00c48c]/10 text-[#00c48c]"
+                                                                            : transaction.status === "failed"
+                                                                            ? "bg-red-100 text-red-600"
+                                                                            : transaction.status === "pending"
+                                                                            ? "bg-yellow-100 text-yellow-600"
+                                                                            : "bg-gray-100 text-gray-600"
+                                                                    }`}
+                                                                >
+                                                                    {transaction.status}
+                                                                </span>
+                                                            </p>
+                                                            {transaction.hash && (
+                                                                <p className="text-xs text-gray-500">
+                                                                    Hash:{transaction.hash.substring(0, 40)}...
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p
+                                                            className={`font-bold ${
+                                                                transaction.type === "incoming"
+                                                                    ? "text-green-600"
+                                                                    : "text-gray-900"
+                                                            }`}
+                                                        >
+                                                            {displayAmount}
+                                                        </p>
+                                                        {displayFee && (
+                                                            <p className="text-xs text-gray-500">
+                                                                {displayFee}
+                                                            </p>
                                                         )}
                                                     </div>
-                                                    <div>
-                                                        <p className="font-semibold text-[#0b1f3a]">
-                                                            {transaction.name}
-                                                        </p>
-                                                        <p className="text-sm text-gray-600">
-                                                            {transaction.date}{" "}
-                                                            <span
-                                                                className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
-                                                                    ? "bg-[#00c48c]/10 text-[#00c48c]"
-                                                                    : transaction.status === "failed"
-                                                                        ? "bg-red-100 text-red-600"
-                                                                        : "bg-blue-100 text-blue-600"
-                                                                    }`}
-                                                            >
-                                                                {transaction.status === "completed" && "completed"}
-                                                                {transaction.status === "failed" && "failed"}
-                                                                {transaction.status === "refund" && "refund"}
-                                                            </span>
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">
-                                                            {transaction.hash}
-                                                        </p>
-                                                    </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p
-                                                        className={`font-bold ${transaction.type === "incoming"
-                                                            ? "text-green-600"
-                                                            : "text-gray-900"
-                                                            }`}
-                                                    >
-                                                        {transaction.amount}
-                                                    </p>
-                                                    {transaction.fee && (
-                                                        <p className="text-xs text-gray-500">
-                                                            {transaction.fee}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </CardContent>
                             </Card>
