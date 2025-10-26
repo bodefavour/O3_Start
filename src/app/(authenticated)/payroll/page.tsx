@@ -373,10 +373,11 @@ export default function PayrollPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                     {filteredEmployees.map((employee, index) => {
                         const initials = employee.name
-                            .split(' ')
-                            .map((n: string) => n[0])
-                            .join('')
-                            .toUpperCase();
+                            ? employee.name.split(' ')
+                                .map((n: string) => n[0])
+                                .join('')
+                                .toUpperCase()
+                            : 'NA';
                         const colorClasses = ['bg-green-500', 'bg-cyan-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500'];
                         const color = colorClasses[index % colorClasses.length];
 
@@ -393,25 +394,25 @@ export default function PayrollPage() {
                                             </div>
                                             <div>
                                                 <h3 className="font-bold text-[#0b1f3a]">
-                                                    {employee.name}
+                                                    {employee.name || 'Unknown Employee'}
                                                 </h3>
                                                 <p className="text-sm text-gray-600">
-                                                    {employee.position}
+                                                    {employee.position || 'N/A'}
                                                 </p>
                                                 <p className="text-xs text-gray-500">
-                                                    {employee.department}
+                                                    {employee.department || 'N/A'}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="text-right">
                                             <p className="font-bold text-[#0b1f3a]">
-                                                {employee.currency}${parseFloat(employee.salary).toLocaleString()}/mo
+                                                {employee.currency || '$'}{parseFloat(employee.salary || 0).toLocaleString()}/mo
                                             </p>
                                             <Badge className={`mt-1 ${employee.status === 'active'
                                                     ? 'bg-green-100 text-green-700 hover:bg-green-100'
                                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
                                                 } capitalize`}>
-                                                {employee.status}
+                                                {employee.status || 'inactive'}
                                             </Badge>
                                         </div>
                                     </div>
