@@ -20,9 +20,11 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Repeat,
 } from "lucide-react";
 import { ReceiveModal } from "@/components/wallet/ReceiveModal";
 import { SendModal } from "@/components/wallet/SendModal";
+import { SwapModal } from "@/components/wallet/SwapModal";
 
 // Mock data - will be replaced with real API calls
 const mockTransactions = [
@@ -83,6 +85,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
+  const [swapModalOpen, setSwapModalOpen] = useState(false);
 
   // Mock wallet data for modals
   const defaultWallet = {
@@ -130,6 +133,14 @@ export default function DashboardPage() {
 
   const handleCloseReceiveModal = () => {
     setReceiveModalOpen(false);
+  };
+
+  const handleOpenSwapModal = () => {
+    setSwapModalOpen(true);
+  };
+
+  const handleCloseSwapModal = () => {
+    setSwapModalOpen(false);
   };
 
   const maxAmount = Math.max(...weeklyData.map((d) => d.amount));
@@ -285,7 +296,7 @@ export default function DashboardPage() {
             <h2 className="mb-4 text-lg font-bold text-[#0b1f3a]">
               Quick Actions
             </h2>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Button
                 onClick={handleOpenSendModal}
                 className="h-auto justify-start gap-3 rounded-xl bg-[#00c48c] p-4 text-left hover:bg-[#00b37d]"
@@ -300,6 +311,14 @@ export default function DashboardPage() {
               >
                 <Download className="h-5 w-5" />
                 <span className="font-semibold">Receive</span>
+              </Button>
+              <Button
+                onClick={handleOpenSwapModal}
+                variant="outline"
+                className="h-auto justify-start gap-3 rounded-xl border-2 p-4 text-left"
+              >
+                <Repeat className="h-5 w-5" />
+                <span className="font-semibold">Swap</span>
               </Button>
               <Button
                 asChild
@@ -434,6 +453,12 @@ export default function DashboardPage() {
         currency={defaultWallet.currency}
         currencySymbol={defaultWallet.symbol}
         walletAddress={defaultWallet.address}
+      />
+
+      {/* Swap Modal */}
+      <SwapModal
+        isOpen={swapModalOpen}
+        onClose={handleCloseSwapModal}
       />
     </div>
   );

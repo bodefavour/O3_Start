@@ -29,6 +29,7 @@ import {
 import { useToast } from "@/contexts";
 import { ReceiveModal } from "@/components/wallet/ReceiveModal";
 import { SendModal } from "@/components/wallet/SendModal";
+import { SwapModal } from "@/components/wallet/SwapModal";
 
 // Mock wallet data - will be replaced with Hedera API
 const mockWallets = [
@@ -164,6 +165,7 @@ export default function WalletPage() {
     const [filterStatus, setFilterStatus] = useState<"all" | "sent" | "received" | "swapped">("all");
     const [receiveModalOpen, setReceiveModalOpen] = useState(false);
     const [sendModalOpen, setSendModalOpen] = useState(false);
+    const [swapModalOpen, setSwapModalOpen] = useState(false);
     const [selectedWallet, setSelectedWallet] = useState<{
         currency: string;
         symbol: string;
@@ -220,6 +222,14 @@ export default function WalletPage() {
     const handleCloseSendModal = () => {
         setSendModalOpen(false);
         setSelectedWallet(null);
+    };
+
+    const handleOpenSwapModal = () => {
+        setSwapModalOpen(true);
+    };
+
+    const handleCloseSwapModal = () => {
+        setSwapModalOpen(false);
     };
 
     const filteredTransactions = mockTransactions.filter((tx) => {
@@ -475,7 +485,11 @@ export default function WalletPage() {
                                                 <Download className="h-4 w-4" />
                                                 Receive
                                             </Button>
-                                            <Button variant="outline" className="rounded-xl px-4">
+                                            <Button 
+                                                onClick={handleOpenSwapModal}
+                                                variant="outline" 
+                                                className="rounded-xl px-4"
+                                            >
                                                 <Repeat className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -506,7 +520,11 @@ export default function WalletPage() {
                                         <Download className="h-4 w-4" />
                                         Receive
                                     </Button>
-                                    <Button variant="outline" className="gap-2 rounded-xl">
+                                    <Button 
+                                        onClick={handleOpenSwapModal}
+                                        variant="outline" 
+                                        className="gap-2 rounded-xl"
+                                    >
                                         <Repeat className="h-4 w-4" />
                                         Swap
                                     </Button>
@@ -713,7 +731,11 @@ export default function WalletPage() {
                                                 <Download className="h-4 w-4" />
                                                 Receive
                                             </Button>
-                                            <Button variant="outline" className="rounded-xl px-4">
+                                            <Button 
+                                                onClick={handleOpenSwapModal}
+                                                variant="outline" 
+                                                className="rounded-xl px-4"
+                                            >
                                                 <Repeat className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -744,7 +766,11 @@ export default function WalletPage() {
                                         <Download className="h-4 w-4" />
                                         Receive
                                     </Button>
-                                    <Button variant="outline" className="gap-2 rounded-xl">
+                                    <Button 
+                                        onClick={handleOpenSwapModal}
+                                        variant="outline" 
+                                        className="gap-2 rounded-xl"
+                                    >
                                         <Repeat className="h-4 w-4" />
                                         Swap
                                     </Button>
@@ -1058,6 +1084,12 @@ export default function WalletPage() {
                     walletName={selectedWallet.name}
                 />
             )}
+
+            {/* Swap Modal */}
+            <SwapModal
+                isOpen={swapModalOpen}
+                onClose={handleCloseSwapModal}
+            />
         </div>
     );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/contexts";
 
@@ -28,6 +28,7 @@ export function SendModal({
     const [amount, setAmount] = useState("");
     const [priority, setPriority] = useState<"standard" | "fast">("standard");
     const [note, setNote] = useState("");
+    const [transactionHash, setTransactionHash] = useState("");
 
     if (!isOpen) return null;
 
@@ -48,17 +49,13 @@ export function SendModal({
 
     const handleSendNow = () => {
         // TODO: Implement actual send transaction
+        // Generate a mock transaction hash
+        const mockHash = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb";
+        setTransactionHash(mockHash);
+        
         showToast("Transaction sent successfully!", "success");
         setStep(3);
-        setTimeout(() => {
-            onClose();
-            // Reset form
-            setStep(1);
-            setRecipientAddress("");
-            setAmount("");
-            setPriority("standard");
-            setNote("");
-        }, 2000);
+        // Don't auto-close anymore, let user see the success screen
     };
 
     const handleClose = () => {
@@ -69,6 +66,7 @@ export function SendModal({
         setAmount("");
         setPriority("standard");
         setNote("");
+        setTransactionHash("");
     };
 
     return (
@@ -316,6 +314,34 @@ export function SendModal({
                                 >
                                     Send Now
                                 </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 3: Success */}
+                    {step === 3 && (
+                        <div className="flex flex-col items-center py-8">
+                            {/* Success Icon */}
+                            <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[#00c48c]/20">
+                                <Check className="h-12 w-12 text-[#00c48c]" strokeWidth={3} />
+                            </div>
+
+                            {/* Success Message */}
+                            <h3 className="mb-2 text-2xl font-bold text-[#0b1f3a]">
+                                Transaction Sent!
+                            </h3>
+                            <p className="mb-8 text-center text-sm text-gray-600 px-8">
+                                Your transaction has been submitted to the network and will be processed shortly
+                            </p>
+
+                            {/* Transaction Hash */}
+                            <div className="w-full rounded-lg bg-gray-100 px-6 py-4">
+                                <p className="mb-2 text-center text-sm font-semibold text-gray-700">
+                                    Transaction Hash
+                                </p>
+                                <p className="break-all text-center text-xs font-mono text-gray-900">
+                                    {transactionHash}
+                                </p>
                             </div>
                         </div>
                     )}
