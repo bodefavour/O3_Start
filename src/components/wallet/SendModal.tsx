@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/contexts";
+import { toast } from "sonner";
 
 interface SendModalProps {
     isOpen: boolean;
@@ -17,12 +17,10 @@ interface SendModalProps {
 export function SendModal({
     isOpen,
     onClose,
-    currency,
     currencySymbol,
     availableBalance,
     walletName,
 }: SendModalProps) {
-    const { showToast } = useToast();
     const [step, setStep] = useState(1); // 1: Details, 2: Review, 3: Success
     const [recipientAddress, setRecipientAddress] = useState("");
     const [amount, setAmount] = useState("");
@@ -37,7 +35,7 @@ export function SendModal({
 
     const handleContinue = () => {
         if (!recipientAddress || !amount) {
-            showToast("Please fill in all required fields", "error");
+            toast.error("Please fill in all required fields");
             return;
         }
         setStep(2);
@@ -53,7 +51,7 @@ export function SendModal({
         const mockHash = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb";
         setTransactionHash(mockHash);
 
-        showToast("Transaction sent successfully!", "success");
+        toast.success("Transaction sent successfully!");
         setStep(3);
         // Don't auto-close anymore, let user see the success screen
     };

@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/contexts";
-import { useUser } from "@/contexts";
+import { useToast } from "@/contexts/auth-provider";
+import { useUser } from "@/contexts/auth-provider";
 import { CheckCircle2, Upload, FileText, Clock } from "lucide-react";
 
 export default function VerifyPage() {
