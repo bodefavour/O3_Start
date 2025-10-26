@@ -993,7 +993,7 @@ export default function WalletPage() {
                         </div>
                     )}
 
-                    {/* Transaction History Tab */}
+                    {/* Transaction History Tab **/}
                     {activeTab === "history" && (
                         <div>
                             {/* Quick Actions */}
