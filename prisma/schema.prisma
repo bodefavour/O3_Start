@@ -1,5 +1,5 @@
 // Prisma Schema for BorderlessPay
-// Database: PostgreSQL
+// This is a reference schema - we're using Drizzle ORM instead
 
 generator client {
   provider = "prisma-client-js"
@@ -10,260 +10,156 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User and Authentication
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
-  businessName  String
-  accountId     String    @unique // Hedera Account ID
+  emailVerified DateTime?
+  image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
-  profile       Profile?
+  // Business Info
+  businessName  String?
+  businessType  String?
+  firstName     String?
+  lastName      String?
+  phoneNumber   String?
+  
+  // Account
+  accounts      Account[]
+  sessions      Session[]
   wallets       Wallet[]
   transactions  Transaction[]
   invoices      Invoice[]
   employees     Employee[]
-  apiKeys       ApiKey[]
   
   @@index([email])
-  @@index([accountId])
 }
 
-model Profile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
   
-  firstName       String?
-  lastName        String?
-  phoneNumber     String?
-  avatar          String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // Business Information
-  businessType    String?
-  registrationNumber String?
-  taxId           String?
-  
-  // Address
-  streetAddress   String?
-  city            String?
-  postalCode      String?
-  country         String?
-  
-  // Preferences
-  timezone        String   @default("UTC")
-  language        String   @default("en")
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
-// Wallets
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
 model Wallet {
   id              String   @id @default(cuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   name            String
-  currency        String   // USD, NGN, KES, GHS, etc.
-  symbol          String   // $, ₦, KSh, ₵
-  balance         Decimal  @default(0) @db.Decimal(20, 8)
-  address         String   @unique // Hedera token association
-  type            String   // Stablecoin, Local Currency
-  
+  symbol          String   // USDC, USDT, NGN, KES, etc.
+  type            String   // stablecoin, local_currency
+  balance         Decimal  @default(0)
+  address         String   @unique
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  transactions    Transaction[]
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
-  @@index([currency])
+  @@index([symbol])
+  @@index([address])
 }
 
-// Transactions
 model Transaction {
   id              String   @id @default(cuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  walletId        String
-  wallet          Wallet   @relation(fields: [walletId], references: [id])
-  
-  type            String   // outgoing, incoming, swap, exchange
-  status          String   // pending, completed, failed, cancelled
-  
-  fromCurrency    String
-  toCurrency      String?
-  amount          Decimal  @db.Decimal(20, 8)
-  fee             Decimal  @db.Decimal(20, 8)
-  total           Decimal  @db.Decimal(20, 8)
-  
-  recipientAddress String?
-  senderAddress   String?
-  
-  transactionHash String?  @unique
+  type            String   // incoming, outgoing, swap
+  status          String   // completed, pending, failed, cancelled
+  amount          Decimal
+  currency        String
+  fromAddress     String?
+  toAddress       String?
+  networkFee      Decimal?
   note            String?
-  
+  hash            String?  @unique
+  metadata        Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   @@index([userId])
-  @@index([walletId])
   @@index([status])
   @@index([createdAt])
+  @@index([hash])
 }
 
-// Invoices
 model Invoice {
   id              String   @id @default(cuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   invoiceNumber   String   @unique
   clientName      String
-  clientEmail     String?
-  
   description     String
-  amount          Decimal  @db.Decimal(20, 2)
-  currency        String
-  
-  status          String   // draft, sent, paid, overdue, cancelled
+  amount          Decimal
+  currency        String   @default("USD")
+  status          String   // paid, sent, overdue, draft
   dueDate         DateTime?
-  paidDate        DateTime?
-  
+  paidAt          DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   @@index([userId])
   @@index([status])
+  @@index([invoiceNumber])
 }
 
-// Payroll/Employees
 model Employee {
   id              String   @id @default(cuid())
   userId          String   // Business owner
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   employeeId      String   @unique
-  name            String
+  firstName       String
+  lastName        String
   email           String
   position        String
   department      String
-  
-  salary          Decimal  @db.Decimal(20, 2)
-  currency        String
-  
-  walletAddress   String?
-  status          String   @default("active") // active, inactive
-  
-  joinedDate      DateTime
+  salary          Decimal
+  currency        String   @default("USD")
+  status          String   @default("active")
+  joinedDate      DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  payments        PayrollPayment[]
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
-  @@index([employeeId])
-}
-
-model PayrollPayment {
-  id              String   @id @default(cuid())
-  employeeId      String
-  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  
-  amount          Decimal  @db.Decimal(20, 2)
-  currency        String
-  status          String   // pending, completed, failed
-  
-  transactionHash String?
-  paidDate        DateTime?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
   @@index([employeeId])
   @@index([status])
 }
 
-// API Keys
-model ApiKey {
+model ExchangeRate {
   id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromCurrency    String
+  toCurrency      String
+  rate            Decimal
+  timestamp       DateTime @default(now())
   
-  name            String
-  key             String   @unique
-  secret          String
-  
-  permissions     String[] // read, write, execute
-  environment     String   // production, development
-  
-  lastUsedAt      DateTime?
-  expiresAt       DateTime?
-  
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@index([userId])
-  @@index([key])
-}
-
-// Analytics & Metrics (aggregated data)
-model AnalyticsMetric {
-  id              String   @id @default(cuid())
-  userId          String
-  
-  metricType      String   // transaction_volume, user_count, revenue, etc.
-  period          String   // daily, weekly, monthly
-  date            DateTime
-  
-  value           Decimal  @db.Decimal(20, 8)
-  metadata        Json?    // Additional context
-  
-  createdAt       DateTime @default(now())
-  
-  @@unique([userId, metricType, period, date])
-  @@index([userId])
-  @@index([metricType])
-  @@index([date])
-}
-
-// Notifications
-model Notification {
-  id              String   @id @default(cuid())
-  userId          String
-  
-  type            String   // transaction, security, payment, etc.
-  title           String
-  message         String
-  
-  isRead          Boolean  @default(false)
-  
-  metadata        Json?
-  
-  createdAt       DateTime @default(now())
-  
-  @@index([userId])
-  @@index([isRead])
-}
-
-// Webhooks
-model Webhook {
-  id              String   @id @default(cuid())
-  userId          String
-  
-  url             String
-  events          String[] // payment.created, transaction.completed, etc.
-  
-  isActive        Boolean  @default(true)
-  secret          String
-  
-  lastDeliveryAt  DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@index([userId])
+  @@unique([fromCurrency, toCurrency, timestamp])
+  @@index([fromCurrency, toCurrency])
 }

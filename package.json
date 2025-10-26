@@ -10,7 +10,9 @@
     "format": "prettier --write .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "drizzle-kit seed"
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx src/db/seed.ts",
+    "db:setup": "node scripts/setup-db.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
