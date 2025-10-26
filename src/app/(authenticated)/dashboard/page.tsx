@@ -368,8 +368,8 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-3">
                         <div
                           className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
-                              ? "bg-green-100"
-                              : "bg-red-100"
+                            ? "bg-green-100"
+                            : "bg-red-100"
                             }`}
                         >
                           {transaction.type === "incoming" ? (
@@ -390,16 +390,16 @@ export default function DashboardPage() {
                       <div className="text-right">
                         <p
                           className={`text-sm font-bold ${transaction.type === "incoming"
-                              ? "text-green-600"
-                              : "text-gray-900"
+                            ? "text-green-600"
+                            : "text-gray-900"
                             }`}
                         >
                           {transaction.amount}
                         </p>
                         <span
                           className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
-                              ? "bg-[#00c48c]/10 text-[#00c48c]"
-                              : "bg-yellow-100 text-yellow-700"
+                            ? "bg-[#00c48c]/10 text-[#00c48c]"
+                            : "bg-yellow-100 text-yellow-700"
                             }`}
                         >
                           {transaction.status === "completed"
