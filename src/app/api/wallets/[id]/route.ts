@@ -6,13 +6,14 @@ import { eq } from 'drizzle-orm';
 // GET /api/wallets/[id]
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const [wallet] = await db
             .select()
             .from(wallets)
-            .where(eq(wallets.id, params.id));
+            .where(eq(wallets.id, id));
 
         if (!wallet) {
             return NextResponse.json(
@@ -34,9 +35,10 @@ export async function GET(
 // PATCH /api/wallets/[id]
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
         const { name, isActive } = body;
 
@@ -47,7 +49,7 @@ export async function PATCH(
         const [updatedWallet] = await db
             .update(wallets)
             .set(updates)
-            .where(eq(wallets.id, params.id))
+            .where(eq(wallets.id, id))
             .returning();
 
         if (!updatedWallet) {

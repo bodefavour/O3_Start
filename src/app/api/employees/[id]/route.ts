@@ -6,13 +6,14 @@ import { eq } from 'drizzle-orm';
 // GET /api/employees/[id]
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const [employee] = await db
             .select()
             .from(employees)
-            .where(eq(employees.id, params.id));
+            .where(eq(employees.id, id));
 
         if (!employee) {
             return NextResponse.json(
@@ -34,9 +35,10 @@ export async function GET(
 // PATCH /api/employees/[id]
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
         const { firstName, lastName, email, position, department, salary, status } = body;
 
@@ -52,7 +54,7 @@ export async function PATCH(
         const [updatedEmployee] = await db
             .update(employees)
             .set(updates)
-            .where(eq(employees.id, params.id))
+            .where(eq(employees.id, id))
             .returning();
 
         if (!updatedEmployee) {
@@ -75,12 +77,13 @@ export async function PATCH(
 // DELETE /api/employees/[id]
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const [deletedEmployee] = await db
             .delete(employees)
-            .where(eq(employees.id, params.id))
+            .where(eq(employees.id, id))
             .returning();
 
         if (!deletedEmployee) {

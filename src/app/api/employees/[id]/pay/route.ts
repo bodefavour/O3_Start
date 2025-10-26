@@ -6,9 +6,10 @@ import { eq } from 'drizzle-orm';
 // POST /api/employees/[id]/pay - Process payroll payment
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
         const { walletId, note } = body;
 
@@ -16,7 +17,7 @@ export async function POST(
         const [employee] = await db
             .select()
             .from(employees)
-            .where(eq(employees.id, params.id));
+            .where(eq(employees.id, id));
 
         if (!employee) {
             return NextResponse.json(

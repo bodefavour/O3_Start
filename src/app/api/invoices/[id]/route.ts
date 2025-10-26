@@ -6,13 +6,14 @@ import { eq } from 'drizzle-orm';
 // GET /api/invoices/[id]
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const [invoice] = await db
             .select()
             .from(invoices)
-            .where(eq(invoices.id, params.id));
+            .where(eq(invoices.id, id));
 
         if (!invoice) {
             return NextResponse.json(
@@ -34,9 +35,10 @@ export async function GET(
 // PATCH /api/invoices/[id]
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
         const { status, paidAt, clientName, description, amount, dueDate } = body;
 
@@ -56,7 +58,7 @@ export async function PATCH(
         const [updatedInvoice] = await db
             .update(invoices)
             .set(updates)
-            .where(eq(invoices.id, params.id))
+            .where(eq(invoices.id, id))
             .returning();
 
         if (!updatedInvoice) {
@@ -79,12 +81,13 @@ export async function PATCH(
 // DELETE /api/invoices/[id]
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const [deletedInvoice] = await db
             .delete(invoices)
-            .where(eq(invoices.id, params.id))
+            .where(eq(invoices.id, id))
             .returning();
 
         if (!deletedInvoice) {
