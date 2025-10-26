@@ -16,10 +16,10 @@ export default function SignInPage() {
       businessName: "Demo Business",
       email: "demo@borderlesspay.com",
     };
-    
+
     // Log in with demo credentials
     login(demoUser.accountId, demoUser.businessName, demoUser.email);
-    
+
     // Redirect to dashboard
     router.push("/dashboard");
   };
@@ -40,7 +40,7 @@ export default function SignInPage() {
             Access your BorderlessPay account
           </p>
         </div>
-        
+
         {/* Demo Login Button */}
         <div className="mb-6">
           <Button

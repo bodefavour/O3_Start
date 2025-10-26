@@ -21,6 +21,8 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import { ReceiveModal } from "@/components/wallet/ReceiveModal";
+import { SendModal } from "@/components/wallet/SendModal";
 
 // Mock data - will be replaced with real API calls
 const mockTransactions = [
@@ -79,6 +81,17 @@ export default function DashboardPage() {
   const [balance, setBalance] = useState("67,980.76");
   const [monthlyVolume, setMonthlyVolume] = useState("186,450");
   const [loading, setLoading] = useState(true);
+  const [receiveModalOpen, setReceiveModalOpen] = useState(false);
+  const [sendModalOpen, setSendModalOpen] = useState(false);
+
+  // Mock wallet data for modals
+  const defaultWallet = {
+    currency: "USD Coin",
+    symbol: "USDC",
+    address: "0x742a35Cc8634C0532925a3b848cBe97595f0bEb",
+    balance: "25,000",
+    name: "USD Coin",
+  };
 
   useEffect(() => {
     // Check authentication
@@ -101,6 +114,22 @@ export default function DashboardPage() {
   const handleLogout = () => {
     logout();
     router.push("/");
+  };
+
+  const handleOpenSendModal = () => {
+    setSendModalOpen(true);
+  };
+
+  const handleCloseSendModal = () => {
+    setSendModalOpen(false);
+  };
+
+  const handleOpenReceiveModal = () => {
+    setReceiveModalOpen(true);
+  };
+
+  const handleCloseReceiveModal = () => {
+    setReceiveModalOpen(false);
   };
 
   const maxAmount = Math.max(...weeklyData.map((d) => d.amount));
@@ -258,23 +287,19 @@ export default function DashboardPage() {
             </h2>
             <div className="grid gap-4 sm:grid-cols-3">
               <Button
-                asChild
+                onClick={handleOpenSendModal}
                 className="h-auto justify-start gap-3 rounded-xl bg-[#00c48c] p-4 text-left hover:bg-[#00b37d]"
               >
-                <Link href="/wallet?action=send">
-                  <Send className="h-5 w-5" />
-                  <span className="font-semibold">Send Money</span>
-                </Link>
+                <Send className="h-5 w-5" />
+                <span className="font-semibold">Send Money</span>
               </Button>
               <Button
-                asChild
+                onClick={handleOpenReceiveModal}
                 variant="outline"
                 className="h-auto justify-start gap-3 rounded-xl border-2 p-4 text-left"
               >
-                <Link href="/wallet?action=receive">
-                  <Download className="h-5 w-5" />
-                  <span className="font-semibold">Receive</span>
-                </Link>
+                <Download className="h-5 w-5" />
+                <span className="font-semibold">Receive</span>
               </Button>
               <Button
                 asChild
@@ -342,11 +367,10 @@ export default function DashboardPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                            transaction.type === "incoming"
+                          className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
                               ? "bg-green-100"
                               : "bg-red-100"
-                          }`}
+                            }`}
                         >
                           {transaction.type === "incoming" ? (
                             <TrendingDown className="h-5 w-5 text-green-600" />
@@ -365,20 +389,18 @@ export default function DashboardPage() {
                       </div>
                       <div className="text-right">
                         <p
-                          className={`text-sm font-bold ${
-                            transaction.type === "incoming"
+                          className={`text-sm font-bold ${transaction.type === "incoming"
                               ? "text-green-600"
                               : "text-gray-900"
-                          }`}
+                            }`}
                         >
                           {transaction.amount}
                         </p>
                         <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            transaction.status === "completed"
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
                               ? "bg-[#00c48c]/10 text-[#00c48c]"
                               : "bg-yellow-100 text-yellow-700"
-                          }`}
+                            }`}
                         >
                           {transaction.status === "completed"
                             ? "Completed"
@@ -393,6 +415,26 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Send Modal */}
+      <SendModal
+        isOpen={sendModalOpen}
+        onClose={handleCloseSendModal}
+        currency={defaultWallet.currency}
+        currencySymbol={defaultWallet.symbol}
+        walletAddress={defaultWallet.address}
+        availableBalance={defaultWallet.balance}
+        walletName={defaultWallet.name}
+      />
+
+      {/* Receive Modal */}
+      <ReceiveModal
+        isOpen={receiveModalOpen}
+        onClose={handleCloseReceiveModal}
+        currency={defaultWallet.currency}
+        currencySymbol={defaultWallet.symbol}
+        walletAddress={defaultWallet.address}
+      />
     </div>
   );
 }
