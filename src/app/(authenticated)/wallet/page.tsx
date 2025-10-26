@@ -30,6 +30,8 @@ import { useToast } from "@/contexts";
 import { ReceiveModal } from "@/components/wallet/ReceiveModal";
 import { SendModal } from "@/components/wallet/SendModal";
 import { SwapModal } from "@/components/wallet/SwapModal";
+import { walletApi, transactionApi } from "@/lib/api";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Mock wallet data - will be replaced with Hedera API
 const mockWallets = [
