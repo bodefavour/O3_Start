@@ -1,4 +1,4 @@
-import { drizzle, type NeonHttpDatabase } from 'drizzle-orm/neon-http';
+import { drizzle } from 'drizzle-orm/neon-http';
 import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
 import * as schema from './schema';
 
@@ -8,6 +8,6 @@ if (!process.env.DATABASE_URL) {
 
 // Initialize the database connection
 const sql: NeonQueryFunction<boolean, boolean> = neon(process.env.DATABASE_URL);
-const db: NeonHttpDatabase = drizzle(sql, { schema });
+const db = drizzle(sql, { schema });
 
 export { sql, db };

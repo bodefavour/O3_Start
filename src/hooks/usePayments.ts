@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useUser, useToast } from '@/contexts';
-import type { Payment, PaginatedResponse } from '@/lib/web3/types';
+import type { Payment } from '@/lib/web3/types';
 
 export function usePayments() {
     const { user } = useUser();
@@ -29,17 +29,17 @@ export function usePayments() {
             const response = await fetch(
                 `/api/payments/history?accountId=${user.accountId}&page=${page}&limit=10`
             );
-            const data: PaginatedResponse<Payment> = await response.json();
+            const result: any = await response.json();
 
-            if (data.success) {
+            if (result.success && result.data) {
                 if (page === 1) {
-                    setPayments(data.data);
+                    setPayments(result.data);
                 } else {
-                    setPayments((prev) => [...prev, ...data.data]);
+                    setPayments((prev) => [...prev, ...result.data]);
                 }
-                setPagination(data.pagination);
+                setPagination(result.pagination);
             } else {
-                showToast('Failed to fetch payments', 'error');
+                showToast(result.error || 'Failed to fetch payments', 'error');
             }
         } catch (err) {
             showToast('Network error. Please try again.', 'error');

@@ -15,6 +15,7 @@
     "db:setup": "node scripts/setup-db.js"
   },
   "dependencies": {
+    "@hashgraph/sdk": "^2.75.0",
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.0.2",
     "@radix-ui/react-avatar": "^1.1.10",
