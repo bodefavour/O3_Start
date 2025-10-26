@@ -3,7 +3,7 @@ import { db } from '@/db';
 import { employees, transactions, wallets } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
-// POST /api/employees/[id]/pay - Process payroll payment
+// POST /api/employees/[id]/pay - Process payroll payment/
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
