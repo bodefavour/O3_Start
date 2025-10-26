@@ -102,7 +102,7 @@ export default function InvoicingPage() {
 
         async function fetchData() {
             if (!userId) return; // Type guard for async function
-            
+
             try {
                 setLoadingData(true);
                 const [invoicesRes, statsRes] = await Promise.all([
