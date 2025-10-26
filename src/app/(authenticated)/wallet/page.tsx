@@ -995,31 +995,9 @@ export default function WalletPage() {
 
                     {/* Transaction History Tab */}
                     {activeTab === "history" && (
-                                                        )}
-                </div>
-        </div>
-    ))
-}
-                                        </div >
-                                    </CardContent >
-                                </Card >
-
-    {/* Load More */ }
-    < div className = "mt-6 text-center" >
-        <Button variant="outline" className="rounded-xl">
-            Load More Transactions
-        </Button>
-                                </div >
-                            </div >
-                        </div >
-                    )}
-
-{/* Transaction History Tab */ }
-{
-    activeTab === "history" && (
-        <div>
-            {/* Quick Actions */}
-            <div className="mb-6 grid gap-4 sm:grid-cols-3">
+                        <div>
+                            {/* Quick Actions */}
+                            <div className="mb-6 grid gap-4 sm:grid-cols-3">
                 <Button
                     asChild
                     className="gap-2 rounded-xl bg-[#00c48c] hover:bg-[#00b37d]"
