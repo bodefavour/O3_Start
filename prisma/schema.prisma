@@ -1,0 +1,269 @@
+// Prisma Schema for BorderlessPay
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User and Authentication
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  businessName  String
+  accountId     String    @unique // Hedera Account ID
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  profile       Profile?
+  wallets       Wallet[]
+  transactions  Transaction[]
+  invoices      Invoice[]
+  employees     Employee[]
+  apiKeys       ApiKey[]
+  
+  @@index([email])
+  @@index([accountId])
+}
+
+model Profile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  firstName       String?
+  lastName        String?
+  phoneNumber     String?
+  avatar          String?
+  
+  // Business Information
+  businessType    String?
+  registrationNumber String?
+  taxId           String?
+  
+  // Address
+  streetAddress   String?
+  city            String?
+  postalCode      String?
+  country         String?
+  
+  // Preferences
+  timezone        String   @default("UTC")
+  language        String   @default("en")
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Wallets
+model Wallet {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name            String
+  currency        String   // USD, NGN, KES, GHS, etc.
+  symbol          String   // $, ₦, KSh, ₵
+  balance         Decimal  @default(0) @db.Decimal(20, 8)
+  address         String   @unique // Hedera token association
+  type            String   // Stablecoin, Local Currency
+  
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  transactions    Transaction[]
+  
+  @@index([userId])
+  @@index([currency])
+}
+
+// Transactions
+model Transaction {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  walletId        String
+  wallet          Wallet   @relation(fields: [walletId], references: [id])
+  
+  type            String   // outgoing, incoming, swap, exchange
+  status          String   // pending, completed, failed, cancelled
+  
+  fromCurrency    String
+  toCurrency      String?
+  amount          Decimal  @db.Decimal(20, 8)
+  fee             Decimal  @db.Decimal(20, 8)
+  total           Decimal  @db.Decimal(20, 8)
+  
+  recipientAddress String?
+  senderAddress   String?
+  
+  transactionHash String?  @unique
+  note            String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([walletId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Invoices
+model Invoice {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  invoiceNumber   String   @unique
+  clientName      String
+  clientEmail     String?
+  
+  description     String
+  amount          Decimal  @db.Decimal(20, 2)
+  currency        String
+  
+  status          String   // draft, sent, paid, overdue, cancelled
+  dueDate         DateTime?
+  paidDate        DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+}
+
+// Payroll/Employees
+model Employee {
+  id              String   @id @default(cuid())
+  userId          String   // Business owner
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  employeeId      String   @unique
+  name            String
+  email           String
+  position        String
+  department      String
+  
+  salary          Decimal  @db.Decimal(20, 2)
+  currency        String
+  
+  walletAddress   String?
+  status          String   @default("active") // active, inactive
+  
+  joinedDate      DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  payments        PayrollPayment[]
+  
+  @@index([userId])
+  @@index([employeeId])
+}
+
+model PayrollPayment {
+  id              String   @id @default(cuid())
+  employeeId      String
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  amount          Decimal  @db.Decimal(20, 2)
+  currency        String
+  status          String   // pending, completed, failed
+  
+  transactionHash String?
+  paidDate        DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([employeeId])
+  @@index([status])
+}
+
+// API Keys
+model ApiKey {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name            String
+  key             String   @unique
+  secret          String
+  
+  permissions     String[] // read, write, execute
+  environment     String   // production, development
+  
+  lastUsedAt      DateTime?
+  expiresAt       DateTime?
+  
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([key])
+}
+
+// Analytics & Metrics (aggregated data)
+model AnalyticsMetric {
+  id              String   @id @default(cuid())
+  userId          String
+  
+  metricType      String   // transaction_volume, user_count, revenue, etc.
+  period          String   // daily, weekly, monthly
+  date            DateTime
+  
+  value           Decimal  @db.Decimal(20, 8)
+  metadata        Json?    // Additional context
+  
+  createdAt       DateTime @default(now())
+  
+  @@unique([userId, metricType, period, date])
+  @@index([userId])
+  @@index([metricType])
+  @@index([date])
+}
+
+// Notifications
+model Notification {
+  id              String   @id @default(cuid())
+  userId          String
+  
+  type            String   // transaction, security, payment, etc.
+  title           String
+  message         String
+  
+  isRead          Boolean  @default(false)
+  
+  metadata        Json?
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([userId])
+  @@index([isRead])
+}
+
+// Webhooks
+model Webhook {
+  id              String   @id @default(cuid())
+  userId          String
+  
+  url             String
+  events          String[] // payment.created, transaction.completed, etc.
+  
+  isActive        Boolean  @default(true)
+  secret          String
+  
+  lastDeliveryAt  DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+}

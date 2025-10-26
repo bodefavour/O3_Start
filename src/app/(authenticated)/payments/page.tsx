@@ -205,21 +205,19 @@ export default function PaymentsPage() {
                             <div className="inline-flex rounded-lg bg-white/10 p-1">
                                 <button
                                     onClick={() => setBillingCycle("monthly")}
-                                    className={`rounded-lg px-6 py-2 text-sm font-medium transition-colors ${
-                                        billingCycle === "monthly"
+                                    className={`rounded-lg px-6 py-2 text-sm font-medium transition-colors ${billingCycle === "monthly"
                                             ? "bg-[#00c48c] text-white"
                                             : "text-gray-300 hover:text-white"
-                                    }`}
+                                        }`}
                                 >
                                     Monthly
                                 </button>
                                 <button
                                     onClick={() => setBillingCycle("yearly")}
-                                    className={`rounded-lg px-6 py-2 text-sm font-medium transition-colors ${
-                                        billingCycle === "yearly"
+                                    className={`rounded-lg px-6 py-2 text-sm font-medium transition-colors ${billingCycle === "yearly"
                                             ? "bg-[#00c48c] text-white"
                                             : "text-gray-300 hover:text-white"
-                                    }`}
+                                        }`}
                                 >
                                     Yearly
                                 </button>
@@ -231,11 +229,10 @@ export default function PaymentsPage() {
                             {plans.map((plan) => (
                                 <Card
                                     key={plan.id}
-                                    className={`cursor-pointer transition-all ${
-                                        selectedPlan === plan.id
+                                    className={`cursor-pointer transition-all ${selectedPlan === plan.id
                                             ? "border-2 border-[#00c48c] bg-white/10"
                                             : "border-white/20 bg-white/5 hover:bg-white/10"
-                                    }`}
+                                        }`}
                                     onClick={() =>
                                         setSelectedPlan(plan.id as "starter" | "business" | "enterprise")
                                     }
@@ -267,11 +264,10 @@ export default function PaymentsPage() {
                                                 </ul>
                                             </div>
                                             <div
-                                                className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${
-                                                    selectedPlan === plan.id
+                                                className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${selectedPlan === plan.id
                                                         ? "border-[#00c48c] bg-[#00c48c]"
                                                         : "border-white/40"
-                                                }`}
+                                                    }`}
                                             >
                                                 {selectedPlan === plan.id && (
                                                     <div className="h-3 w-3 rounded-full bg-white" />
@@ -324,22 +320,20 @@ export default function PaymentsPage() {
                                     <div className="grid grid-cols-2 gap-3">
                                         <button
                                             onClick={() => setPaymentMethod("card")}
-                                            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                                                paymentMethod === "card"
+                                            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${paymentMethod === "card"
                                                     ? "border-[#00c48c] bg-[#00c48c] text-white"
                                                     : "border-white/20 text-gray-300 hover:border-white/40"
-                                            }`}
+                                                }`}
                                         >
                                             <CreditCard className="h-4 w-4" />
                                             Credit Card
                                         </button>
                                         <button
                                             onClick={() => setPaymentMethod("crypto")}
-                                            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                                                paymentMethod === "crypto"
+                                            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${paymentMethod === "crypto"
                                                     ? "border-[#00c48c] bg-[#00c48c] text-white"
                                                     : "border-white/20 text-gray-300 hover:border-white/40"
-                                            }`}
+                                                }`}
                                         >
                                             <WalletIcon className="h-4 w-4" />
                                             Crypto

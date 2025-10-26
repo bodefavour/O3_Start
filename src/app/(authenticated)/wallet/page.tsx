@@ -485,9 +485,9 @@ export default function WalletPage() {
                                                 <Download className="h-4 w-4" />
                                                 Receive
                                             </Button>
-                                            <Button 
+                                            <Button
                                                 onClick={handleOpenSwapModal}
-                                                variant="outline" 
+                                                variant="outline"
                                                 className="rounded-xl px-4"
                                             >
                                                 <Repeat className="h-4 w-4" />
@@ -520,9 +520,9 @@ export default function WalletPage() {
                                         <Download className="h-4 w-4" />
                                         Receive
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={handleOpenSwapModal}
-                                        variant="outline" 
+                                        variant="outline"
                                         className="gap-2 rounded-xl"
                                     >
                                         <Repeat className="h-4 w-4" />
@@ -544,8 +544,8 @@ export default function WalletPage() {
                                         <button
                                             onClick={() => setFilterStatus("all")}
                                             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "all"
-                                                    ? "bg-[#00c48c] text-white"
-                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                ? "bg-[#00c48c] text-white"
+                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                                 }`}
                                         >
                                             All
@@ -553,8 +553,8 @@ export default function WalletPage() {
                                         <button
                                             onClick={() => setFilterStatus("sent")}
                                             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "sent"
-                                                    ? "bg-gray-700 text-white"
-                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                ? "bg-gray-700 text-white"
+                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                                 }`}
                                         >
                                             Sent
@@ -562,8 +562,8 @@ export default function WalletPage() {
                                         <button
                                             onClick={() => setFilterStatus("received")}
                                             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "received"
-                                                    ? "bg-gray-700 text-white"
-                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                ? "bg-gray-700 text-white"
+                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                                 }`}
                                         >
                                             Received
@@ -571,8 +571,8 @@ export default function WalletPage() {
                                         <button
                                             onClick={() => setFilterStatus("swapped")}
                                             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "swapped"
-                                                    ? "bg-gray-700 text-white"
-                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                ? "bg-gray-700 text-white"
+                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                                 }`}
                                         >
                                             Swapped
@@ -591,10 +591,10 @@ export default function WalletPage() {
                                                     <div className="flex items-center gap-4">
                                                         <div
                                                             className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
-                                                                    ? "bg-green-100"
-                                                                    : transaction.type === "outgoing"
-                                                                        ? "bg-red-100"
-                                                                        : "bg-blue-100"
+                                                                ? "bg-green-100"
+                                                                : transaction.type === "outgoing"
+                                                                    ? "bg-red-100"
+                                                                    : "bg-blue-100"
                                                                 }`}
                                                         >
                                                             {transaction.type === "incoming" ? (
@@ -613,10 +613,10 @@ export default function WalletPage() {
                                                                 {transaction.date}{" "}
                                                                 <span
                                                                     className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
-                                                                            ? "bg-[#00c48c]/10 text-[#00c48c]"
-                                                                            : transaction.status === "failed"
-                                                                                ? "bg-red-100 text-red-600"
-                                                                                : "bg-blue-100 text-blue-600"
+                                                                        ? "bg-[#00c48c]/10 text-[#00c48c]"
+                                                                        : transaction.status === "failed"
+                                                                            ? "bg-red-100 text-red-600"
+                                                                            : "bg-blue-100 text-blue-600"
                                                                         }`}
                                                                 >
                                                                     {transaction.status === "completed" && "completed"}
@@ -632,8 +632,8 @@ export default function WalletPage() {
                                                     <div className="text-right">
                                                         <p
                                                             className={`font-bold ${transaction.type === "incoming"
-                                                                    ? "text-green-600"
-                                                                    : "text-gray-900"
+                                                                ? "text-green-600"
+                                                                : "text-gray-900"
                                                                 }`}
                                                         >
                                                             {transaction.amount}
@@ -680,8 +680,8 @@ export default function WalletPage() {
                                             </div>
                                             <span
                                                 className={`rounded-full px-3 py-1 text-xs font-semibold ${wallet.badgeColor === "green"
-                                                        ? "bg-[#00c48c]/10 text-[#00c48c]"
-                                                        : "bg-red-100 text-red-600"
+                                                    ? "bg-[#00c48c]/10 text-[#00c48c]"
+                                                    : "bg-red-100 text-red-600"
                                                     }`}
                                             >
                                                 {wallet.badge}
@@ -731,9 +731,9 @@ export default function WalletPage() {
                                                 <Download className="h-4 w-4" />
                                                 Receive
                                             </Button>
-                                            <Button 
+                                            <Button
                                                 onClick={handleOpenSwapModal}
-                                                variant="outline" 
+                                                variant="outline"
                                                 className="rounded-xl px-4"
                                             >
                                                 <Repeat className="h-4 w-4" />
@@ -766,9 +766,9 @@ export default function WalletPage() {
                                         <Download className="h-4 w-4" />
                                         Receive
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={handleOpenSwapModal}
-                                        variant="outline" 
+                                        variant="outline"
                                         className="gap-2 rounded-xl"
                                     >
                                         <Repeat className="h-4 w-4" />
@@ -790,8 +790,8 @@ export default function WalletPage() {
                                         <button
                                             onClick={() => setFilterStatus("all")}
                                             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "all"
-                                                    ? "bg-[#00c48c] text-white"
-                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                ? "bg-[#00c48c] text-white"
+                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                                 }`}
                                         >
                                             All
@@ -799,8 +799,8 @@ export default function WalletPage() {
                                         <button
                                             onClick={() => setFilterStatus("sent")}
                                             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "sent"
-                                                    ? "bg-gray-700 text-white"
-                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                ? "bg-gray-700 text-white"
+                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                                 }`}
                                         >
                                             Sent
@@ -808,8 +808,8 @@ export default function WalletPage() {
                                         <button
                                             onClick={() => setFilterStatus("received")}
                                             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "received"
-                                                    ? "bg-gray-700 text-white"
-                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                ? "bg-gray-700 text-white"
+                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                                 }`}
                                         >
                                             Received
@@ -817,8 +817,8 @@ export default function WalletPage() {
                                         <button
                                             onClick={() => setFilterStatus("swapped")}
                                             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "swapped"
-                                                    ? "bg-gray-700 text-white"
-                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                ? "bg-gray-700 text-white"
+                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                                 }`}
                                         >
                                             Swapped
@@ -837,10 +837,10 @@ export default function WalletPage() {
                                                     <div className="flex items-center gap-4">
                                                         <div
                                                             className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
-                                                                    ? "bg-green-100"
-                                                                    : transaction.type === "outgoing"
-                                                                        ? "bg-red-100"
-                                                                        : "bg-blue-100"
+                                                                ? "bg-green-100"
+                                                                : transaction.type === "outgoing"
+                                                                    ? "bg-red-100"
+                                                                    : "bg-blue-100"
                                                                 }`}
                                                         >
                                                             {transaction.type === "incoming" ? (
@@ -859,10 +859,10 @@ export default function WalletPage() {
                                                                 {transaction.date}{" "}
                                                                 <span
                                                                     className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
-                                                                            ? "bg-[#00c48c]/10 text-[#00c48c]"
-                                                                            : transaction.status === "failed"
-                                                                                ? "bg-red-100 text-red-600"
-                                                                                : "bg-blue-100 text-blue-600"
+                                                                        ? "bg-[#00c48c]/10 text-[#00c48c]"
+                                                                        : transaction.status === "failed"
+                                                                            ? "bg-red-100 text-red-600"
+                                                                            : "bg-blue-100 text-blue-600"
                                                                         }`}
                                                                 >
                                                                     {transaction.status === "completed" && "completed"}
@@ -878,8 +878,8 @@ export default function WalletPage() {
                                                     <div className="text-right">
                                                         <p
                                                             className={`font-bold ${transaction.type === "incoming"
-                                                                    ? "text-green-600"
-                                                                    : "text-gray-900"
+                                                                ? "text-green-600"
+                                                                : "text-gray-900"
                                                                 }`}
                                                         >
                                                             {transaction.amount}

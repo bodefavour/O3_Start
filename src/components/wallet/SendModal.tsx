@@ -52,7 +52,7 @@ export function SendModal({
         // Generate a mock transaction hash
         const mockHash = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb";
         setTransactionHash(mockHash);
-        
+
         showToast("Transaction sent successfully!", "success");
         setStep(3);
         // Don't auto-close anymore, let user see the success screen
@@ -92,10 +92,10 @@ export function SendModal({
                         <div className="flex items-center gap-2">
                             <div
                                 className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${step === 1
+                                    ? "bg-[#00c48c] text-white"
+                                    : step > 1
                                         ? "bg-[#00c48c] text-white"
-                                        : step > 1
-                                            ? "bg-[#00c48c] text-white"
-                                            : "bg-gray-300 text-gray-600"
+                                        : "bg-gray-300 text-gray-600"
                                     }`}
                             >
                                 1
@@ -107,10 +107,10 @@ export function SendModal({
                         <div className="flex items-center gap-2">
                             <div
                                 className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${step === 2
+                                    ? "bg-[#00c48c] text-white"
+                                    : step > 2
                                         ? "bg-[#00c48c] text-white"
-                                        : step > 2
-                                            ? "bg-[#00c48c] text-white"
-                                            : "bg-gray-300 text-gray-600"
+                                        : "bg-gray-300 text-gray-600"
                                     }`}
                             >
                                 2
@@ -121,8 +121,8 @@ export function SendModal({
                         {/* Step 3 */}
                         <div
                             className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${step === 3
-                                    ? "bg-[#00c48c] text-white"
-                                    : "bg-gray-300 text-gray-600"
+                                ? "bg-[#00c48c] text-white"
+                                : "bg-gray-300 text-gray-600"
                                 }`}
                         >
                             3
@@ -180,8 +180,8 @@ export function SendModal({
                                     {/* Standard */}
                                     <label
                                         className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors ${priority === "standard"
-                                                ? "border-[#00c48c] bg-[#00c48c]/5"
-                                                : "border-gray-300 hover:border-gray-400"
+                                            ? "border-[#00c48c] bg-[#00c48c]/5"
+                                            : "border-gray-300 hover:border-gray-400"
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
@@ -204,8 +204,8 @@ export function SendModal({
                                     {/* Fast */}
                                     <label
                                         className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors ${priority === "fast"
-                                                ? "border-[#00c48c] bg-[#00c48c]/5"
-                                                : "border-gray-300 hover:border-gray-400"
+                                            ? "border-[#00c48c] bg-[#00c48c]/5"
+                                            : "border-gray-300 hover:border-gray-400"
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">

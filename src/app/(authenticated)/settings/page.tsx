@@ -165,8 +165,8 @@ export default function SettingsPage() {
                                 <button
                                     onClick={() => setActiveTab("profile")}
                                     className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors ${activeTab === "profile"
-                                            ? "bg-[#00c48c] text-white"
-                                            : "text-gray-700 hover:bg-gray-100"
+                                        ? "bg-[#00c48c] text-white"
+                                        : "text-gray-700 hover:bg-gray-100"
                                         }`}
                                 >
                                     <User className="h-5 w-5" />
@@ -175,8 +175,8 @@ export default function SettingsPage() {
                                 <button
                                     onClick={() => setActiveTab("business")}
                                     className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors ${activeTab === "business"
-                                            ? "bg-[#00c48c] text-white"
-                                            : "text-gray-700 hover:bg-gray-100"
+                                        ? "bg-[#00c48c] text-white"
+                                        : "text-gray-700 hover:bg-gray-100"
                                         }`}
                                 >
                                     <Building2 className="h-5 w-5" />
@@ -185,8 +185,8 @@ export default function SettingsPage() {
                                 <button
                                     onClick={() => setActiveTab("security")}
                                     className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors ${activeTab === "security"
-                                            ? "bg-[#00c48c] text-white"
-                                            : "text-gray-700 hover:bg-gray-100"
+                                        ? "bg-[#00c48c] text-white"
+                                        : "text-gray-700 hover:bg-gray-100"
                                         }`}
                                 >
                                     <Shield className="h-5 w-5" />
@@ -195,8 +195,8 @@ export default function SettingsPage() {
                                 <button
                                     onClick={() => setActiveTab("notifications")}
                                     className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors ${activeTab === "notifications"
-                                            ? "bg-[#00c48c] text-white"
-                                            : "text-gray-700 hover:bg-gray-100"
+                                        ? "bg-[#00c48c] text-white"
+                                        : "text-gray-700 hover:bg-gray-100"
                                         }`}
                                 >
                                     <Bell className="h-5 w-5" />
@@ -205,8 +205,8 @@ export default function SettingsPage() {
                                 <button
                                     onClick={() => setActiveTab("api")}
                                     className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors ${activeTab === "api"
-                                            ? "bg-[#00c48c] text-white"
-                                            : "text-gray-700 hover:bg-gray-100"
+                                        ? "bg-[#00c48c] text-white"
+                                        : "text-gray-700 hover:bg-gray-100"
                                         }`}
                                 >
                                     <Code className="h-5 w-5" />

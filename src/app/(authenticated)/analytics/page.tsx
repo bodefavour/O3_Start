@@ -239,41 +239,37 @@ export default function AnalyticsPage() {
                         <div className="flex items-center gap-6 border-b">
                             <button
                                 onClick={() => setActiveTab("overview")}
-                                className={`pb-3 text-sm font-medium transition-colors ${
-                                    activeTab === "overview"
+                                className={`pb-3 text-sm font-medium transition-colors ${activeTab === "overview"
                                         ? "border-b-2 border-[#00c48c] text-[#00c48c]"
                                         : "text-gray-600 hover:text-gray-900"
-                                }`}
+                                    }`}
                             >
                                 Overview
                             </button>
                             <button
                                 onClick={() => setActiveTab("transactions")}
-                                className={`pb-3 text-sm font-medium transition-colors ${
-                                    activeTab === "transactions"
+                                className={`pb-3 text-sm font-medium transition-colors ${activeTab === "transactions"
                                         ? "border-b-2 border-[#00c48c] text-[#00c48c]"
                                         : "text-gray-600 hover:text-gray-900"
-                                }`}
+                                    }`}
                             >
                                 Transactions
                             </button>
                             <button
                                 onClick={() => setActiveTab("geographic")}
-                                className={`pb-3 text-sm font-medium transition-colors ${
-                                    activeTab === "geographic"
+                                className={`pb-3 text-sm font-medium transition-colors ${activeTab === "geographic"
                                         ? "border-b-2 border-[#00c48c] text-[#00c48c]"
                                         : "text-gray-600 hover:text-gray-900"
-                                }`}
+                                    }`}
                             >
                                 Geographic
                             </button>
                             <button
                                 onClick={() => setActiveTab("currencies")}
-                                className={`pb-3 text-sm font-medium transition-colors ${
-                                    activeTab === "currencies"
+                                className={`pb-3 text-sm font-medium transition-colors ${activeTab === "currencies"
                                         ? "border-b-2 border-[#00c48c] text-[#00c48c]"
                                         : "text-gray-600 hover:text-gray-900"
-                                }`}
+                                    }`}
                             >
                                 Currencies
                             </button>
@@ -439,15 +435,14 @@ export default function AnalyticsPage() {
                                                 {category.title}
                                             </h4>
                                             <div
-                                                className={`h-3 w-3 rounded-full ${
-                                                    category.badge === "green"
+                                                className={`h-3 w-3 rounded-full ${category.badge === "green"
                                                         ? "bg-green-500"
                                                         : category.badge === "blue"
-                                                        ? "bg-blue-500"
-                                                        : category.badge === "red"
-                                                        ? "bg-red-500"
-                                                        : "bg-purple-500"
-                                                }`}
+                                                            ? "bg-blue-500"
+                                                            : category.badge === "red"
+                                                                ? "bg-red-500"
+                                                                : "bg-purple-500"
+                                                    }`}
                                             />
                                         </div>
                                         <div className="space-y-2 text-sm">
@@ -512,15 +507,14 @@ export default function AnalyticsPage() {
                                         >
                                             <div className="flex items-center gap-3">
                                                 <item.icon
-                                                    className={`h-5 w-5 ${
-                                                        item.color === "green"
+                                                    className={`h-5 w-5 ${item.color === "green"
                                                             ? "text-green-600"
                                                             : item.color === "yellow"
-                                                            ? "text-yellow-600"
-                                                            : item.color === "red"
-                                                            ? "text-red-600"
-                                                            : "text-purple-600"
-                                                    }`}
+                                                                ? "text-yellow-600"
+                                                                : item.color === "red"
+                                                                    ? "text-red-600"
+                                                                    : "text-purple-600"
+                                                        }`}
                                                 />
                                                 <span className="font-medium text-gray-900">
                                                     {item.status}
