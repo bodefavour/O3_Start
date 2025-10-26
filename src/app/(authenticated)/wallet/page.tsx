@@ -1205,7 +1205,6 @@ export default function WalletPage() {
                         onClose={handleCloseSendModal}
                         currency={selectedWallet.currency}
                         currencySymbol={selectedWallet.symbol}
-                        walletAddress={selectedWallet.address}
                         availableBalance={selectedWallet.balance}
                         walletName={selectedWallet.name}
                     />

@@ -474,7 +474,6 @@ export default function DashboardPage() {
         onClose={handleCloseSendModal}
         currency={defaultWallet.currency}
         currencySymbol={defaultWallet.symbol}
-        walletAddress={defaultWallet.address}
         availableBalance={defaultWallet.balance}
         walletName={defaultWallet.name}
       />
