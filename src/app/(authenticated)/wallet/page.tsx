@@ -673,10 +673,10 @@ export default function WalletPage() {
                                                         <div className="flex items-center gap-4">
                                                             <div
                                                                 className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
-                                                                        ? "bg-green-100"
-                                                                        : transaction.type === "outgoing"
-                                                                            ? "bg-red-100"
-                                                                            : "bg-blue-100"
+                                                                    ? "bg-green-100"
+                                                                    : transaction.type === "outgoing"
+                                                                        ? "bg-red-100"
+                                                                        : "bg-blue-100"
                                                                     }`}
                                                             >
                                                                 {transaction.type === "incoming" ? (
@@ -695,12 +695,12 @@ export default function WalletPage() {
                                                                     {formattedDate}{" "}
                                                                     <span
                                                                         className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
-                                                                                ? "bg-[#00c48c]/10 text-[#00c48c]"
-                                                                                : transaction.status === "failed"
-                                                                                    ? "bg-red-100 text-red-600"
-                                                                                    : transaction.status === "pending"
-                                                                                        ? "bg-yellow-100 text-yellow-600"
-                                                                                        : "bg-gray-100 text-gray-600"
+                                                                            ? "bg-[#00c48c]/10 text-[#00c48c]"
+                                                                            : transaction.status === "failed"
+                                                                                ? "bg-red-100 text-red-600"
+                                                                                : transaction.status === "pending"
+                                                                                    ? "bg-yellow-100 text-yellow-600"
+                                                                                    : "bg-gray-100 text-gray-600"
                                                                             }`}
                                                                     >
                                                                         {transaction.status}
@@ -716,8 +716,8 @@ export default function WalletPage() {
                                                         <div className="text-right">
                                                             <p
                                                                 className={`font-bold ${transaction.type === "incoming"
-                                                                        ? "text-green-600"
-                                                                        : "text-gray-900"
+                                                                    ? "text-green-600"
+                                                                    : "text-gray-900"
                                                                     }`}
                                                             >
                                                                 {displayAmount}
@@ -921,10 +921,10 @@ export default function WalletPage() {
                                                         <div className="flex items-center gap-4">
                                                             <div
                                                                 className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
-                                                                        ? "bg-green-100"
-                                                                        : transaction.type === "outgoing"
-                                                                            ? "bg-red-100"
-                                                                            : "bg-blue-100"
+                                                                    ? "bg-green-100"
+                                                                    : transaction.type === "outgoing"
+                                                                        ? "bg-red-100"
+                                                                        : "bg-blue-100"
                                                                     }`}
                                                             >
                                                                 {transaction.type === "incoming" ? (
@@ -943,12 +943,12 @@ export default function WalletPage() {
                                                                     {formattedDate}{" "}
                                                                     <span
                                                                         className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
-                                                                                ? "bg-[#00c48c]/10 text-[#00c48c]"
-                                                                                : transaction.status === "failed"
-                                                                                    ? "bg-red-100 text-red-600"
-                                                                                    : transaction.status === "pending"
-                                                                                        ? "bg-yellow-100 text-yellow-600"
-                                                                                        : "bg-gray-100 text-gray-600"
+                                                                            ? "bg-[#00c48c]/10 text-[#00c48c]"
+                                                                            : transaction.status === "failed"
+                                                                                ? "bg-red-100 text-red-600"
+                                                                                : transaction.status === "pending"
+                                                                                    ? "bg-yellow-100 text-yellow-600"
+                                                                                    : "bg-gray-100 text-gray-600"
                                                                             }`}
                                                                     >
                                                                         {transaction.status}
@@ -964,8 +964,8 @@ export default function WalletPage() {
                                                         <div className="text-right">
                                                             <p
                                                                 className={`font-bold ${transaction.type === "incoming"
-                                                                        ? "text-green-600"
-                                                                        : "text-gray-900"
+                                                                    ? "text-green-600"
+                                                                    : "text-gray-900"
                                                                     }`}
                                                             >
                                                                 {displayAmount}

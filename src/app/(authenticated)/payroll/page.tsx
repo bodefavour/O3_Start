@@ -117,7 +117,7 @@ export default function PayrollPage() {
     useEffect(() => {
         const fetchData = async () => {
             if (!userId) return;
-            
+
             setLoadingData(true);
             try {
                 const response = await employeeApi.getAll(userId);
@@ -328,7 +328,7 @@ export default function PayrollPage() {
                                 <div>
                                     <p className="text-sm text-gray-600">Last Payment</p>
                                     <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">
-                                        {employees.length > 0 && employees[0].lastPayment 
+                                        {employees.length > 0 && employees[0].lastPayment
                                             ? new Date(employees[0].lastPayment).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                                             : 'N/A'}
                                     </p>
@@ -379,7 +379,7 @@ export default function PayrollPage() {
                             .toUpperCase();
                         const colorClasses = ['bg-green-500', 'bg-cyan-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500'];
                         const color = colorClasses[index % colorClasses.length];
-                        
+
                         return (
                             <Card key={employee.id} className="overflow-hidden">
                                 <CardContent className="p-6">
@@ -407,11 +407,10 @@ export default function PayrollPage() {
                                             <p className="font-bold text-[#0b1f3a]">
                                                 {employee.currency}${parseFloat(employee.salary).toLocaleString()}/mo
                                             </p>
-                                            <Badge className={`mt-1 ${
-                                                employee.status === 'active' 
+                                            <Badge className={`mt-1 ${employee.status === 'active'
                                                     ? 'bg-green-100 text-green-700 hover:bg-green-100'
                                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
-                                            } capitalize`}>
+                                                } capitalize`}>
                                                 {employee.status}
                                             </Badge>
                                         </div>
@@ -428,10 +427,10 @@ export default function PayrollPage() {
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="text-gray-600">Joined:</span>
                                             <span className="font-medium text-gray-900">
-                                                {new Date(employee.createdAt).toLocaleDateString('en-US', { 
-                                                    month: 'short', 
-                                                    day: 'numeric', 
-                                                    year: 'numeric' 
+                                                {new Date(employee.createdAt).toLocaleDateString('en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    year: 'numeric'
                                                 })}
                                             </span>
                                         </div>
@@ -445,9 +444,9 @@ export default function PayrollPage() {
                                             <div className="flex items-center justify-between text-sm">
                                                 <span className="text-gray-600">Last Payment:</span>
                                                 <span className="font-medium text-gray-900">
-                                                    {new Date(employee.lastPayment).toLocaleDateString('en-US', { 
-                                                        month: 'short', 
-                                                        day: 'numeric' 
+                                                    {new Date(employee.lastPayment).toLocaleDateString('en-US', {
+                                                        month: 'short',
+                                                        day: 'numeric'
                                                     })}
                                                 </span>
                                             </div>

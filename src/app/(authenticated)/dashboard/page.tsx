@@ -32,7 +32,7 @@ import { SwapModal } from "@/components/wallet/SwapModal";
 function getTimeAgo(date: Date): string {
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
+
   if (seconds < 60) return `${seconds} seconds ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -91,7 +91,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!userId) return;
-      
+
       setLoadingData(true);
       try {
         const [walletsRes, transactionsRes] = await Promise.all([
@@ -101,7 +101,7 @@ export default function DashboardPage() {
 
         const fetchedWallets = walletsRes.wallets || [];
         const fetchedTransactions = transactionsRes.transactions || [];
-        
+
         setWallets(fetchedWallets);
         setTransactions(fetchedTransactions);
 
@@ -115,7 +115,7 @@ export default function DashboardPage() {
         const now = new Date();
         const thisMonth = now.getMonth();
         const thisYear = now.getFullYear();
-        
+
         const monthlyTxns = fetchedTransactions.filter((t: any) => {
           const txDate = new Date(t.timestamp);
           return txDate.getMonth() === thisMonth && txDate.getFullYear() === thisYear;
@@ -406,7 +406,7 @@ export default function DashboardPage() {
                     const amount = Math.abs(parseFloat(transaction.amount));
                     const txDate = new Date(transaction.timestamp);
                     const timeAgo = getTimeAgo(txDate);
-                    
+
                     return (
                       <div
                         key={transaction.id}
@@ -427,11 +427,11 @@ export default function DashboardPage() {
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-[#0b1f3a]">
-                              {transaction.type === 'swap' 
+                              {transaction.type === 'swap'
                                 ? `Swap ${transaction.fromCurrency} → ${transaction.toCurrency}`
                                 : transaction.type === 'send'
-                                ? `To ${transaction.toAddress?.slice(0, 12)}...`
-                                : transaction.note || 'Transaction'}
+                                  ? `To ${transaction.toAddress?.slice(0, 12)}...`
+                                  : transaction.note || 'Transaction'}
                             </p>
                             <p className="text-xs text-gray-500">
                               {transaction.transactionHash?.slice(0, 16)}... • {timeAgo}
@@ -451,8 +451,8 @@ export default function DashboardPage() {
                             className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${transaction.status === "completed"
                               ? "bg-[#00c48c]/10 text-[#00c48c]"
                               : transaction.status === "pending"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-red-100 text-red-700"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-red-100 text-red-700"
                               }`}
                           >
                             {transaction.status}

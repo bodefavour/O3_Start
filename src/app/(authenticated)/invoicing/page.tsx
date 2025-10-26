@@ -90,7 +90,7 @@ export default function InvoicingPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("All Status");
-    
+
     // Real data from API
     const [invoices, setInvoices] = useState<any[]>([]);
     const [stats, setStats] = useState<any>(null);
@@ -107,7 +107,7 @@ export default function InvoicingPage() {
                     invoiceApi.getAll(userId),
                     invoiceApi.getStats(userId),
                 ]);
-                
+
                 setInvoices(invoicesRes.invoices || []);
                 setStats(statsRes.stats || null);
             } catch (error) {
@@ -143,7 +143,7 @@ export default function InvoicingPage() {
             invoice.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
             invoice.description.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus =
-            statusFilter === "All Status" || 
+            statusFilter === "All Status" ||
             invoice.status.toLowerCase() === statusFilter.toLowerCase();
         return matchesSearch && matchesStatus;
     });
@@ -452,10 +452,10 @@ export default function InvoicingPage() {
                                                 </Badge>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">
-                                                {new Date(invoice.createdAt).toLocaleDateString('en-US', { 
-                                                    month: 'short', 
-                                                    day: 'numeric', 
-                                                    year: 'numeric' 
+                                                {new Date(invoice.createdAt).toLocaleDateString('en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    year: 'numeric'
                                                 })}
                                             </td>
                                             <td className="px-6 py-4">
