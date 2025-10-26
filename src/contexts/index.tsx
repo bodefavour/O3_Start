@@ -12,7 +12,7 @@ interface UserContextType {
     user: User | null;
     setUser: (user: User | null) => void;
     isAuthenticated: boolean;
-    login: (accountId: string, businessName?: string) => void;
+    login: (accountId: string, businessName?: string, email?: string) => void;
     logout: () => void;
 }
 
@@ -34,8 +34,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    const login = (accountId: string, businessName?: string) => {
-        const newUser: User = { accountId, businessName };
+    const login = (accountId: string, businessName?: string, email?: string) => {
+        const newUser: User = { accountId, businessName, email };
         setUser(newUser);
         if (typeof window !== 'undefined') {
             localStorage.setItem('borderlesspay_user', JSON.stringify(newUser));
