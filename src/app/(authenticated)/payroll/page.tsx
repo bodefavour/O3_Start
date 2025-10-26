@@ -409,8 +409,8 @@ export default function PayrollPage() {
                                                 {employee.currency || '$'}{parseFloat(employee.salary || 0).toLocaleString()}/mo
                                             </p>
                                             <Badge className={`mt-1 ${employee.status === 'active'
-                                                    ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
+                                                ? 'bg-green-100 text-green-700 hover:bg-green-100'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
                                                 } capitalize`}>
                                                 {employee.status || 'inactive'}
                                             </Badge>
