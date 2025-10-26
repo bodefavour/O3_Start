@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts";
+import { employeeApi } from "@/lib/api";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -94,7 +96,10 @@ const mockEmployees = [
 export default function PayrollPage() {
     const router = useRouter();
     const { user, logout, isAuthenticated } = useUser();
+    const { userId } = useCurrentUser();
     const [loading, setLoading] = useState(true);
+    const [loadingData, setLoadingData] = useState(true);
+    const [employees, setEmployees] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [departmentFilter, setDepartmentFilter] = useState("All Department");
 
@@ -109,16 +114,34 @@ export default function PayrollPage() {
         }, 1000);
     }, [isAuthenticated, router]);
 
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!userId) return;
+            
+            setLoadingData(true);
+            try {
+                const response = await employeeApi.getAll(userId);
+                setEmployees(response.employees || []);
+            } catch (error) {
+                console.error('Error fetching employees:', error);
+            } finally {
+                setLoadingData(false);
+            }
+        };
+
+        fetchData();
+    }, [userId]);
+
     const handleLogout = () => {
         logout();
         router.push("/");
     };
 
-    const filteredEmployees = mockEmployees.filter((employee) => {
+    const filteredEmployees = employees.filter((employee) => {
         const matchesSearch =
-            employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            employee.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            employee.email.toLowerCase().includes(searchQuery.toLowerCase());
+            employee.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            employee.position?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            employee.email?.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesDepartment =
             departmentFilter === "All Department" ||
             employee.department === departmentFilter;
@@ -253,7 +276,9 @@ export default function PayrollPage() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-gray-600">Total Employees</p>
-                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">24</p>
+                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">
+                                        {employees.length}
+                                    </p>
                                 </div>
                                 <div className="rounded-lg bg-gray-100 p-3">
                                     <UsersIcon className="h-6 w-6 text-gray-700" />
@@ -268,7 +293,10 @@ export default function PayrollPage() {
                                 <div>
                                     <p className="text-sm text-gray-600">Monthly Payroll</p>
                                     <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">
-                                        $125,000
+                                        ${employees
+                                            .filter(e => e.status === 'active')
+                                            .reduce((sum, e) => sum + parseFloat(e.salary), 0)
+                                            .toLocaleString()}
                                     </p>
                                 </div>
                                 <div className="rounded-lg bg-green-100 p-3">
@@ -282,8 +310,10 @@ export default function PayrollPage() {
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-gray-600">Pending Payments</p>
-                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">8</p>
+                                    <p className="text-sm text-gray-600">Active Employees</p>
+                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">
+                                        {employees.filter(e => e.status === 'active').length}
+                                    </p>
                                 </div>
                                 <div className="rounded-lg bg-blue-100 p-3">
                                     <Clock className="h-6 w-6 text-blue-600" />
@@ -296,9 +326,11 @@ export default function PayrollPage() {
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-gray-600">Total Paid (YTD)</p>
+                                    <p className="text-sm text-gray-600">Last Payment</p>
                                     <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">
-                                        $890,000
+                                        {employees.length > 0 && employees[0].lastPayment 
+                                            ? new Date(employees[0].lastPayment).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                            : 'N/A'}
                                     </p>
                                 </div>
                                 <div className="rounded-lg bg-red-100 p-3">
@@ -339,82 +371,109 @@ export default function PayrollPage() {
 
                 {/* Employee Cards Grid */}
                 <div className="grid gap-6 md:grid-cols-2">
-                    {filteredEmployees.map((employee, index) => (
-                        <Card key={index} className="overflow-hidden">
-                            <CardContent className="p-6">
-                                {/* Employee Header */}
-                                <div className="mb-4 flex items-start justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={`flex h-12 w-12 items-center justify-center rounded-full ${employee.color} text-lg font-bold text-white`}
-                                        >
-                                            {employee.initials}
+                    {filteredEmployees.map((employee, index) => {
+                        const initials = employee.name
+                            .split(' ')
+                            .map((n: string) => n[0])
+                            .join('')
+                            .toUpperCase();
+                        const colorClasses = ['bg-green-500', 'bg-cyan-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500'];
+                        const color = colorClasses[index % colorClasses.length];
+                        
+                        return (
+                            <Card key={employee.id} className="overflow-hidden">
+                                <CardContent className="p-6">
+                                    {/* Employee Header */}
+                                    <div className="mb-4 flex items-start justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className={`flex h-12 w-12 items-center justify-center rounded-full ${color} text-lg font-bold text-white`}
+                                            >
+                                                {initials}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-[#0b1f3a]">
+                                                    {employee.name}
+                                                </h3>
+                                                <p className="text-sm text-gray-600">
+                                                    {employee.position}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {employee.department}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-[#0b1f3a]">
-                                                {employee.name}
-                                            </h3>
-                                            <p className="text-sm text-gray-600">
-                                                {employee.position}
+                                        <div className="text-right">
+                                            <p className="font-bold text-[#0b1f3a]">
+                                                {employee.currency}${parseFloat(employee.salary).toLocaleString()}/mo
                                             </p>
-                                            <p className="text-xs text-gray-500">
-                                                {employee.department}
-                                            </p>
+                                            <Badge className={`mt-1 ${
+                                                employee.status === 'active' 
+                                                    ? 'bg-green-100 text-green-700 hover:bg-green-100'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
+                                            } capitalize`}>
+                                                {employee.status}
+                                            </Badge>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-bold text-[#0b1f3a]">
-                                            {employee.salary}
-                                        </p>
-                                        <Badge className="mt-1 bg-green-100 text-green-700 hover:bg-green-100">
-                                            {employee.status}
-                                        </Badge>
-                                    </div>
-                                </div>
 
-                                {/* Employee Details */}
-                                <div className="mb-4 space-y-2 border-t pt-4">
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-gray-600">Employee ID:</span>
-                                        <span className="font-medium text-gray-900">
-                                            {employee.id}
-                                        </span>
-                                    </div>
-                                    {employee.joined && (
+                                    {/* Employee Details */}
+                                    <div className="mb-4 space-y-2 border-t pt-4">
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-gray-600">Employee ID:</span>
+                                            <span className="font-medium text-gray-900">
+                                                {employee.employeeId || `EMP-${String(index + 1).padStart(3, '0')}`}
+                                            </span>
+                                        </div>
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="text-gray-600">Joined:</span>
                                             <span className="font-medium text-gray-900">
-                                                {employee.joined}
+                                                {new Date(employee.createdAt).toLocaleDateString('en-US', { 
+                                                    month: 'short', 
+                                                    day: 'numeric', 
+                                                    year: 'numeric' 
+                                                })}
                                             </span>
                                         </div>
-                                    )}
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-gray-600">Email:</span>
-                                        <span className="truncate font-medium text-gray-900 max-w-[200px]">
-                                            {employee.email}
-                                        </span>
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-gray-600">Email:</span>
+                                            <span className="truncate font-medium text-gray-900 max-w-[200px]">
+                                                {employee.email}
+                                            </span>
+                                        </div>
+                                        {employee.lastPayment && (
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-gray-600">Last Payment:</span>
+                                                <span className="font-medium text-gray-900">
+                                                    {new Date(employee.lastPayment).toLocaleDateString('en-US', { 
+                                                        month: 'short', 
+                                                        day: 'numeric' 
+                                                    })}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
 
-                                {/* Actions */}
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        size="sm"
-                                        className="flex-1 gap-2 rounded-lg bg-[#00c48c] hover:bg-[#00b37d]"
-                                    >
-                                        <CheckCircle className="h-4 w-4" />
-                                        Pay Now
-                                    </Button>
-                                    <button className="rounded-lg border border-gray-300 p-2 text-gray-600 hover:bg-gray-50">
-                                        <Info className="h-4 w-4" />
-                                    </button>
-                                    <button className="rounded-lg border border-gray-300 p-2 text-gray-600 hover:bg-gray-50">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                    {/* Actions */}
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            size="sm"
+                                            className="flex-1 gap-2 rounded-lg bg-[#00c48c] hover:bg-[#00b37d]"
+                                        >
+                                            <CheckCircle className="h-4 w-4" />
+                                            Pay Now
+                                        </Button>
+                                        <button className="rounded-lg border border-gray-300 p-2 text-gray-600 hover:bg-gray-50">
+                                            <Info className="h-4 w-4" />
+                                        </button>
+                                        <button className="rounded-lg border border-gray-300 p-2 text-gray-600 hover:bg-gray-50">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
                 </div>
             </main>
         </div>

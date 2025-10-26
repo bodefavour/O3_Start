@@ -663,69 +663,74 @@ export default function WalletPage() {
                                 <Card>
                                     <CardContent className="p-0">
                                         <div className="divide-y divide-gray-100">
-                                            {filteredTransactions.map((transaction) => (
-                                                <div
-                                                    key={transaction.id}
-                                                    className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        <div
-                                                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
-                                                                ? "bg-green-100"
-                                                                : transaction.type === "outgoing"
-                                                                    ? "bg-red-100"
-                                                                    : "bg-blue-100"
-                                                                }`}
-                                                        >
-                                                            {transaction.type === "incoming" ? (
-                                                                <ArrowDownLeft className="h-5 w-5 text-green-600" />
-                                                            ) : transaction.type === "outgoing" ? (
-                                                                <ArrowUpRight className="h-5 w-5 text-red-600" />
-                                                            ) : (
-                                                                <TrendingUp className="h-5 w-5 text-blue-600" />
+                                            {filteredTransactions.slice(0, 5).map((transaction) => {
+                                                const { formattedDate, transactionName, displayAmount, displayFee } = formatTransaction(transaction);
+                                                return (
+                                                    <div
+                                                        key={transaction.id}
+                                                        className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
+                                                    >
+                                                        <div className="flex items-center gap-4">
+                                                            <div
+                                                                className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
+                                                                        ? "bg-green-100"
+                                                                        : transaction.type === "outgoing"
+                                                                            ? "bg-red-100"
+                                                                            : "bg-blue-100"
+                                                                    }`}
+                                                            >
+                                                                {transaction.type === "incoming" ? (
+                                                                    <ArrowDownLeft className="h-5 w-5 text-green-600" />
+                                                                ) : transaction.type === "outgoing" ? (
+                                                                    <ArrowUpRight className="h-5 w-5 text-red-600" />
+                                                                ) : (
+                                                                    <Repeat className="h-5 w-5 text-blue-600" />
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-semibold text-[#0b1f3a]">
+                                                                    {transactionName}
+                                                                </p>
+                                                                <p className="text-sm text-gray-600">
+                                                                    {formattedDate}{" "}
+                                                                    <span
+                                                                        className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
+                                                                                ? "bg-[#00c48c]/10 text-[#00c48c]"
+                                                                                : transaction.status === "failed"
+                                                                                    ? "bg-red-100 text-red-600"
+                                                                                    : transaction.status === "pending"
+                                                                                        ? "bg-yellow-100 text-yellow-600"
+                                                                                        : "bg-gray-100 text-gray-600"
+                                                                            }`}
+                                                                    >
+                                                                        {transaction.status}
+                                                                    </span>
+                                                                </p>
+                                                                {transaction.hash && (
+                                                                    <p className="text-xs text-gray-500">
+                                                                        Hash:{transaction.hash.substring(0, 40)}...
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p
+                                                                className={`font-bold ${transaction.type === "incoming"
+                                                                        ? "text-green-600"
+                                                                        : "text-gray-900"
+                                                                    }`}
+                                                            >
+                                                                {displayAmount}
+                                                            </p>
+                                                            {displayFee && (
+                                                                <p className="text-xs text-gray-500">
+                                                                    {displayFee}
+                                                                </p>
                                                             )}
                                                         </div>
-                                                        <div>
-                                                            <p className="font-semibold text-[#0b1f3a]">
-                                                                {transaction.name}
-                                                            </p>
-                                                            <p className="text-sm text-gray-600">
-                                                                {transaction.date}{" "}
-                                                                <span
-                                                                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
-                                                                        ? "bg-[#00c48c]/10 text-[#00c48c]"
-                                                                        : transaction.status === "failed"
-                                                                            ? "bg-red-100 text-red-600"
-                                                                            : "bg-blue-100 text-blue-600"
-                                                                        }`}
-                                                                >
-                                                                    {transaction.status === "completed" && "completed"}
-                                                                    {transaction.status === "failed" && "failed"}
-                                                                    {transaction.status === "refund" && "refund"}
-                                                                </span>
-                                                            </p>
-                                                            <p className="text-xs text-gray-500">
-                                                                {transaction.hash}
-                                                            </p>
-                                                        </div>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <p
-                                                            className={`font-bold ${transaction.type === "incoming"
-                                                                ? "text-green-600"
-                                                                : "text-gray-900"
-                                                                }`}
-                                                        >
-                                                            {transaction.amount}
-                                                        </p>
-                                                        {transaction.fee && (
-                                                            <p className="text-xs text-gray-500">
-                                                                {transaction.fee}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -906,69 +911,74 @@ export default function WalletPage() {
                                 <Card>
                                     <CardContent className="p-0">
                                         <div className="divide-y divide-gray-100">
-                                            {filteredTransactions.map((transaction) => (
-                                                <div
-                                                    key={transaction.id}
-                                                    className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        <div
-                                                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
-                                                                ? "bg-green-100"
-                                                                : transaction.type === "outgoing"
-                                                                    ? "bg-red-100"
-                                                                    : "bg-blue-100"
-                                                                }`}
-                                                        >
-                                                            {transaction.type === "incoming" ? (
-                                                                <ArrowDownLeft className="h-5 w-5 text-green-600" />
-                                                            ) : transaction.type === "outgoing" ? (
-                                                                <ArrowUpRight className="h-5 w-5 text-red-600" />
-                                                            ) : (
-                                                                <TrendingUp className="h-5 w-5 text-blue-600" />
+                                            {filteredTransactions.slice(0, 5).map((transaction) => {
+                                                const { formattedDate, transactionName, displayAmount, displayFee } = formatTransaction(transaction);
+                                                return (
+                                                    <div
+                                                        key={transaction.id}
+                                                        className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
+                                                    >
+                                                        <div className="flex items-center gap-4">
+                                                            <div
+                                                                className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
+                                                                        ? "bg-green-100"
+                                                                        : transaction.type === "outgoing"
+                                                                            ? "bg-red-100"
+                                                                            : "bg-blue-100"
+                                                                    }`}
+                                                            >
+                                                                {transaction.type === "incoming" ? (
+                                                                    <ArrowDownLeft className="h-5 w-5 text-green-600" />
+                                                                ) : transaction.type === "outgoing" ? (
+                                                                    <ArrowUpRight className="h-5 w-5 text-red-600" />
+                                                                ) : (
+                                                                    <Repeat className="h-5 w-5 text-blue-600" />
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-semibold text-[#0b1f3a]">
+                                                                    {transactionName}
+                                                                </p>
+                                                                <p className="text-sm text-gray-600">
+                                                                    {formattedDate}{" "}
+                                                                    <span
+                                                                        className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
+                                                                                ? "bg-[#00c48c]/10 text-[#00c48c]"
+                                                                                : transaction.status === "failed"
+                                                                                    ? "bg-red-100 text-red-600"
+                                                                                    : transaction.status === "pending"
+                                                                                        ? "bg-yellow-100 text-yellow-600"
+                                                                                        : "bg-gray-100 text-gray-600"
+                                                                            }`}
+                                                                    >
+                                                                        {transaction.status}
+                                                                    </span>
+                                                                </p>
+                                                                {transaction.hash && (
+                                                                    <p className="text-xs text-gray-500">
+                                                                        Hash:{transaction.hash.substring(0, 40)}...
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p
+                                                                className={`font-bold ${transaction.type === "incoming"
+                                                                        ? "text-green-600"
+                                                                        : "text-gray-900"
+                                                                    }`}
+                                                            >
+                                                                {displayAmount}
+                                                            </p>
+                                                            {displayFee && (
+                                                                <p className="text-xs text-gray-500">
+                                                                    {displayFee}
+                                                                </p>
                                                             )}
                                                         </div>
-                                                        <div>
-                                                            <p className="font-semibold text-[#0b1f3a]">
-                                                                {transaction.name}
-                                                            </p>
-                                                            <p className="text-sm text-gray-600">
-                                                                {transaction.date}{" "}
-                                                                <span
-                                                                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
-                                                                        ? "bg-[#00c48c]/10 text-[#00c48c]"
-                                                                        : transaction.status === "failed"
-                                                                            ? "bg-red-100 text-red-600"
-                                                                            : "bg-blue-100 text-blue-600"
-                                                                        }`}
-                                                                >
-                                                                    {transaction.status === "completed" && "completed"}
-                                                                    {transaction.status === "failed" && "failed"}
-                                                                    {transaction.status === "refund" && "refund"}
-                                                                </span>
-                                                            </p>
-                                                            <p className="text-xs text-gray-500">
-                                                                {transaction.hash}
-                                                            </p>
-                                                        </div>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <p
-                                                            className={`font-bold ${transaction.type === "incoming"
-                                                                ? "text-green-600"
-                                                                : "text-gray-900"
-                                                                }`}
-                                                        >
-                                                            {transaction.amount}
-                                                        </p>
-                                                        {transaction.fee && (
-                                                            <p className="text-xs text-gray-500">
-                                                                {transaction.fee}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -985,223 +995,250 @@ export default function WalletPage() {
 
                     {/* Transaction History Tab */}
                     {activeTab === "history" && (
-                        <div>
-                            {/* Quick Actions */}
-                            <div className="mb-6 grid gap-4 sm:grid-cols-3">
-                                <Button
-                                    asChild
-                                    className="gap-2 rounded-xl bg-[#00c48c] hover:bg-[#00b37d]"
-                                >
-                                    <Link href="/wallet/send">
-                                        <Send className="h-4 w-4" />
-                                        Send Money
-                                    </Link>
-                                </Button>
-                                <Button
-                                    onClick={() => handleOpenReceiveModal("Transaction History", "All Currencies", "Select a wallet first")}
-                                    variant="outline"
-                                    className="gap-2 rounded-xl"
-                                >
-                                    <Download className="h-4 w-4" />
-                                    Receive
-                                </Button>
-                                <Button variant="outline" className="gap-2 rounded-xl">
-                                    <Settings className="h-4 w-4" />
-                                    Settings
-                                </Button>
-                            </div>
-
-                            {/* Transactions Header */}
-                            <div className="mb-4 flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-[#0b1f3a]">
-                                    Transactions History
-                                </h3>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setFilterStatus("all")}
-                                        className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "all"
-                                            ? "bg-[#00c48c] text-white"
-                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                            }`}
-                                    >
-                                        All
-                                    </button>
-                                    <button
-                                        onClick={() => setFilterStatus("sent")}
-                                        className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "sent"
-                                            ? "bg-gray-700 text-white"
-                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                            }`}
-                                    >
-                                        Sent
-                                    </button>
-                                    <button
-                                        onClick={() => setFilterStatus("received")}
-                                        className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "received"
-                                            ? "bg-gray-700 text-white"
-                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                            }`}
-                                    >
-                                        Received
-                                    </button>
-                                    <button
-                                        onClick={() => setFilterStatus("swapped")}
-                                        className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "swapped"
-                                            ? "bg-gray-700 text-white"
-                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                            }`}
-                                    >
-                                        Swapped
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Transaction List */}
-                            <Card>
-                                <CardContent className="p-0">
-                                    <div className="divide-y divide-gray-100">
-                                        {filteredTransactions.map((transaction) => {
-                                            // Format date
-                                            const date = new Date(transaction.createdAt);
-                                            const formattedDate = date.toLocaleDateString('en-US', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: 'numeric',
-                                                minute: '2-digit',
-                                                hour12: true
-                                            });
-
-                                            // Get transaction name/description
-                                            let transactionName = '';
-                                            if (transaction.note) {
-                                                transactionName = transaction.note;
-                                            } else if (transaction.type === 'swap') {
-                                                transactionName = `Swapped to ${transaction.metadata?.toCurrency || 'currency'}`;
-                                            } else if (transaction.type === 'incoming') {
-                                                transactionName = transaction.fromAddress?.substring(0, 20) || 'Incoming Payment';
-                                            } else {
-                                                transactionName = transaction.toAddress?.substring(0, 20) || 'Outgoing Payment';
-                                            }
-
-                                            // Format amount with sign
-                                            const sign = transaction.type === 'incoming' ? '+' : '-';
-                                            const displayAmount = `${sign}${parseFloat(transaction.amount).toLocaleString()} ${transaction.currency}`;
-
-                                            // Format fee
-                                            const displayFee = transaction.networkFee
-                                                ? `Fee:$${parseFloat(transaction.networkFee).toFixed(2)}`
-                                                : null;
-
-                                            return (
-                                                <div
-                                                    key={transaction.id}
-                                                    className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        <div
-                                                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
-                                                                    ? "bg-green-100"
-                                                                    : transaction.type === "outgoing"
-                                                                        ? "bg-red-100"
-                                                                        : "bg-blue-100"
-                                                                }`}
-                                                        >
-                                                            {transaction.type === "incoming" ? (
-                                                                <ArrowDownLeft className="h-5 w-5 text-green-600" />
-                                                            ) : transaction.type === "outgoing" ? (
-                                                                <ArrowUpRight className="h-5 w-5 text-red-600" />
-                                                            ) : (
-                                                                <Repeat className="h-5 w-5 text-blue-600" />
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-semibold text-[#0b1f3a]">
-                                                                {transactionName}
-                                                            </p>
-                                                            <p className="text-sm text-gray-600">
-                                                                {formattedDate}{" "}
-                                                                <span
-                                                                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
-                                                                            ? "bg-[#00c48c]/10 text-[#00c48c]"
-                                                                            : transaction.status === "failed"
-                                                                                ? "bg-red-100 text-red-600"
-                                                                                : transaction.status === "pending"
-                                                                                    ? "bg-yellow-100 text-yellow-600"
-                                                                                    : "bg-gray-100 text-gray-600"
-                                                                        }`}
-                                                                >
-                                                                    {transaction.status}
-                                                                </span>
-                                                            </p>
-                                                            {transaction.hash && (
-                                                                <p className="text-xs text-gray-500">
-                                                                    Hash:{transaction.hash.substring(0, 40)}...
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <p
-                                                            className={`font-bold ${transaction.type === "incoming"
-                                                                    ? "text-green-600"
-                                                                    : "text-gray-900"
-                                                                }`}
-                                                        >
-                                                            {displayAmount}
-                                                        </p>
-                                                        {displayFee && (
-                                                            <p className="text-xs text-gray-500">
-                                                                {displayFee}
-                                                            </p>
                                                         )}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Load More */}
-                            <div className="mt-6 text-center">
-                                <Button variant="outline" className="rounded-xl">
-                                    Load More Transactions
-                                </Button>
-                            </div>
-                        </div>
-                    )}
                 </div>
-            </main>
-
-            {/* Receive Modal */}
-            {selectedWallet && (
-                <ReceiveModal
-                    isOpen={receiveModalOpen}
-                    onClose={handleCloseReceiveModal}
-                    currency={selectedWallet.currency}
-                    currencySymbol={selectedWallet.symbol}
-                    walletAddress={selectedWallet.address}
-                />
-            )}
-
-            {/* Send Modal */}
-            {selectedWallet && (
-                <SendModal
-                    isOpen={sendModalOpen}
-                    onClose={handleCloseSendModal}
-                    currency={selectedWallet.currency}
-                    currencySymbol={selectedWallet.symbol}
-                    walletAddress={selectedWallet.address}
-                    availableBalance={selectedWallet.balance}
-                    walletName={selectedWallet.name}
-                />
-            )}
-
-            {/* Swap Modal */}
-            <SwapModal
-                isOpen={swapModalOpen}
-                onClose={handleCloseSwapModal}
-            />
         </div>
+    ))
+}
+                                        </div >
+                                    </CardContent >
+                                </Card >
+
+    {/* Load More */ }
+    < div className = "mt-6 text-center" >
+        <Button variant="outline" className="rounded-xl">
+            Load More Transactions
+        </Button>
+                                </div >
+                            </div >
+                        </div >
+                    )}
+
+{/* Transaction History Tab */ }
+{
+    activeTab === "history" && (
+        <div>
+            {/* Quick Actions */}
+            <div className="mb-6 grid gap-4 sm:grid-cols-3">
+                <Button
+                    asChild
+                    className="gap-2 rounded-xl bg-[#00c48c] hover:bg-[#00b37d]"
+                >
+                    <Link href="/wallet/send">
+                        <Send className="h-4 w-4" />
+                        Send Money
+                    </Link>
+                </Button>
+                <Button
+                    onClick={() => handleOpenReceiveModal("Transaction History", "All Currencies", "Select a wallet first")}
+                    variant="outline"
+                    className="gap-2 rounded-xl"
+                >
+                    <Download className="h-4 w-4" />
+                    Receive
+                </Button>
+                <Button variant="outline" className="gap-2 rounded-xl">
+                    <Settings className="h-4 w-4" />
+                    Settings
+                </Button>
+            </div>
+
+            {/* Transactions Header */}
+            <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-[#0b1f3a]">
+                    Transactions History
+                </h3>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setFilterStatus("all")}
+                        className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "all"
+                            ? "bg-[#00c48c] text-white"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                    >
+                        All
+                    </button>
+                    <button
+                        onClick={() => setFilterStatus("sent")}
+                        className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "sent"
+                            ? "bg-gray-700 text-white"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                    >
+                        Sent
+                    </button>
+                    <button
+                        onClick={() => setFilterStatus("received")}
+                        className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "received"
+                            ? "bg-gray-700 text-white"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                    >
+                        Received
+                    </button>
+                    <button
+                        onClick={() => setFilterStatus("swapped")}
+                        className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${filterStatus === "swapped"
+                            ? "bg-gray-700 text-white"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                    >
+                        Swapped
+                    </button>
+                </div>
+            </div>
+
+            {/* Transaction List */}
+            <Card>
+                <CardContent className="p-0">
+                    <div className="divide-y divide-gray-100">
+                        {filteredTransactions.map((transaction) => {
+                            // Format date
+                            const date = new Date(transaction.createdAt);
+                            const formattedDate = date.toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true
+                            });
+
+                            // Get transaction name/description
+                            let transactionName = '';
+                            if (transaction.note) {
+                                transactionName = transaction.note;
+                            } else if (transaction.type === 'swap') {
+                                transactionName = `Swapped to ${transaction.metadata?.toCurrency || 'currency'}`;
+                            } else if (transaction.type === 'incoming') {
+                                transactionName = transaction.fromAddress?.substring(0, 20) || 'Incoming Payment';
+                            } else {
+                                transactionName = transaction.toAddress?.substring(0, 20) || 'Outgoing Payment';
+                            }
+
+                            // Format amount with sign
+                            const sign = transaction.type === 'incoming' ? '+' : '-';
+                            const displayAmount = `${sign}${parseFloat(transaction.amount).toLocaleString()} ${transaction.currency}`;
+
+                            // Format fee
+                            const displayFee = transaction.networkFee
+                                ? `Fee:$${parseFloat(transaction.networkFee).toFixed(2)}`
+                                : null;
+
+                            return (
+                                <div
+                                    key={transaction.id}
+                                    className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div
+                                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
+                                                ? "bg-green-100"
+                                                : transaction.type === "outgoing"
+                                                    ? "bg-red-100"
+                                                    : "bg-blue-100"
+                                                }`}
+                                        >
+                                            {transaction.type === "incoming" ? (
+                                                <ArrowDownLeft className="h-5 w-5 text-green-600" />
+                                            ) : transaction.type === "outgoing" ? (
+                                                <ArrowUpRight className="h-5 w-5 text-red-600" />
+                                            ) : (
+                                                <Repeat className="h-5 w-5 text-blue-600" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-[#0b1f3a]">
+                                                {transactionName}
+                                            </p>
+                                            <p className="text-sm text-gray-600">
+                                                {formattedDate}{" "}
+                                                <span
+                                                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
+                                                        ? "bg-[#00c48c]/10 text-[#00c48c]"
+                                                        : transaction.status === "failed"
+                                                            ? "bg-red-100 text-red-600"
+                                                            : transaction.status === "pending"
+                                                                ? "bg-yellow-100 text-yellow-600"
+                                                                : "bg-gray-100 text-gray-600"
+                                                        }`}
+                                                >
+                                                    {transaction.status}
+                                                </span>
+                                            </p>
+                                            {transaction.hash && (
+                                                <p className="text-xs text-gray-500">
+                                                    Hash:{transaction.hash.substring(0, 40)}...
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p
+                                            className={`font-bold ${transaction.type === "incoming"
+                                                ? "text-green-600"
+                                                : "text-gray-900"
+                                                }`}
+                                        >
+                                            {displayAmount}
+                                        </p>
+                                        {displayFee && (
+                                            <p className="text-xs text-gray-500">
+                                                {displayFee}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Load More */}
+            <div className="mt-6 text-center">
+                <Button variant="outline" className="rounded-xl">
+                    Load More Transactions
+                </Button>
+            </div>
+        </div>
+    )
+}
+                </div >
+            </main >
+
+    {/* Receive Modal */ }
+{
+    selectedWallet && (
+        <ReceiveModal
+            isOpen={receiveModalOpen}
+            onClose={handleCloseReceiveModal}
+            currency={selectedWallet.currency}
+            currencySymbol={selectedWallet.symbol}
+            walletAddress={selectedWallet.address}
+        />
+    )
+}
+
+{/* Send Modal */ }
+{
+    selectedWallet && (
+        <SendModal
+            isOpen={sendModalOpen}
+            onClose={handleCloseSendModal}
+            currency={selectedWallet.currency}
+            currencySymbol={selectedWallet.symbol}
+            walletAddress={selectedWallet.address}
+            availableBalance={selectedWallet.balance}
+            walletName={selectedWallet.name}
+        />
+    )
+}
+
+{/* Swap Modal */ }
+<SwapModal
+    isOpen={swapModalOpen}
+    onClose={handleCloseSwapModal}
+/>
+        </div >
     );
 }

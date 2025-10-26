@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts";
+import { walletApi, transactionApi, analyticsApi } from "@/lib/api";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -26,49 +28,16 @@ import { ReceiveModal } from "@/components/wallet/ReceiveModal";
 import { SendModal } from "@/components/wallet/SendModal";
 import { SwapModal } from "@/components/wallet/SwapModal";
 
-// Mock data - will be replaced with real API calls
-const mockTransactions = [
-  {
-    id: "TXN01",
-    name: "TechCorp Ltd",
-    description: "2 minutes ago",
-    amount: "+2,500 USDC",
-    status: "completed",
-    type: "incoming",
-  },
-  {
-    id: "TXN02",
-    name: "Lagos Office",
-    description: "1 hour ago",
-    amount: "-₦450,000",
-    status: "completed",
-    type: "outgoing",
-  },
-  {
-    id: "TXN03",
-    name: "Global Suppliers",
-    description: "3 hours ago",
-    amount: "+1,200 USDT",
-    status: "completed",
-    type: "incoming",
-  },
-  {
-    id: "INV-2024-001",
-    name: "Client Invoice",
-    description: "5 hours ago",
-    amount: "+2,500 USDC",
-    status: "completed",
-    type: "incoming",
-  },
-  {
-    id: "TXN05",
-    name: "Vendor Payment",
-    description: "5 hours ago",
-    amount: "-300 USD",
-    status: "pending",
-    type: "outgoing",
-  },
-];
+// Helper function to calculate time ago
+function getTimeAgo(date: Date): string {
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (seconds < 60) return `${seconds} seconds ago`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+  return `${Math.floor(seconds / 86400)} days ago`;
+}
 
 const weeklyData = [
   { week: "Week1", amount: 45000 },
@@ -80,19 +49,29 @@ const weeklyData = [
 export default function DashboardPage() {
   const router = useRouter();
   const { user, logout, isAuthenticated } = useUser();
-  const [balance, setBalance] = useState("67,980.76");
-  const [monthlyVolume, setMonthlyVolume] = useState("186,450");
+  const { userId } = useCurrentUser();
+  const [balance, setBalance] = useState("0");
+  const [monthlyVolume, setMonthlyVolume] = useState("0");
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [wallets, setWallets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
 
-  // Mock wallet data for modals
-  const defaultWallet = {
+  // Mock wallet data for modals - will be replaced with first real wallet
+  const defaultWallet = wallets.length > 0 ? {
+    currency: wallets[0].currency,
+    symbol: wallets[0].currency,
+    address: wallets[0].address || "0x742a35Cc8634C0532925a3b848cBe97595f0bEb",
+    balance: wallets[0].balance,
+    name: wallets[0].currency,
+  } : {
     currency: "USD Coin",
     symbol: "USDC",
     address: "0x742a35Cc8634C0532925a3b848cBe97595f0bEb",
-    balance: "25,000",
+    balance: "0",
     name: "USD Coin",
   };
 
@@ -107,12 +86,55 @@ export default function DashboardPage() {
     setTimeout(() => {
       setLoading(false);
     }, 1000);
-
-    // TODO: Fetch real data from Hedera
-    // fetchWalletBalance();
-    // fetchMonthlyVolume();
-    // fetchTransactions();
   }, [isAuthenticated, router]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!userId) return;
+      
+      setLoadingData(true);
+      try {
+        const [walletsRes, transactionsRes] = await Promise.all([
+          walletApi.getAll(userId),
+          transactionApi.getAll(userId)
+        ]);
+
+        const fetchedWallets = walletsRes.wallets || [];
+        const fetchedTransactions = transactionsRes.transactions || [];
+        
+        setWallets(fetchedWallets);
+        setTransactions(fetchedTransactions);
+
+        // Calculate total balance across all wallets
+        const totalBalance = fetchedWallets.reduce((sum: number, w: any) => {
+          return sum + parseFloat(w.balance);
+        }, 0);
+        setBalance(totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+        // Calculate monthly volume (sum of all transactions this month)
+        const now = new Date();
+        const thisMonth = now.getMonth();
+        const thisYear = now.getFullYear();
+        
+        const monthlyTxns = fetchedTransactions.filter((t: any) => {
+          const txDate = new Date(t.timestamp);
+          return txDate.getMonth() === thisMonth && txDate.getFullYear() === thisYear;
+        });
+
+        const monthlyVol = monthlyTxns.reduce((sum: number, t: any) => {
+          return sum + Math.abs(parseFloat(t.amount));
+        }, 0);
+        setMonthlyVolume(monthlyVol.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }));
+
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    fetchData();
+  }, [userId]);
 
   const handleLogout = () => {
     logout();
@@ -379,55 +401,66 @@ export default function DashboardPage() {
                   </Link>
                 </div>
                 <div className="space-y-3">
-                  {mockTransactions.map((transaction) => (
-                    <div
-                      key={transaction.id}
-                      className="flex items-center justify-between rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-lg ${transaction.type === "incoming"
-                            ? "bg-green-100"
-                            : "bg-red-100"
-                            }`}
-                        >
-                          {transaction.type === "incoming" ? (
-                            <TrendingDown className="h-5 w-5 text-green-600" />
-                          ) : (
-                            <TrendingUp className="h-5 w-5 text-red-600" />
-                          )}
+                  {transactions.slice(0, 5).map((transaction) => {
+                    const isIncoming = parseFloat(transaction.amount) > 0;
+                    const amount = Math.abs(parseFloat(transaction.amount));
+                    const txDate = new Date(transaction.timestamp);
+                    const timeAgo = getTimeAgo(txDate);
+                    
+                    return (
+                      <div
+                        key={transaction.id}
+                        className="flex items-center justify-between rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${isIncoming
+                              ? "bg-green-100"
+                              : "bg-red-100"
+                              }`}
+                          >
+                            {isIncoming ? (
+                              <TrendingDown className="h-5 w-5 text-green-600" />
+                            ) : (
+                              <TrendingUp className="h-5 w-5 text-red-600" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-[#0b1f3a]">
+                              {transaction.type === 'swap' 
+                                ? `Swap ${transaction.fromCurrency} → ${transaction.toCurrency}`
+                                : transaction.type === 'send'
+                                ? `To ${transaction.toAddress?.slice(0, 12)}...`
+                                : transaction.note || 'Transaction'}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {transaction.transactionHash?.slice(0, 16)}... • {timeAgo}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-[#0b1f3a]">
-                            {transaction.name}
+                        <div className="text-right">
+                          <p
+                            className={`text-sm font-bold ${isIncoming
+                              ? "text-green-600"
+                              : "text-gray-900"
+                              }`}
+                          >
+                            {isIncoming ? '+' : '-'}{transaction.currency}{amount.toLocaleString()}
                           </p>
-                          <p className="text-xs text-gray-500">
-                            {transaction.id} • {transaction.description}
-                          </p>
+                          <span
+                            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${transaction.status === "completed"
+                              ? "bg-[#00c48c]/10 text-[#00c48c]"
+                              : transaction.status === "pending"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-red-100 text-red-700"
+                              }`}
+                          >
+                            {transaction.status}
+                          </span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p
-                          className={`text-sm font-bold ${transaction.type === "incoming"
-                            ? "text-green-600"
-                            : "text-gray-900"
-                            }`}
-                        >
-                          {transaction.amount}
-                        </p>
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${transaction.status === "completed"
-                            ? "bg-[#00c48c]/10 text-[#00c48c]"
-                            : "bg-yellow-100 text-yellow-700"
-                            }`}
-                        >
-                          {transaction.status === "completed"
-                            ? "Completed"
-                            : "Pending"}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

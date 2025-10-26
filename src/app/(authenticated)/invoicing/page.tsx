@@ -29,6 +29,9 @@ import {
     Send,
     ChevronDown,
 } from "lucide-react";
+import { invoiceApi } from "@/lib/api";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useToast } from "@/contexts";
 
 // Mock invoice data
 const mockInvoices = [
@@ -82,9 +85,41 @@ const mockInvoices = [
 export default function InvoicingPage() {
     const router = useRouter();
     const { user, logout, isAuthenticated } = useUser();
+    const { showToast } = useToast();
+    const { userId, loading: userLoading } = useCurrentUser();
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("All Status");
+    
+    // Real data from API
+    const [invoices, setInvoices] = useState<any[]>([]);
+    const [stats, setStats] = useState<any>(null);
+    const [loadingData, setLoadingData] = useState(true);
+
+    // Fetch real data
+    useEffect(() => {
+        if (!userId || userLoading) return;
+
+        async function fetchData() {
+            try {
+                setLoadingData(true);
+                const [invoicesRes, statsRes] = await Promise.all([
+                    invoiceApi.getAll(userId),
+                    invoiceApi.getStats(userId),
+                ]);
+                
+                setInvoices(invoicesRes.invoices || []);
+                setStats(statsRes.stats || null);
+            } catch (error) {
+                console.error('Error fetching invoices:', error);
+                showToast('Failed to load invoices', 'error');
+            } finally {
+                setLoadingData(false);
+            }
+        }
+
+        fetchData();
+    }, [userId, userLoading]);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -102,23 +137,24 @@ export default function InvoicingPage() {
         router.push("/");
     };
 
-    const filteredInvoices = mockInvoices.filter((invoice) => {
+    const filteredInvoices = invoices.filter((invoice) => {
         const matchesSearch =
-            invoice.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            invoice.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            invoice.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            invoice.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
             invoice.description.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus =
-            statusFilter === "All Status" || invoice.status === statusFilter;
+            statusFilter === "All Status" || 
+            invoice.status.toLowerCase() === statusFilter.toLowerCase();
         return matchesSearch && matchesStatus;
     });
 
     const getStatusColor = (status: string) => {
-        switch (status) {
-            case "Paid":
+        switch (status.toLowerCase()) {
+            case "paid":
                 return "bg-green-100 text-green-700 hover:bg-green-100";
-            case "Sent":
+            case "sent":
                 return "bg-blue-100 text-blue-700 hover:bg-blue-100";
-            case "Overdue":
+            case "overdue":
                 return "bg-red-100 text-red-700 hover:bg-red-100";
             case "Draft":
                 return "bg-cyan-100 text-cyan-700 hover:bg-cyan-100";
@@ -262,7 +298,9 @@ export default function InvoicingPage() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-gray-600">Total Invoices</p>
-                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">156</p>
+                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">
+                                        {stats?.total || invoices.length}
+                                    </p>
                                 </div>
                                 <div className="rounded-lg bg-gray-100 p-3">
                                     <FileText className="h-6 w-6 text-gray-700" />
@@ -276,7 +314,9 @@ export default function InvoicingPage() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-gray-600">Paid Amount</p>
-                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">$89,450</p>
+                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">
+                                        ${stats?.paidAmount?.toLocaleString() || '0'}
+                                    </p>
                                 </div>
                                 <div className="rounded-lg bg-green-100 p-3">
                                     <CheckCircle className="h-6 w-6 text-green-600" />
@@ -290,7 +330,9 @@ export default function InvoicingPage() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-gray-600">Pending Amount</p>
-                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">$23,780</p>
+                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">
+                                        ${stats?.pendingAmount?.toLocaleString() || '0'}
+                                    </p>
                                 </div>
                                 <div className="rounded-lg bg-blue-100 p-3">
                                     <Clock className="h-6 w-6 text-blue-600" />
@@ -304,7 +346,9 @@ export default function InvoicingPage() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-gray-600">Overdue Amount</p>
-                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">$5,670</p>
+                                    <p className="mt-2 text-2xl font-bold text-[#0b1f3a]">
+                                        ${invoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + parseFloat(inv.amount), 0).toLocaleString()}
+                                    </p>
                                 </div>
                                 <div className="rounded-lg bg-red-100 p-3">
                                     <XCircle className="h-6 w-6 text-red-600" />
@@ -387,28 +431,32 @@ export default function InvoicingPage() {
                                             <td className="px-6 py-4">
                                                 <div>
                                                     <p className="font-semibold text-[#0b1f3a]">
-                                                        {invoice.id}
+                                                        {invoice.invoiceNumber}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        {invoice.description}
+                                                        {invoice.description || 'No description'}
                                                     </p>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-900">
-                                                {invoice.client}
+                                                {invoice.clientName}
                                             </td>
                                             <td className="px-6 py-4 font-semibold text-[#0b1f3a]">
-                                                {invoice.amount}
+                                                {invoice.currency}{parseFloat(invoice.amount).toLocaleString()}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <Badge
-                                                    className={`${getStatusColor(invoice.status)} gap-1`}
+                                                    className={`${getStatusColor(invoice.status)} gap-1 capitalize`}
                                                 >
                                                     {invoice.status}
                                                 </Badge>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">
-                                                {invoice.date}
+                                                {new Date(invoice.createdAt).toLocaleDateString('en-US', { 
+                                                    month: 'short', 
+                                                    day: 'numeric', 
+                                                    year: 'numeric' 
+                                                })}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
