@@ -4,7 +4,7 @@ import { useState } from "react";
 import { X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useToast, useUser } from "@/contexts";
+import { useToast, useUser } from "@/contexts/auth-provider";
 import { TransactionLink } from "@/components/hedera/TransactionLink";
 
 interface SendModalProps {

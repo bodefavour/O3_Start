@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/contexts";
+import { useUser } from "@/contexts/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { invoiceApi } from "@/lib/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useToast } from "@/contexts";
+import { useToast } from "@/contexts/auth-provider";
 
 // Mock invoice data
 const mockInvoices = [

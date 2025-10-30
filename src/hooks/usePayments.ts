@@ -5,13 +5,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-<<<<<<< HEAD
-import { useUser, useToast } from '@/contexts';
-import type { Payment } from '@/lib/web3/types';
-=======
 import { useUser, useToast } from '@/contexts/auth-provider';
-import type { Payment, PaginatedResponse } from '@/lib/web3/types';
->>>>>>> 9acd4fb (refactor: update authentication to use thirdweb)
+import type { Payment } from '@/lib/web3/types';
 
 export function usePayments() {
     const { user } = useUser();

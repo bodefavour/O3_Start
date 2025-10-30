@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/contexts';
+import { useToast } from '@/contexts/auth-provider';
 
 export function HederaAccountInput() {
     const [accountId, setAccountId] = useState('');
