@@ -206,8 +206,8 @@ export default function PaymentsPage() {
                                 <button
                                     onClick={() => setBillingCycle("monthly")}
                                     className={`rounded-lg px-6 py-2 text-sm font-medium transition-colors ${billingCycle === "monthly"
-                                            ? "bg-[#00c48c] text-white"
-                                            : "text-gray-300 hover:text-white"
+                                        ? "bg-[#00c48c] text-white"
+                                        : "text-gray-300 hover:text-white"
                                         }`}
                                 >
                                     Monthly
@@ -215,8 +215,8 @@ export default function PaymentsPage() {
                                 <button
                                     onClick={() => setBillingCycle("yearly")}
                                     className={`rounded-lg px-6 py-2 text-sm font-medium transition-colors ${billingCycle === "yearly"
-                                            ? "bg-[#00c48c] text-white"
-                                            : "text-gray-300 hover:text-white"
+                                        ? "bg-[#00c48c] text-white"
+                                        : "text-gray-300 hover:text-white"
                                         }`}
                                 >
                                     Yearly
@@ -230,8 +230,8 @@ export default function PaymentsPage() {
                                 <Card
                                     key={plan.id}
                                     className={`cursor-pointer transition-all ${selectedPlan === plan.id
-                                            ? "border-2 border-[#00c48c] bg-white/10"
-                                            : "border-white/20 bg-white/5 hover:bg-white/10"
+                                        ? "border-2 border-[#00c48c] bg-white/10"
+                                        : "border-white/20 bg-white/5 hover:bg-white/10"
                                         }`}
                                     onClick={() =>
                                         setSelectedPlan(plan.id as "starter" | "business" | "enterprise")
@@ -265,8 +265,8 @@ export default function PaymentsPage() {
                                             </div>
                                             <div
                                                 className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${selectedPlan === plan.id
-                                                        ? "border-[#00c48c] bg-[#00c48c]"
-                                                        : "border-white/40"
+                                                    ? "border-[#00c48c] bg-[#00c48c]"
+                                                    : "border-white/40"
                                                     }`}
                                             >
                                                 {selectedPlan === plan.id && (
@@ -321,8 +321,8 @@ export default function PaymentsPage() {
                                         <button
                                             onClick={() => setPaymentMethod("card")}
                                             className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${paymentMethod === "card"
-                                                    ? "border-[#00c48c] bg-[#00c48c] text-white"
-                                                    : "border-white/20 text-gray-300 hover:border-white/40"
+                                                ? "border-[#00c48c] bg-[#00c48c] text-white"
+                                                : "border-white/20 text-gray-300 hover:border-white/40"
                                                 }`}
                                         >
                                             <CreditCard className="h-4 w-4" />
@@ -331,8 +331,8 @@ export default function PaymentsPage() {
                                         <button
                                             onClick={() => setPaymentMethod("crypto")}
                                             className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${paymentMethod === "crypto"
-                                                    ? "border-[#00c48c] bg-[#00c48c] text-white"
-                                                    : "border-white/20 text-gray-300 hover:border-white/40"
+                                                ? "border-[#00c48c] bg-[#00c48c] text-white"
+                                                : "border-white/20 text-gray-300 hover:border-white/40"
                                                 }`}
                                         >
                                             <WalletIcon className="h-4 w-4" />
