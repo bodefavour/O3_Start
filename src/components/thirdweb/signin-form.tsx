@@ -52,7 +52,9 @@ const SignInButton: React.FC<SignInButtonProps> = ({
       hidePrivateKeyExport: false,
     }),
     createWallet("io.metamask"),
-    createWallet("com.hashpack.wallet"),
+    // HashPack wallet temporarily disabled - requires WalletConnect Project ID
+    // Uncomment after adding NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID to .env
+    // createWallet("com.hashpack.wallet"),
   ];
 
   const displayName = truncateAddress(activeAccount?.address);
@@ -132,7 +134,10 @@ const SignInForm: React.FC<SignInButtonProps> = () => {
       },
       hidePrivateKeyExport: false,
     }),
-    createWallet("com.hashpack.wallet"),
+    createWallet("io.metamask"),
+    // HashPack wallet temporarily disabled - requires WalletConnect Project ID
+    // Uncomment after adding NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID to .env
+    // createWallet("com.hashpack.wallet"),
   ];
 
   return (

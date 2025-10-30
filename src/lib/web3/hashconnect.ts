@@ -11,6 +11,7 @@ export interface HashConnectState {
 
 let hashconnectInstance: HashConnect | null = null;
 let pairingData: any = null;
+let isInitializing = false;
 
 const appMetadata = {
     name: 'BorderlessPay',
@@ -21,66 +22,122 @@ const appMetadata = {
 
 /**
  * Initialize HashConnect and connect to HashPack wallet
- * Note: For hackathon demo, we'll use a simplified connection flow
  */
 export async function initHashConnect(): Promise<HashConnectState> {
+    // Prevent multiple simultaneous initializations
+    if (isInitializing) {
+        console.log('HashConnect initialization already in progress...');
+        return {
+            hashconnect: hashconnectInstance,
+            accountId: pairingData?.accountIds?.[0] || null,
+            isConnected: !!hashconnectInstance && !!pairingData,
+        };
+    }
+
+    // Return existing connection if already initialized
+    if (hashconnectInstance && pairingData) {
+        console.log('HashConnect already connected');
+        return {
+            hashconnect: hashconnectInstance,
+            accountId: pairingData.accountIds[0],
+            isConnected: true,
+        };
+    }
+
+    isInitializing = true;
+
     try {
-        // For demo purposes, we'll use the Thirdweb HashPack wallet integration
-        // The actual HashConnect v3 requires WalletConnect v2 project ID
-        // which is optional for this hackathon demo
-
-        console.log('HashConnect: Using simplified demo mode');
-        console.log('For production, get WalletConnect Project ID from: https://cloud.walletconnect.com');
-
-        // Return demo state - in production you'd connect to actual HashPack
-        return {
-            hashconnect: null,
-            accountId: null, // Users can manually enter their Hedera account ID
-            isConnected: false,
-        };
-
-        /* 
-        // Uncomment this for production with WalletConnect Project ID:
+        const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
         
+        if (!projectId) {
+            console.warn('WalletConnect Project ID not configured');
+            isInitializing = false;
+            return {
+                hashconnect: null,
+                accountId: null,
+                isConnected: false,
+            };
+        }
+
+        // Create new HashConnect instance
         hashconnectInstance = new HashConnect(
-          LedgerId.TESTNET,
-          process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
-          appMetadata,
-          true
+            LedgerId.TESTNET,
+            projectId,
+            appMetadata,
+            true
         );
-    
+
+        console.log('Initializing HashConnect...');
         await hashconnectInstance.init();
-    
-        hashconnectInstance.pairingEvent.on((data: any) => {
-          pairingData = data;
-          console.log('HashPack paired:', data);
+
+        // Listen for pairing events (use 'once' to prevent duplicate listeners)
+        hashconnectInstance.pairingEvent.once((data: any) => {
+            pairingData = data;
+            console.log('HashPack paired successfully:', data.accountIds);
         });
-    
+
+        // Listen for connection status changes
         hashconnectInstance.connectionStatusChangeEvent.on((state: any) => {
-          console.log('Connection state changed:', state);
+            console.log('Connection state:', state);
         });
-    
+
+        // Request pairing (opens HashPack)
+        console.log('Opening pairing modal...');
         hashconnectInstance.openPairingModal();
-    
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-    
+
+        // Wait for pairing with timeout
+        await new Promise((resolve) => {
+            const timeout = setTimeout(() => {
+                console.log('Pairing timeout - user may need more time');
+                resolve(undefined);
+            }, 10000); // 10 second timeout
+
+            if (hashconnectInstance) {
+                hashconnectInstance.pairingEvent.once(() => {
+                    clearTimeout(timeout);
+                    resolve(undefined);
+                });
+            }
+        });
+
         const accountId = pairingData?.accountIds?.[0] || null;
-    
+        
+        if (accountId) {
+            console.log('Connected to Hedera account:', accountId);
+        } else {
+            console.log('No account connected yet');
+        }
+
+        isInitializing = false;
+
         return {
-          hashconnect: hashconnectInstance,
-          accountId,
-          isConnected: !!accountId,
+            hashconnect: hashconnectInstance,
+            accountId,
+            isConnected: !!accountId,
         };
-        */
     } catch (error) {
         console.error('HashConnect initialization error:', error);
+        isInitializing = false;
+        
+        // Clean up on error
+        if (hashconnectInstance) {
+            try {
+                hashconnectInstance.disconnect();
+            } catch (e) {
+                // Ignore disconnect errors
+            }
+            hashconnectInstance = null;
+        }
+        
         return {
             hashconnect: null,
             accountId: null,
             isConnected: false,
         };
     }
-}/**
+}
+
+/**
  * Get current HashConnect instance
  */
 export function getHashConnect(): HashConnect | null {
@@ -106,9 +163,16 @@ export function getPairingString(): string | null {
  */
 export async function disconnectHashPack(): Promise<void> {
     if (hashconnectInstance) {
-        hashconnectInstance.disconnect();
-        hashconnectInstance = null;
-        pairingData = null;
+        try {
+            console.log('Disconnecting HashPack...');
+            hashconnectInstance.disconnect();
+            hashconnectInstance = null;
+            pairingData = null;
+            isInitializing = false;
+            console.log('HashPack disconnected successfully');
+        } catch (error) {
+            console.error('Disconnect error:', error);
+        }
     }
 }
 
@@ -121,7 +185,6 @@ export function isHashPackInstalled(): boolean {
 
 /**
  * Sign and send transaction using HashPack
- * Note: This is a simplified version - actual implementation depends on HashConnect API
  */
 export async function sendTransaction(
     transactionBytes: Uint8Array,
@@ -131,6 +194,8 @@ export async function sendTransaction(
         if (!hashconnectInstance || !pairingData) {
             return { success: false, error: 'HashPack not connected' };
         }
+
+        console.log('Sending transaction to HashPack for signing...');
 
         // Send transaction through HashConnect
         const result = await hashconnectInstance.sendTransaction(
@@ -143,6 +208,8 @@ export async function sendTransaction(
                 },
             } as any
         );
+
+        console.log('Transaction result:', result);
 
         return {
             success: true,
@@ -164,8 +231,6 @@ export async function requestAccountInfo(): Promise<any> {
 
     const accountId = pairingData.accountIds[0];
 
-    // Note: getAccountInfo may not be available in all versions
-    // Return pairing data as fallback
     return {
         accountId,
         network: 'testnet',
