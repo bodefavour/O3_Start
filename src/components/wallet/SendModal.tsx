@@ -52,11 +52,11 @@ export function SendModal({
 
     const handleSendNow = async () => {
         setSending(true);
-        
+
         try {
             // Get Hedera token ID from environment
             const tokenId = process.env.NEXT_PUBLIC_HEDERA_TOKEN_ID;
-            
+
             if (!tokenId) {
                 // Fallback to mock for demo if not configured
                 console.warn('Hedera token not configured, using mock transaction');
@@ -346,14 +346,16 @@ export function SendModal({
                                     onClick={handleBack}
                                     variant="outline"
                                     className="flex-1 rounded-xl py-6 text-base font-semibold"
+                                    disabled={sending}
                                 >
                                     Back
                                 </Button>
                                 <Button
                                     onClick={handleSendNow}
-                                    className="flex-1 gap-2 rounded-xl bg-[#00c48c] py-6 text-base font-semibold hover:bg-[#00b37d]"
+                                    className="flex-1 gap-2 rounded-xl bg-[#00c48c] py-6 text-base font-semibold hover:bg-[#00b37d] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={sending}
                                 >
-                                    Send Now
+                                    {sending ? 'Sending...' : 'Send Now'}
                                 </Button>
                             </div>
                         </div>
