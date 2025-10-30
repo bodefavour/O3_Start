@@ -137,6 +137,7 @@ const SignInForm: React.FC<SignInButtonProps> = () => {
       },
       hidePrivateKeyExport: false,
     }),
+    createWallet("io.metamask"),
     createWallet("com.hashpack.wallet"),
   ];
 
