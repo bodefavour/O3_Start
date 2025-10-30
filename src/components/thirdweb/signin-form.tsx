@@ -6,7 +6,8 @@ import { User } from "lucide-react";
 import { useActiveAccount } from "thirdweb/react";
 import { truncateAddress, generateColorFromAddress } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import router from "next/router";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface SignInButtonProps {
   label?: string;
@@ -43,7 +44,15 @@ const SignInButton: React.FC<SignInButtonProps> = ({
   privacyPolicyUrl = "https://sealedtrust.com",
 }) => {
   const activeAccount = useActiveAccount();
+  const router = useRouter();
   const avatarBg = generateColorFromAddress(activeAccount?.address);
+
+  // Redirect to dashboard when account becomes active
+  useEffect(() => {
+    if (activeAccount?.address) {
+      router.push("/dashboard");
+    }
+  }, [activeAccount?.address, router]);
 
   const wallets = [
     inAppWallet({
