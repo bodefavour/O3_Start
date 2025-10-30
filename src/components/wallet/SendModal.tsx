@@ -374,18 +374,29 @@ export function SendModal({
                                 Transaction Sent!
                             </h3>
                             <p className="mb-8 text-center text-sm text-gray-600 px-8">
-                                Your transaction has been submitted to the network and will be processed shortly
+                                Your transaction has been submitted to Hedera network and will be confirmed shortly
                             </p>
 
-                            {/* Transaction Hash */}
-                            <div className="w-full rounded-lg bg-gray-100 px-6 py-4">
-                                <p className="mb-2 text-center text-sm font-semibold text-gray-700">
-                                    Transaction Hash
+                            {/* Transaction Hash with Link to Mirror Node */}
+                            <div className="w-full rounded-lg bg-gray-100 px-6 py-4 mb-6">
+                                <p className="mb-3 text-center text-sm font-semibold text-gray-700">
+                                    Transaction ID
                                 </p>
-                                <p className="break-all text-center text-xs font-mono text-gray-900">
-                                    {transactionHash}
-                                </p>
+                                <div className="flex justify-center">
+                                    <TransactionLink 
+                                        transactionId={transactionHash}
+                                        network={process.env.HEDERA_NETWORK as 'testnet' | 'mainnet' || 'testnet'}
+                                    />
+                                </div>
                             </div>
+
+                            {/* Close Button */}
+                            <Button
+                                onClick={handleClose}
+                                className="w-full rounded-xl bg-[#00c48c] py-6 text-base font-semibold hover:bg-[#00b37d]"
+                            >
+                                Done
+                            </Button>
                         </div>
                     )}
                 </div>
