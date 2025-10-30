@@ -48,7 +48,7 @@ export async function initHashConnect(): Promise<HashConnectState> {
 
     try {
         const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
-        
+
         if (!projectId) {
             console.warn('WalletConnect Project ID not configured');
             isInitializing = false;
@@ -101,7 +101,7 @@ export async function initHashConnect(): Promise<HashConnectState> {
         });
 
         const accountId = pairingData?.accountIds?.[0] || null;
-        
+
         if (accountId) {
             console.log('Connected to Hedera account:', accountId);
         } else {
@@ -118,7 +118,7 @@ export async function initHashConnect(): Promise<HashConnectState> {
     } catch (error) {
         console.error('HashConnect initialization error:', error);
         isInitializing = false;
-        
+
         // Clean up on error
         if (hashconnectInstance) {
             try {
@@ -128,7 +128,7 @@ export async function initHashConnect(): Promise<HashConnectState> {
             }
             hashconnectInstance = null;
         }
-        
+
         return {
             hashconnect: null,
             accountId: null,
