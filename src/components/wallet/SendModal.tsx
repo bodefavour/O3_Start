@@ -383,7 +383,7 @@ export function SendModal({
                                     Transaction ID
                                 </p>
                                 <div className="flex justify-center">
-                                    <TransactionLink 
+                                    <TransactionLink
                                         transactionId={transactionHash}
                                         network={process.env.HEDERA_NETWORK as 'testnet' | 'mainnet' || 'testnet'}
                                     />
