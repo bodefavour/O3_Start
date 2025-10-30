@@ -2,23 +2,25 @@
 import { SignInForm } from "@/components/thirdweb/signin-form";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/contexts";
+import { useAuthContext } from "@/contexts/auth-provider";
 import { LogIn } from "lucide-react";
+import { useEffect } from "react";
 
 export default function SignInPage() {
   const router = useRouter();
-  const { login } = useUser();
+  const { isAuthenticated } = useAuthContext();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, router]);
+
 
   const handleDemoLogin = () => {
     // Create demo user data
-    const demoUser = {
-      accountId: "0.0.123456",
-      businessName: "Demo Business",
-      email: "demo@borderlesspay.com",
-    };
-
-    // Log in with demo credentials
-    login(demoUser.accountId, demoUser.businessName, demoUser.email);
+    // Log in with demo credential
 
     // Redirect to dashboard
     router.push("/dashboard");

@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/contexts";
-import { walletApi, transactionApi, analyticsApi } from "@/lib/api";
+import { useAuthContext } from "@/contexts/auth-provider";
+import { walletApi, transactionApi } from "@/lib/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { ReceiveModal } from "@/components/wallet/ReceiveModal";
 import { SendModal } from "@/components/wallet/SendModal";
+import { SignInButton } from "@/components/thirdweb/signin-form";
 import { SwapModal } from "@/components/wallet/SwapModal";
 
 // Helper function to calculate time ago
@@ -48,17 +49,34 @@ const weeklyData = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, logout, isAuthenticated } = useUser();
+  const { isAuthenticated } = useAuthContext();
+
   const { userId } = useCurrentUser();
   const [balance, setBalance] = useState("0");
   const [monthlyVolume, setMonthlyVolume] = useState("0");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [transactions, setTransactions] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [wallets, setWallets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingData, setLoadingData] = useState(true);
+  // const [loadingData, setLoadingData] = useState(true);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
+
+
+
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/signin");
+      return;
+    }
+
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, [isAuthenticated, router]);
 
   // Mock wallet data for modals - will be replaced with first real wallet
   const defaultWallet = wallets.length > 0 ? {
@@ -75,24 +93,30 @@ export default function DashboardPage() {
     name: "USD Coin",
   };
 
-  useEffect(() => {
-    // Check authentication
-    if (!isAuthenticated) {
-      router.push("/signin");
-      return;
-    }
+  // useEffect(() => {
+  //   // Check authentication
+  //   if (!isAuthenticated) {
+  //     router.push("/signin");
+  //     return;
+  //   }
 
-    // Simulate loading data
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, [isAuthenticated, router]);
+  //   // Simulate loading data
+  //   setTimeout(() => {
+  //     setLoading(false);
+  //   }, 1000);
+
+  //   // TODO: Fetch real data from Hedera
+  //   // fetchWalletBalance();
+  //   // fetchMonthlyVolume();
+  //   // fetchTransactions();
+  // }, [isAuthenticated, router]);
+
 
   useEffect(() => {
     const fetchData = async () => {
       if (!userId) return;
 
-      setLoadingData(true);
+      // setLoadingData(true);
       try {
         const [walletsRes, transactionsRes] = await Promise.all([
           walletApi.getAll(userId),
@@ -106,6 +130,7 @@ export default function DashboardPage() {
         setTransactions(fetchedTransactions);
 
         // Calculate total balance across all wallets
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const totalBalance = fetchedWallets.reduce((sum: number, w: any) => {
           return sum + parseFloat(w.balance);
         }, 0);
@@ -116,11 +141,13 @@ export default function DashboardPage() {
         const thisMonth = now.getMonth();
         const thisYear = now.getFullYear();
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const monthlyTxns = fetchedTransactions.filter((t: any) => {
           const txDate = new Date(t.timestamp);
           return txDate.getMonth() === thisMonth && txDate.getFullYear() === thisYear;
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const monthlyVol = monthlyTxns.reduce((sum: number, t: any) => {
           return sum + Math.abs(parseFloat(t.amount));
         }, 0);
@@ -129,15 +156,15 @@ export default function DashboardPage() {
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
-        setLoadingData(false);
+        // setLoadingData(false);
       }
     };
 
     fetchData();
   }, [userId]);
 
+
   const handleLogout = () => {
-    logout();
     router.push("/");
   };
 
@@ -245,11 +272,11 @@ export default function DashboardPage() {
           <div className="border-t border-white/10 p-4">
             <div className="flex items-center gap-3 rounded-lg bg-white/5 p-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00c48c] text-sm font-bold text-white">
-                {user?.businessName?.charAt(0) || "U"}
+                {"U"}
               </div>
               <div className="flex-1 overflow-hidden">
                 <p className="truncate text-sm font-semibold">
-                  {user?.businessName || "User"}
+                  {"User"}
                 </p>
                 <p className="truncate text-xs text-gray-400">Premium Account</p>
               </div>
@@ -269,13 +296,14 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="ml-64 flex-1">
         {/* Header */}
-        <header className="border-b border-gray-200 bg-white px-8 py-6">
+        <header className="flex items-center justify-between border-b border-gray-200 bg-white px-8 py-6">
           <div>
             <h1 className="text-2xl font-bold text-[#0b1f3a]">Dashboard</h1>
             <p className="text-sm text-gray-600">
               Welcome back to BorderlessPay
             </p>
           </div>
+          <SignInButton />
         </header>
 
         <div className="p-8">
@@ -474,6 +502,7 @@ export default function DashboardPage() {
         onClose={handleCloseSendModal}
         currency={defaultWallet.currency}
         currencySymbol={defaultWallet.symbol}
+        // walletAddress={defaultWallet.address}
         availableBalance={defaultWallet.balance}
         walletName={defaultWallet.name}
       />

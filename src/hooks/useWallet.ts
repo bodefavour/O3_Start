@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser, useToast } from '@/contexts';
+import { useUser, useToast } from '@/contexts/auth-provider';
 
 interface WalletBalance {
     accountId: string;

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/contexts";
+import { useAuthContext } from "@/contexts/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -21,147 +21,18 @@ import {
     Settings,
     LogOut,
     TrendingUp,
-    CheckCircle2,
-    AlertCircle,
-    Clock,
     Repeat,
 } from "lucide-react";
-import { useToast } from "@/contexts";
+import { toast } from "sonner";
 import { ReceiveModal } from "@/components/wallet/ReceiveModal";
 import { SendModal } from "@/components/wallet/SendModal";
 import { SwapModal } from "@/components/wallet/SwapModal";
 import { walletApi, transactionApi } from "@/lib/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
-// Mock wallet data - will be replaced with Hedera API
-const mockWallets = [
-    {
-        id: "1",
-        name: "USD Coin",
-        symbol: "USDC",
-        balance: "25,000",
-        balanceUSD: "25,000.00",
-        address: "0x742a35Cc8634C0532925a3b848cBe97595f0bEb",
-        type: "Stablecoin",
-        icon: "💵",
-    },
-    {
-        id: "2",
-        name: "Tether",
-        symbol: "USDT",
-        balance: "15,345",
-        balanceUSD: "15,345.00",
-        address: "0x8f3Cf7ad23Cd3CaBbD9735AF19802239c6A",
-        type: "Stablecoin",
-        icon: "💲",
-    },
-    {
-        id: "3",
-        name: "HUSD Stablecoin",
-        symbol: "HUSD",
-        balance: "5,000",
-        balanceUSD: "5,000.00",
-        address: "0x4Fab6145d64652a48d7853303f6E23f6A6237C2",
-        type: "Stablecoin",
-        icon: "🏦",
-    },
-];
-
-// Mock local currency wallets
-const mockLocalWallets = [
-    {
-        id: "4",
-        name: "NGN",
-        fullName: "Nigerian Naira",
-        balance: "12,500,000",
-        balanceUSD: "8,064.52",
-        address: "NGN-WALLET-001",
-        type: "Local",
-        icon: "🇳🇬",
-        badge: "-0.52%",
-        badgeColor: "red",
-    },
-    {
-        id: "5",
-        name: "KES",
-        fullName: "Kenyan Shilling",
-        balance: "850,000",
-        balanceUSD: "6,538.46",
-        address: "KES-WALLET-002",
-        type: "Local",
-        icon: "🇰🇪",
-        badge: "+11%",
-        badgeColor: "green",
-    },
-    {
-        id: "6",
-        name: "GHS",
-        fullName: "Ghanaian Cedi",
-        balance: "45,000",
-        balanceUSD: "3,750.00",
-        address: "GHS-WALLET-003",
-        type: "Local",
-        icon: "�🇭",
-        badge: "+0.3%",
-        badgeColor: "green",
-    },
-];
-
-const mockTransactions = [
-    {
-        id: "1",
-        name: "John Smith (Winxal)",
-        date: "Jan 15, 11:23 AM",
-        amount: "+2,500 USDC",
-        status: "completed",
-        type: "incoming",
-        hash: "hash1c742a35Cc8634C053292...",
-    },
-    {
-        id: "2",
-        name: "Lagos Office",
-        date: "Jan 15, 11:22 AM",
-        amount: "-500 USDT",
-        fee: "Fee: $2.6",
-        status: "completed",
-        type: "outgoing",
-        hash: "hash1c742a35Cc8634C053292...",
-    },
-    {
-        id: "3",
-        name: "Swapped to NGN",
-        date: "Jan 15, 10:14 AM",
-        amount: "-500 USDC",
-        fee: "Fee: $4",
-        status: "completed",
-        type: "swap",
-        hash: "hash1c9c4b21c1099ceb432932...",
-    },
-    {
-        id: "4",
-        name: "Mary Johnson (Ghana)",
-        date: "Jan 12, 03:42 PM",
-        amount: "-79.5 HUSD",
-        fee: "Fee: $1.23",
-        status: "failed",
-        type: "outgoing",
-        hash: "hash1c9c4b21c1099ceb432932...",
-    },
-    {
-        id: "5",
-        name: "Invoice Payment #INV-001",
-        date: "Jan 11, 12:01 PM",
-        amount: "+2,000 USDC",
-        status: "refund",
-        type: "incoming",
-        hash: "hash1c9c4b21c1099ceb432932...",
-    },
-];
-
 export default function WalletPage() {
     const router = useRouter();
-    const { user, logout, isAuthenticated } = useUser();
-    const { showToast } = useToast();
+    const { isAuthenticated } = useAuthContext();
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<"stablecoins" | "local" | "history">("stablecoins");
     const [filterStatus, setFilterStatus] = useState<"all" | "sent" | "received" | "swapped">("all");
@@ -178,7 +49,9 @@ export default function WalletPage() {
 
     // Real data from API
     const { userId, loading: userLoading } = useCurrentUser();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [wallets, setWallets] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loadingData, setLoadingData] = useState(true);
 
@@ -200,7 +73,7 @@ export default function WalletPage() {
                 setTransactions(transactionsRes.transactions || []);
             } catch (error) {
                 console.error('Error fetching data:', error);
-                showToast('Failed to load wallet data', 'error');
+                toast.error('Failed to load wallet data');
             } finally {
                 setLoadingData(false);
             }
@@ -221,6 +94,7 @@ export default function WalletPage() {
     const totalWallets = wallets.length;
 
     // Helper function to format transaction display
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formatTransaction = (transaction: any) => {
         // Format date
         const date = new Date(transaction.createdAt);
@@ -277,13 +151,12 @@ export default function WalletPage() {
     }, [isAuthenticated, router]);
 
     const handleLogout = () => {
-        logout();
         router.push("/");
     };
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        showToast("Address copied to clipboard!", "success");
+        toast.success("Address copied to clipboard!");
     };
 
     const handleOpenReceiveModal = (currency: string, symbol: string, address: string) => {
@@ -400,11 +273,11 @@ export default function WalletPage() {
                     <div className="border-t border-white/10 p-4">
                         <div className="flex items-center gap-3 rounded-lg bg-white/5 p-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00c48c] text-sm font-bold text-white">
-                                {user?.businessName?.charAt(0) || "U"}
+                                {"U"}
                             </div>
                             <div className="flex-1 overflow-hidden">
                                 <p className="truncate text-sm font-semibold">
-                                    {user?.businessName || "User"}
+                                    {"User"}
                                 </p>
                                 <p className="truncate text-xs text-gray-400">Premium Account</p>
                             </div>
@@ -766,8 +639,10 @@ export default function WalletPage() {
                                                 </div>
                                             </div>
                                             <span
-                                                className="rounded-full bg-[#00c48c]/10 px-3 py-1 text-xs font-semibold text-[#00c48c]"
-                                            >
+                                                className={`rounded-full px-3 py-1 text-xs font-semibold ${wallet.badgeColor === "green"
+                                                    ? "bg-[#00c48c]/10 text-[#00c48c]"
+                                                    : "bg-red-100 text-red-600"
+                                                    }`}                                            >
                                                 {wallet.type}
                                             </span>
                                         </div>
@@ -1200,18 +1075,16 @@ export default function WalletPage() {
             }
 
             {/* Send Modal */}
-            {
-                selectedWallet && (
-                    <SendModal
-                        isOpen={sendModalOpen}
-                        onClose={handleCloseSendModal}
-                        currency={selectedWallet.currency}
-                        currencySymbol={selectedWallet.symbol}
-                        availableBalance={selectedWallet.balance}
-                        walletName={selectedWallet.name}
-                    />
-                )
-            }
+            {selectedWallet && (
+                <SendModal
+                    isOpen={sendModalOpen}
+                    onClose={handleCloseSendModal}
+                    currency={selectedWallet.currency}
+                    currencySymbol={selectedWallet.symbol}
+                    availableBalance={selectedWallet.balance}
+                    walletName={selectedWallet.name}
+                />
+            )}
 
             {/* Swap Modal */}
             <SwapModal

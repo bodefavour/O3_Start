@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { X, Copy, QrCode, Share2, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/contexts";
+import { toast } from "sonner";
 
 interface ReceiveModalProps {
     isOpen: boolean;
@@ -16,11 +15,9 @@ interface ReceiveModalProps {
 export function ReceiveModal({
     isOpen,
     onClose,
-    currency,
     currencySymbol,
     walletAddress,
 }: ReceiveModalProps) {
-    const { showToast } = useToast();
     const [amount, setAmount] = useState("");
     const [note, setNote] = useState("");
 
@@ -28,7 +25,7 @@ export function ReceiveModal({
 
     const handleCopyAddress = () => {
         navigator.clipboard.writeText(walletAddress);
-        showToast("Address copied to clipboard!", "success");
+        toast.success("Address copied to clipboard!");
     };
 
     const handleShare = () => {
@@ -40,7 +37,7 @@ export function ReceiveModal({
             });
         } else {
             navigator.clipboard.writeText(shareText);
-            showToast("Payment request copied to clipboard!", "success");
+            toast.success("Payment request copied to clipboard!");
         }
     };
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { useToast, useUser } from "@/contexts";
 import { TransactionLink } from "@/components/hedera/TransactionLink";
 
@@ -18,7 +19,6 @@ interface SendModalProps {
 export function SendModal({
     isOpen,
     onClose,
-    currency,
     currencySymbol,
     availableBalance,
     walletName,
@@ -40,7 +40,7 @@ export function SendModal({
 
     const handleContinue = () => {
         if (!recipientAddress || !amount) {
-            showToast("Please fill in all required fields", "error");
+            toast.error("Please fill in all required fields");
             return;
         }
         setStep(2);
@@ -53,6 +53,9 @@ export function SendModal({
     const handleSendNow = async () => {
         setSending(true);
 
+        toast.success("Transaction sent successfully!");
+        setStep(3);
+        // Don't auto-close anymore, let user see the success screen
         try {
             // Get Hedera token ID from environment
             const tokenId = process.env.NEXT_PUBLIC_HEDERA_TOKEN_ID;

@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { X, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/contexts";
-
+import { toast } from "sonner";
 interface SwapModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -26,7 +25,6 @@ const availableCurrencies: Currency[] = [
 ];
 
 export function SwapModal({ isOpen, onClose }: SwapModalProps) {
-    const { showToast } = useToast();
     const [fromCurrency, setFromCurrency] = useState<Currency>(availableCurrencies[0]);
     const [toCurrency, setToCurrency] = useState<Currency>(availableCurrencies[1]);
     const [fromAmount, setFromAmount] = useState("");
@@ -62,11 +60,11 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
 
     const handleSwap = () => {
         if (!fromAmount || parseFloat(fromAmount) <= 0) {
-            showToast("Please enter a valid amount", "error");
+            toast.error("Please enter a valid amount");
             return;
         }
         // TODO: Implement actual swap transaction
-        showToast("Swap transaction successful!", "success");
+        toast.success("Swap transaction successful!");
         setTimeout(() => {
             onClose();
             // Reset form
