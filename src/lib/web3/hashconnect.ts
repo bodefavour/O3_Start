@@ -24,62 +24,62 @@ const appMetadata = {
  * Note: For hackathon demo, we'll use a simplified connection flow
  */
 export async function initHashConnect(): Promise<HashConnectState> {
-  try {
-    // For demo purposes, we'll use the Thirdweb HashPack wallet integration
-    // The actual HashConnect v3 requires WalletConnect v2 project ID
-    // which is optional for this hackathon demo
+    try {
+        // For demo purposes, we'll use the Thirdweb HashPack wallet integration
+        // The actual HashConnect v3 requires WalletConnect v2 project ID
+        // which is optional for this hackathon demo
+
+        console.log('HashConnect: Using simplified demo mode');
+        console.log('For production, get WalletConnect Project ID from: https://cloud.walletconnect.com');
+
+        // Return demo state - in production you'd connect to actual HashPack
+        return {
+            hashconnect: null,
+            accountId: null, // Users can manually enter their Hedera account ID
+            isConnected: false,
+        };
+
+        /* 
+        // Uncomment this for production with WalletConnect Project ID:
+        
+        hashconnectInstance = new HashConnect(
+          LedgerId.TESTNET,
+          process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
+          appMetadata,
+          true
+        );
     
-    console.log('HashConnect: Using simplified demo mode');
-    console.log('For production, get WalletConnect Project ID from: https://cloud.walletconnect.com');
+        await hashconnectInstance.init();
     
-    // Return demo state - in production you'd connect to actual HashPack
-    return {
-      hashconnect: null,
-      accountId: null, // Users can manually enter their Hedera account ID
-      isConnected: false,
-    };
+        hashconnectInstance.pairingEvent.on((data: any) => {
+          pairingData = data;
+          console.log('HashPack paired:', data);
+        });
     
-    /* 
-    // Uncomment this for production with WalletConnect Project ID:
+        hashconnectInstance.connectionStatusChangeEvent.on((state: any) => {
+          console.log('Connection state changed:', state);
+        });
     
-    hashconnectInstance = new HashConnect(
-      LedgerId.TESTNET,
-      process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
-      appMetadata,
-      true
-    );
-
-    await hashconnectInstance.init();
-
-    hashconnectInstance.pairingEvent.on((data: any) => {
-      pairingData = data;
-      console.log('HashPack paired:', data);
-    });
-
-    hashconnectInstance.connectionStatusChangeEvent.on((state: any) => {
-      console.log('Connection state changed:', state);
-    });
-
-    hashconnectInstance.openPairingModal();
-
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    const accountId = pairingData?.accountIds?.[0] || null;
-
-    return {
-      hashconnect: hashconnectInstance,
-      accountId,
-      isConnected: !!accountId,
-    };
-    */
-  } catch (error) {
-    console.error('HashConnect initialization error:', error);
-    return {
-      hashconnect: null,
-      accountId: null,
-      isConnected: false,
-    };
-  }
+        hashconnectInstance.openPairingModal();
+    
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+    
+        const accountId = pairingData?.accountIds?.[0] || null;
+    
+        return {
+          hashconnect: hashconnectInstance,
+          accountId,
+          isConnected: !!accountId,
+        };
+        */
+    } catch (error) {
+        console.error('HashConnect initialization error:', error);
+        return {
+            hashconnect: null,
+            accountId: null,
+            isConnected: false,
+        };
+    }
 }/**
  * Get current HashConnect instance
  */
