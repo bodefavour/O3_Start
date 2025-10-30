@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/contexts";
+import { useToast, useUser } from "@/contexts";
+import { TransactionLink } from "@/components/hedera/TransactionLink";
 
 interface SendModalProps {
     isOpen: boolean;
@@ -23,12 +24,14 @@ export function SendModal({
     walletName,
 }: SendModalProps) {
     const { showToast } = useToast();
+    const { user } = useUser();
     const [step, setStep] = useState(1); // 1: Details, 2: Review, 3: Success
     const [recipientAddress, setRecipientAddress] = useState("");
     const [amount, setAmount] = useState("");
     const [priority, setPriority] = useState<"standard" | "fast">("standard");
     const [note, setNote] = useState("");
     const [transactionHash, setTransactionHash] = useState("");
+    const [sending, setSending] = useState(false);
 
     if (!isOpen) return null;
 
@@ -47,15 +50,53 @@ export function SendModal({
         setStep(1);
     };
 
-    const handleSendNow = () => {
-        // TODO: Implement actual send transaction
-        // Generate a mock transaction hash
-        const mockHash = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb";
-        setTransactionHash(mockHash);
+    const handleSendNow = async () => {
+        setSending(true);
+        
+        try {
+            // Get Hedera token ID from environment
+            const tokenId = process.env.NEXT_PUBLIC_HEDERA_TOKEN_ID;
+            
+            if (!tokenId) {
+                // Fallback to mock for demo if not configured
+                console.warn('Hedera token not configured, using mock transaction');
+                const mockHash = `0.0.${Date.now()}@${Math.random().toString(36).substring(7)}`;
+                setTransactionHash(mockHash);
+                showToast("Demo transaction created!", "success");
+                setStep(3);
+                setSending(false);
+                return;
+            }
 
-        showToast("Transaction sent successfully!", "success");
-        setStep(3);
-        // Don't auto-close anymore, let user see the success screen
+            // Call Hedera transfer API
+            const response = await fetch('/api/hedera/transfer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tokenId,
+                    fromAccountId: user?.accountId || '0.0.0', // Will use operator account
+                    toAccountId: recipientAddress,
+                    amount: parseFloat(amount),
+                    memo: note || `Send ${amount} ${currencySymbol}`,
+                    userId: user?.accountId,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setTransactionHash(result.data.transactionId);
+                showToast("Transaction sent successfully!", "success");
+                setStep(3);
+            } else {
+                showToast(result.error || "Transaction failed", "error");
+            }
+        } catch (error: any) {
+            console.error('Send error:', error);
+            showToast(error.message || "Failed to send transaction", "error");
+        } finally {
+            setSending(false);
+        }
     };
 
     const handleClose = () => {
