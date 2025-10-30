@@ -1,6 +1,7 @@
 "use client";
 import { useActiveAccount, useActiveWallet } from "thirdweb/react";
 import { createContext, useContext, useMemo } from "react";
+import { toast as sonnerToast } from "sonner";
 
 import type { AuthContext } from "@/lib/types";
 
@@ -40,4 +41,43 @@ export function useAuthContext() {
         throw new Error("useAuthContext must be used within an AuthProvider");
     }
     return context;
+}
+
+// Compatibility exports for existing code
+export function useUser() {
+    const { address, isAuthenticated } = useAuthContext();
+    return {
+        user: address ? {
+            accountId: address,
+            businessName: "User",
+            email: "",
+        } : null,
+        isAuthenticated,
+        login: (accountId: string, businessName?: string, email?: string) => {
+            console.log("Login called with:", { accountId, businessName, email });
+            // Login is handled by thirdweb connection
+        },
+        logout: () => {
+            console.log("Logout called");
+            // Logout is handled by thirdweb disconnection
+        },
+    };
+}
+
+export function useToast() {
+    return {
+        showToast: (message: string, type: "success" | "error" | "info" = "info") => {
+            switch (type) {
+                case "success":
+                    sonnerToast.success(message);
+                    break;
+                case "error":
+                    sonnerToast.error(message);
+                    break;
+                case "info":
+                    sonnerToast.info(message);
+                    break;
+            }
+        },
+    };
 }
