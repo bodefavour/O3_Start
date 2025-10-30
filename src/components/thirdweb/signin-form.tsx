@@ -70,9 +70,6 @@ const SignInButton: React.FC<SignInButtonProps> = ({
     <ConnectButton
       client={thirdwebClient}
       wallets={wallets}
-      onConnect={(_wallet) => {
-        router.push("/dashboard");
-      }}
       theme={lightTheme({
         colors: {
           modalBg:
@@ -139,6 +136,16 @@ const SignInButton: React.FC<SignInButtonProps> = ({
 };
 
 const SignInForm: React.FC<SignInButtonProps> = () => {
+  const router = useRouter();
+  const activeAccount = useActiveAccount();
+
+  // Redirect to dashboard when account becomes active
+  useEffect(() => {
+    if (activeAccount?.address) {
+      router.push("/dashboard");
+    }
+  }, [activeAccount?.address, router]);
+
   const wallets = [
     inAppWallet({
       auth: {
@@ -155,9 +162,6 @@ const SignInForm: React.FC<SignInButtonProps> = () => {
       <ConnectEmbed
         client={thirdwebClient}
         wallets={wallets}
-        onConnect={(_wallet) => {
-          router.push("/dashboard");
-        }}
         modalSize="compact"
         termsOfServiceUrl="/terms"
         privacyPolicyUrl="/privacy"
