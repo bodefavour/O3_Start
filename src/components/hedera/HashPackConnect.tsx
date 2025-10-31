@@ -46,15 +46,36 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
             try {
                 const hashpack = (window as any).hashpack;
-                const data = await hashpack.getAccountInfo();
+                console.log("Checking existing HashPack connection...");
+                
+                let data;
+                
+                // Try to get existing account info
+                if (typeof hashpack.getAccountInfo === 'function') {
+                    data = await hashpack.getAccountInfo();
+                } else if (typeof hashpack.getPairings === 'function') {
+                    const pairings = await hashpack.getPairings();
+                    if (pairings && pairings.length > 0) {
+                        data = { accountId: pairings[0].accountIds[0] };
+                    }
+                }
 
                 if (data?.accountId) {
+                    console.log("Found existing connection:", data.accountId);
                     setAccountId(data.accountId);
                     setConnected(true);
                     onConnect?.(data.accountId);
+                } else if (data?.accountIds && data.accountIds.length > 0) {
+                    const account = data.accountIds[0];
+                    console.log("Found existing connection:", account);
+                    setAccountId(account);
+                    setConnected(true);
+                    onConnect?.(account);
+                } else {
+                    console.log("No existing HashPack connection found");
                 }
             } catch (error) {
-                console.log("No existing HashPack connection");
+                console.log("No existing HashPack connection:", error);
             }
         };
 
@@ -79,21 +100,61 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
         try {
             const hashpack = (window as any).hashpack;
+            
+            console.log("HashPack object detected:", hashpack);
+            console.log("Available methods:", Object.keys(hashpack));
 
-            // Request connection
-            const data = await hashpack.connectToExtension();
+            // Try different connection methods based on what's available
+            let data;
+            
+            // Method 1: Try connectToExtension (browser extension)
+            if (typeof hashpack.connectToExtension === 'function') {
+                console.log("Attempting connectToExtension...");
+                data = await hashpack.connectToExtension();
+            }
+            // Method 2: Try pairings (mobile app)
+            else if (typeof hashpack.getPairings === 'function') {
+                console.log("Attempting getPairings...");
+                const pairings = await hashpack.getPairings();
+                if (pairings && pairings.length > 0) {
+                    data = { accountId: pairings[0].accountIds[0] };
+                } else {
+                    // Request new pairing
+                    console.log("Requesting new pairing...");
+                    data = await hashpack.requestPairing();
+                }
+            }
+            // Method 3: Try direct connection request
+            else if (typeof hashpack.connect === 'function') {
+                console.log("Attempting connect...");
+                data = await hashpack.connect();
+            }
+            // Method 4: Try getAccountInfo (already connected)
+            else if (typeof hashpack.getAccountInfo === 'function') {
+                console.log("Attempting getAccountInfo...");
+                data = await hashpack.getAccountInfo();
+            }
+
+            console.log("Connection result:", data);
 
             if (data?.accountId) {
                 setAccountId(data.accountId);
                 setConnected(true);
                 toast.success(`Connected to HashPack: ${data.accountId}`);
                 onConnect?.(data.accountId);
+            } else if (data?.accountIds && data.accountIds.length > 0) {
+                // Handle array of account IDs
+                const account = data.accountIds[0];
+                setAccountId(account);
+                setConnected(true);
+                toast.success(`Connected to HashPack: ${account}`);
+                onConnect?.(account);
             } else {
-                throw new Error("Failed to get account information");
+                throw new Error("Failed to get account information from HashPack");
             }
         } catch (error: any) {
             console.error("HashPack connection error:", error);
-            toast.error(error.message || "Failed to connect to HashPack");
+            toast.error(error.message || "Failed to connect to HashPack. Make sure you're using the HashPack app browser or have the extension installed.");
         } finally {
             setConnecting(false);
         }
