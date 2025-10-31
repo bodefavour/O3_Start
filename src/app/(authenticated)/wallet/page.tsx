@@ -831,7 +831,8 @@ export default function WalletPage() {
                                                 return (
                                                     <div
                                                         key={transaction.id}
-                                                        className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
+                                                        onClick={() => transaction.hash && handleOpenTransactionDetails(transaction.hash)}
+                                                        className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50 cursor-pointer"
                                                     >
                                                         <div className="flex items-center gap-4">
                                                             <div
@@ -1081,7 +1082,8 @@ export default function WalletPage() {
                                                 return (
                                                     <div
                                                         key={transaction.id}
-                                                        className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
+                                                        onClick={() => transaction.hash && handleOpenTransactionDetails(transaction.hash)}
+                                                        className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50 cursor-pointer"
                                                     >
                                                         <div className="flex items-center gap-4">
                                                             <div
@@ -1270,7 +1272,8 @@ export default function WalletPage() {
                                             return (
                                                 <div
                                                     key={transaction.id}
-                                                    className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50"
+                                                    onClick={() => transaction.hash && handleOpenTransactionDetails(transaction.hash)}
+                                                    className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50 cursor-pointer"
                                                 >
                                                     <div className="flex items-center gap-4">
                                                         <div
