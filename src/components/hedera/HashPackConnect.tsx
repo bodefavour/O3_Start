@@ -45,9 +45,9 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         const initDAppConnector = async () => {
             try {
                 addLog("Initializing Hedera DAppConnector...");
-                
+
                 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '08c4b07e3ad25f1a27c14a4e8cecb6f0';
-                
+
                 const metadata = {
                     name: 'BorderlessPay',
                     description: 'Global Payment Platform powered by Hedera',
@@ -91,7 +91,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
     const handleConnect = async () => {
         addLog("=== Starting connection attempt ===");
-        
+
         if (!dAppConnector) {
             addLog("ERROR: DAppConnector not initialized");
             toast.error("Wallet connector not initialized. Please refresh the page.");
@@ -104,16 +104,16 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         try {
             addLog("Opening wallet selection modal...");
             await dAppConnector.openModal();
-            
+
             // Wait a bit for connection to establish
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             // Check for connection
             const sessions = dAppConnector.signers;
             if (sessions && sessions.length > 0) {
                 const session = sessions[0];
                 const account = session.getAccountId()?.toString();
-                
+
                 if (account) {
                     addLog(`✅ SUCCESS! Connected: ${account}`);
                     setAccountId(account);
@@ -235,7 +235,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                         "Connect Hedera Wallet"
                     )}
                 </Button>
-                
+
                 {/* Show debug toggle button */}
                 <button
                     onClick={() => setShowDebug(!showDebug)}
