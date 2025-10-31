@@ -146,10 +146,10 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
                 {/* Content */}
                 <div className="p-6 overflow-y-auto max-h-[calc(100vh-12rem)]">
                     {/* From Section */}
-                    <div className="mb-4"
+                    <div className="mb-4">
                         <label className="mb-2 block text-sm font-medium text-gray-700">
-                        From
-                    </label>
+                            From
+                        </label>
                     <div className="rounded-lg border border-gray-300 p-4">
                         <div className="mb-3 flex items-center justify-between">
                             <select
