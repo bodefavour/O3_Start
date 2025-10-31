@@ -154,9 +154,9 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         }
 
         setConnecting(true);
-        
+
         // 10 second timeout
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Connection timeout')), 10000)
         );
 
@@ -211,68 +211,68 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         onDisconnect?.();
     };
 
-  // HashPack-only connect button: fast connection
-  const handleConnectHashPack = async () => {
-    addLog("=== Starting HashPack-only connection ===");
-    if (!dAppConnector) {
-      addLog("ERROR: DAppConnector not initialized");
-      toast.error("Wallet connector not initialized. Please refresh the page.");
-      setShowDebug(true);
-      return;
-    }
-    setConnecting(true);
-    
-    // 10 second timeout
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Connection timeout - please try again')), 10000)
-    );
+    // HashPack-only connect button: fast connection
+    const handleConnectHashPack = async () => {
+        addLog("=== Starting HashPack-only connection ===");
+        if (!dAppConnector) {
+            addLog("ERROR: DAppConnector not initialized");
+            toast.error("Wallet connector not initialized. Please refresh the page.");
+            setShowDebug(true);
+            return;
+        }
+        setConnecting(true);
 
-    try {
-      // Check for extension first (in-app browser)
-      const hashpackExtension = dAppConnector.extensions?.find(ext => 
-        ext.name?.toLowerCase().includes('hashpack') && ext.available
-      );
+        // 10 second timeout
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Connection timeout - please try again')), 10000)
+        );
 
-      let session;
-      if (hashpackExtension) {
-        addLog(`Using HashPack extension: ${hashpackExtension.id}`);
-        session = await Promise.race([
-          dAppConnector.connectExtension(hashpackExtension.id),
-          timeoutPromise
-        ]);
-      } else {
-        addLog("Using deep link (no extension found)");
-        session = await Promise.race([
-          dAppConnector.connect((uri: string) => {
-            setLastWcUri(uri);
-            const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
-            window.location.href = hashpackNative;
-          }),
-          timeoutPromise
-        ]);
-      }
+        try {
+            // Check for extension first (in-app browser)
+            const hashpackExtension = dAppConnector.extensions?.find(ext =>
+                ext.name?.toLowerCase().includes('hashpack') && ext.available
+            );
 
-      const signer = dAppConnector.signers?.[0];
-      const account = signer?.getAccountId()?.toString();
-      if (account) {
-        addLog(`✅ SUCCESS! Connected: ${account}`);
-        setAccountId(account);
-        setConnected(true);
-        window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
-        toast.success(`Connected: ${account}`);
-        onConnect?.(account);
-      } else {
-        throw new Error("No account received");
-      }
-    } catch (error: any) {
-      const msg = String(error?.message || error);
-      addLog(`ERROR: ${msg}`);
-      toast.error(msg || 'Failed to connect');
-      setShowDebug(true);
-    } finally {
-      setConnecting(false);
-    }
-  };    if (connected) {
+            let session;
+            if (hashpackExtension) {
+                addLog(`Using HashPack extension: ${hashpackExtension.id}`);
+                session = await Promise.race([
+                    dAppConnector.connectExtension(hashpackExtension.id),
+                    timeoutPromise
+                ]);
+            } else {
+                addLog("Using deep link (no extension found)");
+                session = await Promise.race([
+                    dAppConnector.connect((uri: string) => {
+                        setLastWcUri(uri);
+                        const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
+                        window.location.href = hashpackNative;
+                    }),
+                    timeoutPromise
+                ]);
+            }
+
+            const signer = dAppConnector.signers?.[0];
+            const account = signer?.getAccountId()?.toString();
+            if (account) {
+                addLog(`✅ SUCCESS! Connected: ${account}`);
+                setAccountId(account);
+                setConnected(true);
+                window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
+                toast.success(`Connected: ${account}`);
+                onConnect?.(account);
+            } else {
+                throw new Error("No account received");
+            }
+        } catch (error: any) {
+            const msg = String(error?.message || error);
+            addLog(`ERROR: ${msg}`);
+            toast.error(msg || 'Failed to connect');
+            setShowDebug(true);
+        } finally {
+            setConnecting(false);
+        }
+    }; if (connected) {
         return (
             <div className="space-y-3">
                 <div className="rounded-lg border border-[#00c48c] bg-[#00c48c]/10 p-4">
@@ -329,7 +329,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 </p>
                 <div className="flex flex-col gap-2">
                     <Button
-                        onClick={handleConnectHashPack}
+                        onClick={handleConnect}
                         disabled={connecting || !dAppConnector}
                         className="w-full bg-[#5D4FF4] hover:bg-[#4D3FE4] h-12 text-base font-semibold"
                     >
@@ -339,21 +339,13 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                 </svg>
-                                Connecting to HashPack...
+                                Connecting...
                             </>
                         ) : !dAppConnector ? (
                             "Initializing..."
                         ) : (
-                            "Connect with HashPack"
+                            "Connect Wallet"
                         )}
-                    </Button>
-                    <Button
-                        onClick={handleConnect}
-                        variant="outline"
-                        disabled={connecting || !dAppConnector}
-                        className="w-full h-10 text-sm"
-                    >
-                        Other wallets
                     </Button>
                 </div>
 
