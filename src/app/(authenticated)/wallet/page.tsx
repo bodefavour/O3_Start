@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { ReceiveModal } from "@/components/wallet/ReceiveModal";
 import { SendModal } from "@/components/wallet/SendModal";
 import { SwapModal } from "@/components/wallet/SwapModal";
+import { TransactionDetailsModal } from "@/components/wallet/TransactionDetailsModal";
 import { walletApi, transactionApi } from "@/lib/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
@@ -39,6 +40,8 @@ export default function WalletPage() {
     const [receiveModalOpen, setReceiveModalOpen] = useState(false);
     const [sendModalOpen, setSendModalOpen] = useState(false);
     const [swapModalOpen, setSwapModalOpen] = useState(false);
+    const [transactionDetailsModalOpen, setTransactionDetailsModalOpen] = useState(false);
+    const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
     const [selectedWallet, setSelectedWallet] = useState<{
         currency: string;
         symbol: string;
@@ -54,6 +57,70 @@ export default function WalletPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loadingData, setLoadingData] = useState(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [hederaBalance, setHederaBalance] = useState<any>(null);
+    const [hbarPrice, setHbarPrice] = useState<number>(0.05); // Default fallback
+
+    // Fetch HBAR price
+    const fetchHbarPrice = async () => {
+        try {
+            const response = await fetch('/api/hedera/price');
+            const result = await response.json();
+            if (result.success) {
+                setHbarPrice(result.data.hbarPrice);
+                console.log('✅ HBAR Price:', result.data.hbarPrice, 'USD (source:', result.data.source + ')');
+            }
+        } catch (error) {
+            console.error('Failed to fetch HBAR price:', error);
+        }
+    };
+
+    // Fetch Hedera balances and transactions for backend signing mode
+    const fetchHederaBalance = async () => {
+        const backendSigningEnabled = process.env.NEXT_PUBLIC_BACKEND_SIGNING_ENABLED === 'true';
+        const operatorId = process.env.NEXT_PUBLIC_HEDERA_OPERATOR_ID;
+
+        if (backendSigningEnabled && operatorId) {
+            try {
+                // Fetch balance
+                const balanceResponse = await fetch(`/api/hedera/balance?accountId=${operatorId}`);
+                const balanceResult = await balanceResponse.json();
+                
+                if (balanceResult.success) {
+                    setHederaBalance(balanceResult.data);
+                    console.log('✅ Fetched Hedera balance:', balanceResult.data);
+                }
+
+                // Fetch transactions from Mirror Node
+                const txResponse = await fetch(`/api/hedera/transactions?accountId=${operatorId}&limit=20`);
+                const txResult = await txResponse.json();
+                
+                if (txResult.success) {
+                    const hederaTx = txResult.data.transactions || [];
+                    console.log('✅ Fetched Hedera transactions from Mirror Node:', hederaTx.length);
+                    
+                    // In backend signing mode, prioritize Mirror Node transactions
+                    setTransactions((prevTx) => {
+                        // Merge and deduplicate by hash, preferring Mirror Node data
+                        const txMap = new Map();
+                        
+                        // Add database transactions first
+                        prevTx.forEach(tx => txMap.set(tx.hash, tx));
+                        
+                        // Override/add Mirror Node transactions (more authoritative)
+                        hederaTx.forEach((tx: any) => txMap.set(tx.hash, tx));
+                        
+                        // Convert back to array and sort by date (newest first)
+                        return Array.from(txMap.values()).sort((a, b) => 
+                            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                        );
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to fetch Hedera data:', error);
+            }
+        }
+    };
 
     // Fetch real data
     useEffect(() => {
@@ -64,6 +131,9 @@ export default function WalletPage() {
 
             try {
                 setLoadingData(true);
+                
+                // Fetch HBAR price first
+                await fetchHbarPrice();
                 
                 // Fetch wallets and transactions separately to handle errors gracefully
                 let fetchedWallets = [];
@@ -87,6 +157,9 @@ export default function WalletPage() {
 
                 setWallets(fetchedWallets);
                 setTransactions(fetchedTransactions);
+                
+                // Also fetch live Hedera balances
+                await fetchHederaBalance();
             } catch (error) {
                 console.error('Error fetching data:', error);
                 setWallets([]);
@@ -103,12 +176,40 @@ export default function WalletPage() {
     const stablecoins = wallets.filter(w => w.type === 'stablecoin');
     const localCurrencies = wallets.filter(w => w.type === 'local_currency');
 
-    const totalPortfolioValue = wallets.reduce(
+    // Calculate total portfolio value including Hedera balances
+    let totalPortfolioValue = wallets.reduce(
         (sum, wallet) => sum + parseFloat(wallet.balance || '0'),
         0
     );
 
-    const totalWallets = wallets.length;
+    // Add Hedera balances with real-time pricing
+    if (hederaBalance) {
+        // Add HBAR value in USD using real-time price
+        const hbarAmount = parseFloat(hederaBalance.hbarBalance || '0');
+        totalPortfolioValue += hbarAmount * hbarPrice;
+        
+        // For HTS tokens, check if they're stablecoins
+        hederaBalance.tokens?.forEach((token: any) => {
+            const tokenBalance = parseFloat(token.balance || '0');
+            const tokenSymbol = token.symbol.toUpperCase();
+            
+            // Stablecoins are worth $1 each
+            if (tokenSymbol.includes('USD') || tokenSymbol.includes('USDC') || 
+                tokenSymbol.includes('USDT') || tokenSymbol === 'BPUSD') {
+                totalPortfolioValue += tokenBalance;
+            } else {
+                // For other tokens, assume very small value (test tokens)
+                // Only add if balance is reasonable (< 10000)
+                if (tokenBalance < 10000) {
+                    totalPortfolioValue += tokenBalance * 0.01; // $0.01 per token
+                }
+                // Ignore tokens with huge balances (likely test tokens worth nothing)
+            }
+        });
+    }
+
+    // Count total wallets including Hedera tokens
+    const totalWallets = wallets.length + (hederaBalance ? 1 + (hederaBalance.tokens?.length || 0) : 0);
 
     // Helper function to format transaction display
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -202,6 +303,16 @@ export default function WalletPage() {
 
     const handleCloseSwapModal = () => {
         setSwapModalOpen(false);
+    };
+
+    const handleOpenTransactionDetails = (transactionId: string) => {
+        setSelectedTransactionId(transactionId);
+        setTransactionDetailsModalOpen(true);
+    };
+
+    const handleCloseTransactionDetails = () => {
+        setTransactionDetailsModalOpen(false);
+        setSelectedTransactionId(null);
     };
 
     const filteredTransactions = transactions.filter((tx) => {
@@ -394,6 +505,166 @@ export default function WalletPage() {
                     {/* Stablecoins Tab */}
                     {activeTab === "stablecoins" && (
                         <div className="space-y-4">
+                            {/* Hedera Live Balances */}
+                            {hederaBalance && (
+                                <>
+                                    {/* HBAR Wallet */}
+                                    <Card className="overflow-hidden border-2 border-[#00c48c]">
+                                        <CardContent className="p-6">
+                                            <div className="mb-4 flex items-start justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#0b1f3a] to-[#00c48c] text-2xl">
+                                                        ℏ
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-[#0b1f3a]">
+                                                            Hedera (HBAR)
+                                                        </h3>
+                                                        <p className="text-sm text-gray-600">Native Cryptocurrency</p>
+                                                    </div>
+                                                </div>
+                                                <span className="rounded-full bg-[#00c48c]/10 px-3 py-1 text-xs font-semibold text-[#00c48c]">
+                                                    LIVE
+                                                </span>
+                                            </div>
+
+                                            <div className="mb-4">
+                                                <p className="text-sm font-medium text-gray-600">Balance</p>
+                                                <p className="text-2xl font-bold text-[#0b1f3a]">
+                                                    {hederaBalance.hbarBalance} ℏ
+                                                </p>
+                                                <p className="text-sm text-gray-600">
+                                                    ≈ ${(parseFloat(hederaBalance.hbarBalance) * hbarPrice).toFixed(2)} USD
+                                                </p>
+                                            </div>
+
+                                            <div className="mb-4">
+                                                <p className="mb-2 text-sm font-medium text-gray-600">
+                                                    Account ID
+                                                </p>
+                                                <div className="flex items-center gap-2 rounded-lg bg-gray-100 p-3">
+                                                    <code className="flex-1 truncate text-sm text-gray-700">
+                                                        {hederaBalance.accountId}
+                                                    </code>
+                                                    <button
+                                                        onClick={() => copyToClipboard(hederaBalance.accountId)}
+                                                        className="flex-shrink-0 rounded p-1 hover:bg-gray-200"
+                                                    >
+                                                        <Copy className="h-4 w-4 text-gray-600" />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-3">
+                                                <Button
+                                                    onClick={() => handleOpenSendModal('HBAR', 'HBAR', hederaBalance.accountId, hederaBalance.hbarBalance, 'Hedera')}
+                                                    className="flex-1 gap-2 rounded-xl bg-[#00c48c] hover:bg-[#00b37d]"
+                                                >
+                                                    <Send className="h-4 w-4" />
+                                                    Send HBAR
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handleOpenReceiveModal('HBAR', 'HBAR', hederaBalance.accountId)}
+                                                    variant="outline"
+                                                    className="flex-1 gap-2 rounded-xl"
+                                                >
+                                                    <Download className="h-4 w-4" />
+                                                    Receive
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    {/* HTS Tokens */}
+                                    {hederaBalance.tokens?.map((token: any) => (
+                                        <Card key={token.tokenId} className="overflow-hidden border-2 border-blue-500">
+                                            <CardContent className="p-6">
+                                                <div className="mb-4 flex items-start justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-2xl">
+                                                            🪙
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-lg font-bold text-[#0b1f3a]">
+                                                                {token.name}
+                                                            </h3>
+                                                            <p className="text-sm text-gray-600">{token.symbol}</p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                                                        HTS TOKEN
+                                                    </span>
+                                                </div>
+
+                                                <div className="mb-4">
+                                                    <p className="text-sm font-medium text-gray-600">Balance</p>
+                                                    <p className="text-2xl font-bold text-[#0b1f3a]">
+                                                        {parseFloat(token.balance).toLocaleString()} {token.symbol}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        {(() => {
+                                                            const tokenBalance = parseFloat(token.balance);
+                                                            const tokenSymbol = token.symbol.toUpperCase();
+                                                            let usdValue = 0;
+                                                            
+                                                            // Stablecoins worth $1 each
+                                                            if (tokenSymbol.includes('USD') || tokenSymbol.includes('USDC') || 
+                                                                tokenSymbol.includes('USDT') || tokenSymbol === 'BPUSD') {
+                                                                usdValue = tokenBalance;
+                                                            } else if (tokenBalance < 10000) {
+                                                                // Small amounts: assume $0.01 value
+                                                                usdValue = tokenBalance * 0.01;
+                                                            } else {
+                                                                // Large amounts: likely test token
+                                                                return 'Test Token (No USD Value)';
+                                                            }
+                                                            
+                                                            return `≈ $${usdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
+                                                        })()}
+                                                    </p>
+                                                </div>
+
+                                                <div className="mb-4">
+                                                    <p className="mb-2 text-sm font-medium text-gray-600">
+                                                        Account ID
+                                                    </p>
+                                                    <div className="flex items-center gap-2 rounded-lg bg-gray-100 p-3">
+                                                        <code className="flex-1 truncate text-sm text-gray-700">
+                                                            {hederaBalance.accountId}
+                                                        </code>
+                                                        <button
+                                                            onClick={() => copyToClipboard(hederaBalance.accountId)}
+                                                            className="flex-shrink-0 rounded p-1 hover:bg-gray-200"
+                                                        >
+                                                            <Copy className="h-4 w-4 text-gray-600" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex gap-3">
+                                                    <Button
+                                                        onClick={() => handleOpenSendModal(token.name, token.symbol, hederaBalance.accountId, token.balance, token.name)}
+                                                        className="flex-1 gap-2 rounded-xl bg-[#00c48c] hover:bg-[#00b37d]"
+                                                    >
+                                                        <Send className="h-4 w-4" />
+                                                        Send {token.symbol}
+                                                    </Button>
+                                                    <Button
+                                                        onClick={() => handleOpenReceiveModal(token.name, token.symbol, hederaBalance.accountId)}
+                                                        variant="outline"
+                                                        className="flex-1 gap-2 rounded-xl"
+                                                    >
+                                                        <Download className="h-4 w-4" />
+                                                        Receive
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </>
+                            )}
+
+                            {/* Database Wallets */}
                             {stablecoins.map((wallet) => (
                                 <Card key={wallet.id} className="overflow-hidden">
                                     <CardContent className="p-6">
@@ -1098,8 +1369,9 @@ export default function WalletPage() {
                     onClose={handleCloseSendModal}
                     currency={selectedWallet.currency}
                     currencySymbol={selectedWallet.symbol}
-                    availableBalance={selectedWallet.balance}
+                    availableBalance={hederaBalance?.hbarBalance || selectedWallet.balance}
                     walletName={selectedWallet.name}
+                    onTransactionSuccess={fetchHederaBalance}
                 />
             )}
 

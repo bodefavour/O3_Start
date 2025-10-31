@@ -14,6 +14,7 @@ interface SendModalProps {
     currencySymbol: string;
     availableBalance: string;
     walletName: string;
+    onTransactionSuccess?: () => void; // Callback to refresh wallet data
 }
 
 interface Token {
@@ -29,6 +30,7 @@ export function SendModal({
     currencySymbol,
     availableBalance,
     walletName,
+    onTransactionSuccess,
 }: SendModalProps) {
     const { showToast } = useToast();
     const { user } = useUser();
@@ -39,10 +41,10 @@ export function SendModal({
     const [note, setNote] = useState("");
     const [transactionHash, setTransactionHash] = useState("");
     const [sending, setSending] = useState(false);
-    
+
     // Backend signing mode
     const backendSigning = process.env.NEXT_PUBLIC_BACKEND_SIGNING_ENABLED === 'true';
-    
+
     // Token selection
     const [selectedToken, setSelectedToken] = useState<string>(process.env.NEXT_PUBLIC_HEDERA_TOKEN_ID || '');
     const [availableTokens, setAvailableTokens] = useState<Token[]>([]);
@@ -66,7 +68,7 @@ export function SendModal({
                 `https://${network}.mirrornode.hedera.com/api/v1/accounts/${accountId}/tokens?limit=100`
             );
             const data = await response.json();
-            
+
             if (data.tokens) {
                 const tokens: Token[] = data.tokens.map((t: any) => ({
                     id: t.token_id,
@@ -74,7 +76,7 @@ export function SendModal({
                     name: t.name || t.token_id,
                     balance: (parseFloat(t.balance) / Math.pow(10, t.decimals || 0)).toFixed(2),
                 }));
-                
+
                 // Add HBAR as first option
                 tokens.unshift({
                     id: 'HBAR',
@@ -82,9 +84,9 @@ export function SendModal({
                     name: 'Hedera',
                     balance: availableBalance,
                 });
-                
+
                 setAvailableTokens(tokens);
-                
+
                 // Set default token if available
                 const defaultToken = process.env.NEXT_PUBLIC_HEDERA_TOKEN_ID;
                 if (defaultToken && tokens.find(t => t.id === defaultToken)) {
@@ -113,7 +115,7 @@ export function SendModal({
 
     const networkFee = priority === "fast" ? 1.5 : 1.0;
     const total = amount ? (parseFloat(amount) + networkFee).toFixed(2) : "0.00";
-    
+
     // Get selected token info
     const currentToken = availableTokens.find(t => t.id === selectedToken) || {
         id: selectedToken,
@@ -166,7 +168,7 @@ export function SendModal({
                         toAccountId: recipientAddress,
                         amount: parseFloat(amount),
                         memo: note || `Send ${amount} ${currentToken.symbol}`,
-                        userId: operatorId,
+                        // Don't send userId for backend signing - use Mirror Node for transaction history
                     }),
                 });
 
@@ -176,6 +178,11 @@ export function SendModal({
                     setTransactionHash(result.data.transactionId);
                     showToast("✅ Transaction sent via backend!", "success");
                     setStep(3);
+                    
+                    // Refresh wallet data after successful transaction
+                    if (onTransactionSuccess) {
+                        onTransactionSuccess();
+                    }
                 } else {
                     // Provide helpful error messages
                     let errorMessage = result.error || 'Transaction failed';
@@ -440,19 +447,19 @@ export function SendModal({
                                         className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pr-16 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#00c48c] focus:outline-none focus:ring-1 focus:ring-[#00c48c]"
                                     />
                                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-600">
-                                        {backendSigning && selectedToken ? 
-                                            availableTokens.find(t => t.id === selectedToken)?.symbol || currencySymbol 
+                                        {backendSigning && selectedToken ?
+                                            availableTokens.find(t => t.id === selectedToken)?.symbol || currencySymbol
                                             : currencySymbol
                                         }
                                     </span>
                                 </div>
                             </div>
                             <p className="mb-6 text-sm text-gray-600">
-                                Available: {backendSigning && selectedToken ? 
-                                    availableTokens.find(t => t.id === selectedToken)?.balance || availableBalance 
+                                Available: {backendSigning && selectedToken ?
+                                    availableTokens.find(t => t.id === selectedToken)?.balance || availableBalance
                                     : availableBalance
-                                } {backendSigning && selectedToken ? 
-                                    availableTokens.find(t => t.id === selectedToken)?.symbol || currencySymbol 
+                                } {backendSigning && selectedToken ?
+                                    availableTokens.find(t => t.id === selectedToken)?.symbol || currencySymbol
                                     : currencySymbol
                                 }
                             </p>
@@ -574,8 +581,8 @@ export function SendModal({
                                 <div className="flex items-center justify-between">
                                     <span className="text-base text-gray-600">Amount</span>
                                     <span className="text-base font-semibold text-gray-900">
-                                        {amount} {backendSigning && selectedToken ? 
-                                            availableTokens.find(t => t.id === selectedToken)?.symbol || currencySymbol 
+                                        {amount} {backendSigning && selectedToken ?
+                                            availableTokens.find(t => t.id === selectedToken)?.symbol || currencySymbol
                                             : currencySymbol
                                         }
                                     </span>
@@ -592,8 +599,8 @@ export function SendModal({
                             <div className="mb-6 flex items-center justify-between border-t border-gray-200 pt-4">
                                 <span className="text-lg font-bold text-gray-900">Total</span>
                                 <span className="text-lg font-bold text-gray-900">
-                                    {total} {backendSigning && selectedToken ? 
-                                        availableTokens.find(t => t.id === selectedToken)?.symbol || currencySymbol 
+                                    {total} {backendSigning && selectedToken ?
+                                        availableTokens.find(t => t.id === selectedToken)?.symbol || currencySymbol
                                         : currencySymbol
                                     }
                                 </span>

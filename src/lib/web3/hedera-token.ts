@@ -306,6 +306,16 @@ export async function getTransactionInfo(transactionId: string): Promise<any> {
 }
 
 /**
+ * Format transaction ID for Mirror Node API
+ * Converts from SDK format: 0.0.4826582@1761924855.321040929
+ * To Mirror Node format: 0.0.4826582-1761924855-321040929
+ */
+export function formatTransactionIdForMirrorNode(transactionId: string): string {
+    // Replace @ with - and . with -
+    return transactionId.replace('@', '-').replace(/\.(\d{9})$/, '-$1');
+}
+
+/**
  * Get HashScan explorer URL for transaction
  */
 export function getExplorerUrl(

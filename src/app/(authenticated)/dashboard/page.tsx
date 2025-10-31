@@ -104,6 +104,9 @@ export default function DashboardPage() {
       if (!userId) return;
 
       try {
+        const backendSigningEnabled = process.env.NEXT_PUBLIC_BACKEND_SIGNING_ENABLED === 'true';
+        const operatorId = process.env.NEXT_PUBLIC_HEDERA_OPERATOR_ID;
+
         // Fetch wallets and transactions separately to handle errors individually
         let fetchedWallets = [];
         let fetchedTransactions = [];
@@ -126,62 +129,82 @@ export default function DashboardPage() {
           fetchedTransactions = [];
         }
 
+        // Fetch Hedera data if backend signing enabled
+        if (backendSigningEnabled && operatorId) {
+          try {
+            // Fetch real-time HBAR price
+            const priceResponse = await fetch('/api/hedera/price');
+            const priceResult = await priceResponse.json();
+            const hbarPrice = priceResult.success ? priceResult.data.hbarPrice : 0.05;
+            
+            console.log('✅ HBAR Price for dashboard:', hbarPrice, 'USD');
+
+            // Fetch Hedera balance
+            const balanceResponse = await fetch(`/api/hedera/balance?accountId=${operatorId}`);
+            const balanceResult = await balanceResponse.json();
+            
+            if (balanceResult.success) {
+              const hbarAmount = parseFloat(balanceResult.data.hbarBalance || '0');
+              let totalValue = hbarAmount * hbarPrice;
+              
+              // Calculate token values properly
+              balanceResult.data.tokens?.forEach((token: any) => {
+                const tokenBalance = parseFloat(token.balance || '0');
+                const tokenSymbol = token.symbol.toUpperCase();
+                
+                // Stablecoins are worth $1 each
+                if (tokenSymbol.includes('USD') || tokenSymbol.includes('USDC') || 
+                    tokenSymbol.includes('USDT') || tokenSymbol === 'BPUSD') {
+                  totalValue += tokenBalance;
+                } else {
+                  // Other tokens: only add value if balance is reasonable
+                  if (tokenBalance < 10000) {
+                    totalValue += tokenBalance * 0.01; // $0.01 per token
+                  }
+                  // Ignore huge balances (test tokens)
+                }
+              });
+              
+              setBalance(totalValue.toFixed(2));
+            }
+
+            // Fetch Hedera transactions
+            const txResponse = await fetch(`/api/hedera/transactions?accountId=${operatorId}&limit=10`);
+            const txResult = await txResponse.json();
+            
+            if (txResult.success) {
+              fetchedTransactions = [...(txResult.data.transactions || []), ...fetchedTransactions];
+              console.log('✅ Fetched Hedera transactions for dashboard:', txResult.data.transactions.length);
+            }
+          } catch (hederaError) {
+            console.warn('Failed to fetch Hedera data:', hederaError);
+          }
+        } else {
+          // Calculate total balance from database wallets only
+          const totalBalance = fetchedWallets.reduce((sum: number, w: any) => {
+            return sum + parseFloat(w.balance || '0');
+          }, 0);
+          setBalance(totalBalance.toFixed(2));
+        }
+
         setWallets(fetchedWallets);
         setTransactions(fetchedTransactions);
 
-        // Calculate total balance from database wallets
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const totalBalance = fetchedWallets.reduce((sum: number, w: any) => {
-          return sum + parseFloat(w.balance || '0');
-        }, 0);
-
-        // If no database balance and we're using backend signing, fetch from Hedera
-        if (totalBalance === 0 && process.env.NEXT_PUBLIC_BACKEND_SIGNING_ENABLED === 'true') {
-          const operatorId = process.env.NEXT_PUBLIC_HEDERA_OPERATOR_ID;
-          if (operatorId) {
-            try {
-              const { getAccountBalance } = await import('@/lib/hedera/direct-signer');
-              const result = await getAccountBalance(operatorId);
-              if (result.balance !== undefined) {
-                setBalance(result.balance.toFixed(2));
-              } else {
-                setBalance('0.00');
-              }
-            } catch (balanceError) {
-              console.warn('Could not fetch Hedera balance:', balanceError);
-              setBalance('0.00');
-            }
-          } else {
-            setBalance(totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-          }
-        } else {
-          setBalance(totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-        }
-
-        // Calculate monthly volume (sum of all transactions this month)
+        // Calculate monthly volume from transactions
         const now = new Date();
-        const thisMonth = now.getMonth();
-        const thisYear = now.getFullYear();
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const monthlyTxns = fetchedTransactions.filter((t: any) => {
-          const txDate = new Date(t.createdAt || t.timestamp);
-          return txDate.getMonth() === thisMonth && txDate.getFullYear() === thisYear;
-        });
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const monthlyVol = monthlyTxns.reduce((sum: number, t: any) => {
-          return sum + Math.abs(parseFloat(t.amount || '0'));
-        }, 0);
-        setMonthlyVolume(monthlyVol.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }));
+        const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        const monthlyTx = fetchedTransactions.filter((tx: any) => 
+          new Date(tx.createdAt) >= oneMonthAgo
+        );
+        const volume = monthlyTx.reduce((sum: number, tx: any) => 
+          sum + parseFloat(tx.amount || '0'), 0
+        );
+        setMonthlyVolume(volume.toFixed(2));
 
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        // Set defaults on error
         setBalance('0.00');
-        setMonthlyVolume('0');
-        setWallets([]);
-        setTransactions([]);
+        setMonthlyVolume('0.00');
       }
     };
 

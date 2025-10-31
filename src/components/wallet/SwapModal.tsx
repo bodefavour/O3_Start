@@ -150,151 +150,151 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
                         <label className="mb-2 block text-sm font-medium text-gray-700">
                             From
                         </label>
-                    <div className="rounded-lg border border-gray-300 p-4">
-                        <div className="mb-3 flex items-center justify-between">
-                            <select
-                                value={fromCurrency.symbol}
-                                onChange={(e) => {
-                                    const selected = availableCurrencies.find(
-                                        (c) => c.symbol === e.target.value
-                                    );
-                                    if (selected) setFromCurrency(selected);
-                                }}
-                                className="text-lg font-bold text-gray-900 bg-transparent border-none outline-none cursor-pointer"
-                            >
-                                {availableCurrencies.map((currency) => (
-                                    <option key={currency.symbol} value={currency.symbol}>
-                                        {currency.symbol}
-                                    </option>
-                                ))}
-                            </select>
+                        <div className="rounded-lg border border-gray-300 p-4">
+                            <div className="mb-3 flex items-center justify-between">
+                                <select
+                                    value={fromCurrency.symbol}
+                                    onChange={(e) => {
+                                        const selected = availableCurrencies.find(
+                                            (c) => c.symbol === e.target.value
+                                        );
+                                        if (selected) setFromCurrency(selected);
+                                    }}
+                                    className="text-lg font-bold text-gray-900 bg-transparent border-none outline-none cursor-pointer"
+                                >
+                                    {availableCurrencies.map((currency) => (
+                                        <option key={currency.symbol} value={currency.symbol}>
+                                            {currency.symbol}
+                                        </option>
+                                    ))}
+                                </select>
+                                <input
+                                    type="text"
+                                    value={fromAmount}
+                                    onChange={(e) => handleFromAmountChange(e.target.value)}
+                                    placeholder="0.00"
+                                    className="text-right text-lg font-medium text-gray-400 bg-transparent border-none outline-none w-32"
+                                />
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">{fromCurrency.name}</span>
+                                <span className="text-gray-900">
+                                    Balance: {fromCurrency.balance}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Swap Button */}
+                    <div className="mb-4 flex justify-center">
+                        <button
+                            onClick={handleSwapCurrencies}
+                            className="rounded-full bg-gray-200 p-2 transition-colors hover:bg-gray-300"
+                        >
+                            <ArrowUpDown className="h-5 w-5 text-gray-700" />
+                        </button>
+                    </div>
+
+                    {/* To Section */}
+                    <div className="mb-6">
+                        <label className="mb-2 block text-sm font-medium text-gray-700">
+                            To
+                        </label>
+                        <div className="rounded-lg border border-gray-300 p-4">
+                            <div className="mb-3 flex items-center justify-between">
+                                <select
+                                    value={toCurrency.symbol}
+                                    onChange={(e) => {
+                                        const selected = availableCurrencies.find(
+                                            (c) => c.symbol === e.target.value
+                                        );
+                                        if (selected) setToCurrency(selected);
+                                    }}
+                                    className="text-lg font-bold text-gray-900 bg-transparent border-none outline-none cursor-pointer"
+                                >
+                                    {availableCurrencies.map((currency) => (
+                                        <option key={currency.symbol} value={currency.symbol}>
+                                            {currency.symbol}
+                                        </option>
+                                    ))}
+                                </select>
+                                <span className="text-right text-lg font-medium text-gray-400">
+                                    {toAmount || "0.000000"}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">{toCurrency.name}</span>
+                                <span className="text-gray-900">
+                                    Balance: {toCurrency.balance}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Slippage Tolerance */}
+                    <div className="mb-6">
+                        <label className="mb-2 block text-sm font-medium text-gray-700">
+                            Slippage Tolerance
+                        </label>
+                        <div className="flex gap-2">
+                            {["0.1", "0.5", "1.0"].map((value) => (
+                                <button
+                                    key={value}
+                                    onClick={() => setSlippage(value)}
+                                    className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${slippage === value
+                                        ? "bg-[#00c48c] text-white"
+                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                        }`}
+                                >
+                                    {value}%
+                                </button>
+                            ))}
                             <input
                                 type="text"
-                                value={fromAmount}
-                                onChange={(e) => handleFromAmountChange(e.target.value)}
-                                placeholder="0.00"
-                                className="text-right text-lg font-medium text-gray-400 bg-transparent border-none outline-none w-32"
+                                value={slippage}
+                                onChange={(e) => setSlippage(e.target.value)}
+                                className="w-24 rounded-lg border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-900 outline-none focus:border-[#00c48c] focus:ring-1 focus:ring-[#00c48c]"
                             />
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">{fromCurrency.name}</span>
-                            <span className="text-gray-900">
-                                Balance: {fromCurrency.balance}
-                            </span>
+                    </div>
+
+                    {/* Important Notice */}
+                    <div className="mb-6 rounded-lg bg-blue-50 p-4">
+                        <div className="flex gap-3">
+                            <div className="flex-shrink-0">
+                                <svg
+                                    className="h-5 w-5 text-blue-600"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 className="mb-1 text-sm font-semibold text-gray-900">
+                                    Important Notice
+                                </h4>
+                                <p className="text-xs text-gray-700">
+                                    Exchange rates are subject to market conditions and may change
+                                    before transaction confirmation.
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Swap Button */}
-                <div className="mb-4 flex justify-center">
-                    <button
-                        onClick={handleSwapCurrencies}
-                        className="rounded-full bg-gray-200 p-2 transition-colors hover:bg-gray-300"
+                    {/* Swap Button */}
+                    <Button
+                        onClick={handleSwap}
+                        className="w-full gap-2 rounded-xl bg-[#00c48c] py-6 text-base font-semibold hover:bg-[#00b37d]"
                     >
-                        <ArrowUpDown className="h-5 w-5 text-gray-700" />
-                    </button>
+                        Swap Now
+                    </Button>
                 </div>
-
-                {/* To Section */}
-                <div className="mb-6">
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                        To
-                    </label>
-                    <div className="rounded-lg border border-gray-300 p-4">
-                        <div className="mb-3 flex items-center justify-between">
-                            <select
-                                value={toCurrency.symbol}
-                                onChange={(e) => {
-                                    const selected = availableCurrencies.find(
-                                        (c) => c.symbol === e.target.value
-                                    );
-                                    if (selected) setToCurrency(selected);
-                                }}
-                                className="text-lg font-bold text-gray-900 bg-transparent border-none outline-none cursor-pointer"
-                            >
-                                {availableCurrencies.map((currency) => (
-                                    <option key={currency.symbol} value={currency.symbol}>
-                                        {currency.symbol}
-                                    </option>
-                                ))}
-                            </select>
-                            <span className="text-right text-lg font-medium text-gray-400">
-                                {toAmount || "0.000000"}
-                            </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">{toCurrency.name}</span>
-                            <span className="text-gray-900">
-                                Balance: {toCurrency.balance}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Slippage Tolerance */}
-                <div className="mb-6">
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                        Slippage Tolerance
-                    </label>
-                    <div className="flex gap-2">
-                        {["0.1", "0.5", "1.0"].map((value) => (
-                            <button
-                                key={value}
-                                onClick={() => setSlippage(value)}
-                                className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${slippage === value
-                                    ? "bg-[#00c48c] text-white"
-                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                                    }`}
-                            >
-                                {value}%
-                            </button>
-                        ))}
-                        <input
-                            type="text"
-                            value={slippage}
-                            onChange={(e) => setSlippage(e.target.value)}
-                            className="w-24 rounded-lg border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-900 outline-none focus:border-[#00c48c] focus:ring-1 focus:ring-[#00c48c]"
-                        />
-                    </div>
-                </div>
-
-                {/* Important Notice */}
-                <div className="mb-6 rounded-lg bg-blue-50 p-4">
-                    <div className="flex gap-3">
-                        <div className="flex-shrink-0">
-                            <svg
-                                className="h-5 w-5 text-blue-600"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                            >
-                                <path
-                                    fillRule="evenodd"
-                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                    clipRule="evenodd"
-                                />
-                            </svg>
-                        </div>
-                        <div>
-                            <h4 className="mb-1 text-sm font-semibold text-gray-900">
-                                Important Notice
-                            </h4>
-                            <p className="text-xs text-gray-700">
-                                Exchange rates are subject to market conditions and may change
-                                before transaction confirmation.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Swap Button */}
-                <Button
-                    onClick={handleSwap}
-                    className="w-full gap-2 rounded-xl bg-[#00c48c] py-6 text-base font-semibold hover:bg-[#00b37d]"
-                >
-                    Swap Now
-                </Button>
             </div>
-        </div>
         </div >
     );
 }

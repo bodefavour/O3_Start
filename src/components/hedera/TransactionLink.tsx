@@ -8,6 +8,15 @@ interface TransactionLinkProps {
 }
 
 /**
+ * Format transaction ID for Mirror Node API
+ * Converts: 0.0.4826582@1761924855.321040929
+ * To: 0.0.4826582-1761924855-321040929
+ */
+function formatTransactionIdForMirrorNode(transactionId: string): string {
+    return transactionId.replace('@', '-').replace(/\.(\d{9})$/, '-$1');
+}
+
+/**
  * Component to display Hedera transaction hash with link to HashScan explorer
  */
 export function TransactionLink({
@@ -17,7 +26,8 @@ export function TransactionLink({
     showIcon = true,
 }: TransactionLinkProps) {
     const explorerUrl = `https://hashscan.io/${network}/transaction/${transactionId}`;
-    const mirrorNodeUrl = `https://${network}.mirrornode.hedera.com/api/v1/transactions/${transactionId}`;
+    const formattedTxId = formatTransactionIdForMirrorNode(transactionId);
+    const mirrorNodeUrl = `https://${network}.mirrornode.hedera.com/api/v1/transactions/${formattedTxId}`;
 
     const shortTxId =
         transactionId.length > 20

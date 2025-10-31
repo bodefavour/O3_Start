@@ -1,10 +1,11 @@
 /**
- * API Endpoint to transfer Hedera tokens
+ * API Endpoint to transfer Hedera tokens or HBAR
  * POST /api/hedera/transfer
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { transferToken, getExplorerUrl } from '@/lib/web3/hedera-token';
+import { transferToken, getExplorerUrl, formatTransactionIdForMirrorNode } from '@/lib/web3/hedera-token';
+import { transferHbar } from '@/lib/web3/provider';
 import { db } from '@/db';
 import { transactions } from '@/db/schema';
 
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
         } = body;
 
         // Validate inputs
-        if (!tokenId || !fromAccountId || !toAccountId || !amount) {
+        if (!fromAccountId || !toAccountId || !amount) {
             return NextResponse.json(
                 {
                     success: false,
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
 
         let txId = transactionId;
         let result;
+        const isHbarTransfer = !tokenId || tokenId === 'HBAR';
 
         // If transaction was already signed and executed by wallet, skip execution
         if (walletSigned && transactionId) {
@@ -46,56 +48,72 @@ export async function POST(request: NextRequest) {
             };
         } else {
             // Execute transfer on Hedera using operator account (backend signing)
-            result = await transferToken(
-                tokenId,
-                fromAccountId,
-                toAccountId,
-                amount,
-                decimals,
-                memo
-            );
-
-            if (!result.success) {
-                return NextResponse.json(
-                    {
-                        success: false,
-                        error: result.error || 'Transfer failed',
-                    },
-                    { status: 500 }
+            if (isHbarTransfer) {
+                // Transfer native HBAR
+                console.log(`Transferring ${amount} HBAR from ${fromAccountId} to ${toAccountId}`);
+                txId = await transferHbar(fromAccountId, toAccountId, amount, memo);
+                result = {
+                    success: true,
+                    transactionId: txId,
+                };
+            } else {
+                // Transfer HTS token
+                console.log(`Transferring ${amount} of token ${tokenId} from ${fromAccountId} to ${toAccountId}`);
+                result = await transferToken(
+                    tokenId,
+                    fromAccountId,
+                    toAccountId,
+                    amount,
+                    decimals,
+                    memo
                 );
-            }
 
-            txId = result.transactionId;
+                if (!result.success) {
+                    return NextResponse.json(
+                        {
+                            success: false,
+                            error: result.error || 'Transfer failed',
+                        },
+                        { status: 500 }
+                    );
+                }
+
+                txId = result.transactionId;
+            }
         }
 
-        // Store transaction in database (optional - don't block on failure)
-        if (userId) {
+        // Store transaction in database (only for authenticated users with valid UUID)
+        // For backend signing mode without userId, transactions are fetched from Mirror Node
+        if (userId && userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
             try {
                 await db.insert(transactions).values({
                     userId,
                     type: 'outgoing',
                     status: 'completed',
                     amount: amount.toString(),
-                    currency: 'BPUSD',
+                    currency: isHbarTransfer ? 'HBAR' : tokenId.split('.').pop() || 'TOKEN',
                     fromAddress: fromAccountId,
                     toAddress: toAccountId,
                     note: memo,
                     hash: txId,
                     metadata: {
-                        tokenId,
+                        tokenId: isHbarTransfer ? null : tokenId,
                         hederaTransaction: true,
                         walletSigned,
+                        transferType: isHbarTransfer ? 'HBAR' : 'HTS',
                     },
                 });
                 console.log('✅ Transaction stored in database');
             } catch (dbError: any) {
-                // Don't fail the transaction if database storage fails
                 console.warn('⚠️ Failed to store transaction in database:', dbError.message);
                 console.log('Transaction succeeded on Hedera blockchain - database storage is optional');
             }
+        } else {
+            console.log('ℹ️ Backend signing mode: Transactions available via Mirror Node API');
         }
 
         const network = process.env.HEDERA_NETWORK || 'testnet';
+        const formattedTxId = formatTransactionIdForMirrorNode(txId!);
 
         return NextResponse.json({
             success: true,
@@ -104,9 +122,10 @@ export async function POST(request: NextRequest) {
                 fromAccountId,
                 toAccountId,
                 amount,
-                tokenId,
+                tokenId: isHbarTransfer ? null : tokenId,
+                transferType: isHbarTransfer ? 'HBAR' : 'HTS',
                 explorerUrl: getExplorerUrl(txId!, network),
-                mirrorNodeUrl: `https://${network}.mirrornode.hedera.com/api/v1/transactions/${txId}`,
+                mirrorNodeUrl: `https://${network}.mirrornode.hedera.com/api/v1/transactions/${formattedTxId}`,
             },
         });
     } catch (error: any) {
