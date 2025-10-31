@@ -33,12 +33,17 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         setDebugLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
     };
 
-    // Check if running on mobile
+    // Check if running on mobile or in HashPack in-app browser
     useEffect(() => {
         const checkMobile = () => {
-            const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            setIsMobile(mobile);
-            addLog(`Mobile detected: ${mobile}`);
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isHashPackBrowser = /HashPack/i.test(navigator.userAgent) || window.location.href.includes('hashpack');
+            
+            // Treat HashPack in-app browser (desktop or mobile) as mobile for connection flow
+            const shouldUseMobileFlow = isMobileDevice || isHashPackBrowser;
+            
+            setIsMobile(shouldUseMobileFlow);
+            addLog(`Mobile device: ${isMobileDevice} | HashPack browser: ${isHashPackBrowser} | Using mobile flow: ${shouldUseMobileFlow}`);
         };
         checkMobile();
     }, []);
@@ -200,11 +205,10 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 addLog("Desktop: Generating QR code for connection...");
 
                 // On desktop, generate WalletConnect URI and show QR code
-                setShowQR(true);
-
                 await dAppConnector.connect((uri: string) => {
                     addLog(`Generated WalletConnect URI for QR code (length: ${uri.length})`);
                     setLastWcUri(uri);
+                    setShowQR(true); // Show QR modal AFTER URI is set
                     // URI is captured, QR code will display it
                 });
 
