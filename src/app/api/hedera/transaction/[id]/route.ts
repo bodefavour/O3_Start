@@ -27,7 +27,17 @@ export async function GET(
         // Convert transaction ID format for Mirror Node
         // From: 0.0.4826582@1761927693.915611221
         // To: 0.0.4826582-1761927693-915611221
-        const formattedId = transactionId.replace('@', '-').replace(/\.(\d{9})$/, '-$1');
+        // Replace @ with - and the last . with -
+        let formattedId = transactionId.replace('@', '-');
+        const lastDotIndex = formattedId.lastIndexOf('.');
+        if (lastDotIndex !== -1) {
+            formattedId = formattedId.substring(0, lastDotIndex) + '-' + formattedId.substring(lastDotIndex + 1);
+        }
+
+        console.log('🔍 Transaction ID conversion:', {
+            original: transactionId,
+            formatted: formattedId
+        });
 
         // Fetch transaction from Mirror Node
         const response = await fetch(
@@ -35,8 +45,10 @@ export async function GET(
         );
 
         if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Mirror Node error:', errorData);
             return NextResponse.json(
-                { success: false, error: 'Transaction not found' },
+                { success: false, error: 'Transaction not found', details: errorData },
                 { status: response.status }
             );
         }

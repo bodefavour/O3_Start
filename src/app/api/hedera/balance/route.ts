@@ -55,12 +55,16 @@ export async function GET(request: NextRequest) {
 
                     if (tokenInfoResponse.ok) {
                         const tokenInfo = await tokenInfoResponse.json();
+                        const decimals = tokenInfo.decimals || 0;
+                        const rawBalance = parseFloat(token.balance);
+                        const formattedBalance = (rawBalance / Math.pow(10, decimals)).toFixed(decimals > 2 ? 2 : decimals);
+                        
                         return {
                             tokenId: token.token_id,
-                            symbol: tokenInfo.symbol || token.symbol || 'Unknown',
-                            name: tokenInfo.name || token.name || `Token ${token.token_id}`,
-                            balance: (parseFloat(token.balance) / Math.pow(10, token.decimals || 0)).toFixed(2),
-                            decimals: token.decimals || 0,
+                            symbol: tokenInfo.symbol || 'Unknown',
+                            name: tokenInfo.name || `Token ${token.token_id}`,
+                            balance: formattedBalance,
+                            decimals: decimals,
                         };
                     }
                 } catch (error) {
@@ -68,12 +72,16 @@ export async function GET(request: NextRequest) {
                 }
 
                 // Fallback to basic info if token info fetch fails
+                const decimals = token.decimals || 0;
+                const rawBalance = parseFloat(token.balance);
+                const formattedBalance = (rawBalance / Math.pow(10, decimals)).toFixed(decimals > 2 ? 2 : decimals);
+                
                 return {
                     tokenId: token.token_id,
-                    symbol: token.symbol || 'Unknown',
-                    name: token.name || `Token ${token.token_id}`,
-                    balance: (parseFloat(token.balance) / Math.pow(10, token.decimals || 0)).toFixed(2),
-                    decimals: token.decimals || 0,
+                    symbol: 'Unknown',
+                    name: `Token ${token.token_id}`,
+                    balance: formattedBalance,
+                    decimals: decimals,
                 };
             }) || []
         );

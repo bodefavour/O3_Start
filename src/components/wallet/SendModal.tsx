@@ -63,26 +63,29 @@ export function SendModal({
     const fetchAccountTokens = async (accountId: string) => {
         setLoadingTokens(true);
         try {
-            const network = process.env.NEXT_PUBLIC_HEDERA_NETWORK || 'testnet';
-            const response = await fetch(
-                `https://${network}.mirrornode.hedera.com/api/v1/accounts/${accountId}/tokens?limit=100`
-            );
-            const data = await response.json();
+            // Use our balance API endpoint which fetches full token metadata
+            const response = await fetch(`/api/hedera/balance?accountId=${accountId}`);
+            const result = await response.json();
 
-            if (data.tokens) {
-                const tokens: Token[] = data.tokens.map((t: any) => ({
-                    id: t.token_id,
-                    symbol: t.symbol || 'Unknown',
-                    name: t.name || t.token_id,
-                    balance: (parseFloat(t.balance) / Math.pow(10, t.decimals || 0)).toFixed(2),
-                }));
+            if (result.success && result.data) {
+                const tokens: Token[] = [];
 
                 // Add HBAR as first option
-                tokens.unshift({
+                tokens.push({
                     id: 'HBAR',
                     symbol: 'HBAR',
                     name: 'Hedera',
-                    balance: availableBalance,
+                    balance: result.data.hbarBalance,
+                });
+
+                // Add HTS tokens with full metadata
+                result.data.tokens?.forEach((t: any) => {
+                    tokens.push({
+                        id: t.tokenId,
+                        symbol: t.symbol,
+                        name: t.name,
+                        balance: t.balance,
+                    });
                 });
 
                 setAvailableTokens(tokens);

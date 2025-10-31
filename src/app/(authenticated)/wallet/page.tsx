@@ -186,27 +186,49 @@ export default function WalletPage() {
     if (hederaBalance) {
         // Add HBAR value in USD using real-time price
         const hbarAmount = parseFloat(hederaBalance.hbarBalance || '0');
-        totalPortfolioValue += hbarAmount * hbarPrice;
+        const hbarValue = hbarAmount * hbarPrice;
+        console.log('💰 HBAR Portfolio:', { hbarAmount, hbarPrice, hbarValue });
+        totalPortfolioValue += hbarValue;
 
         // For HTS tokens, check if they're stablecoins
         hederaBalance.tokens?.forEach((token: any) => {
             const tokenBalance = parseFloat(token.balance || '0');
-            const tokenSymbol = token.symbol.toUpperCase();
+            const tokenSymbol = (token.symbol || '').toUpperCase();
+            const tokenName = (token.name || '').toUpperCase();
+
+            console.log('🪙 Token:', { 
+                symbol: tokenSymbol, 
+                name: tokenName, 
+                balance: tokenBalance,
+                tokenId: token.tokenId 
+            });
 
             // Stablecoins are worth $1 each
-            if (tokenSymbol.includes('USD') || tokenSymbol.includes('USDC') ||
-                tokenSymbol.includes('USDT') || tokenSymbol === 'BPUSD') {
-                totalPortfolioValue += tokenBalance;
+            if (tokenSymbol.includes('USD') || 
+                tokenSymbol.includes('USDC') ||
+                tokenSymbol.includes('USDT') || 
+                tokenSymbol === 'BPUSD' ||
+                tokenName.includes('USD') ||
+                tokenName.includes('BORDERLESSPAY')) {
+                const value = tokenBalance * 1.0; // $1 per stablecoin
+                console.log('  ✅ Stablecoin value:', value);
+                totalPortfolioValue += value;
             } else {
                 // For other tokens, assume very small value (test tokens)
                 // Only add if balance is reasonable (< 10000)
-                if (tokenBalance < 10000) {
-                    totalPortfolioValue += tokenBalance * 0.01; // $0.01 per token
+                if (tokenBalance < 10000 && tokenBalance > 0) {
+                    const value = tokenBalance * 0.01; // $0.01 per token
+                    console.log('  ℹ️ Test token value:', value);
+                    totalPortfolioValue += value;
+                } else if (tokenBalance >= 10000) {
+                    console.log('  ⚠️ Large balance - likely worthless test token, excluded');
                 }
                 // Ignore tokens with huge balances (likely test tokens worth nothing)
             }
         });
     }
+
+    console.log('📊 Total Portfolio Value:', totalPortfolioValue.toFixed(2));
 
     // Count total wallets including Hedera tokens
     const totalWallets = wallets.length + (hederaBalance ? 1 + (hederaBalance.tokens?.length || 0) : 0);
@@ -450,7 +472,7 @@ export default function WalletPage() {
                                     Total Portfolio Value
                                 </div>
                                 <div className="mb-2 text-4xl font-extrabold">
-                                    ${totalPortfolioValue.toLocaleString()}
+                                    ${totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
                                 <p className="text-xs text-gray-400">Across all currencies</p>
                             </CardContent>

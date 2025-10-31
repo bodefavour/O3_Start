@@ -37,6 +37,12 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     const [showDebug, setShowDebug] = useState(false);
     const [hashpackExtension, setHashpackExtension] = useState<ExtensionData | null>(null);
     const [initError, setInitError] = useState<string | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Prevent hydration mismatch by only rendering dynamic content after mount
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const onConnectRef = useRef(onConnect);
     const onDisconnectRef = useRef(onDisconnect);
@@ -462,6 +468,9 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     })();
 
     const statusText = (() => {
+        if (!isMounted) {
+            return "Connect your Hedera wallet via WalletConnect.";
+        }
         if (devBypassAccount) {
             return "Development bypass active. Real wallet connection is skipped.";
         }
