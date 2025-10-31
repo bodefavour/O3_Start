@@ -74,10 +74,10 @@ export function SendModal({
                 // Import DAppConnector dynamically to avoid SSR issues
                 const { DAppConnector, HederaJsonRpcMethod } = await import('@hashgraph/hedera-wallet-connect');
                 const { TransferTransaction, AccountId, TokenId } = await import('@hashgraph/sdk');
-                
+
                 // Get existing DAppConnector instance from window
                 const dAppConnector = (window as any).hederaDAppConnector;
-                
+
                 if (!dAppConnector || !dAppConnector.signers || dAppConnector.signers.length === 0) {
                     showToast("Please connect your Hedera wallet first", "error");
                     setSending(false);

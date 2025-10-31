@@ -27,10 +27,10 @@ async function main() {
         console.log(`Transaction ID: ${result.transactionId}`);
         console.log(`Explorer: https://hashscan.io/testnet/token/${result.tokenId}`);
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-        
+
         console.log('📝 Add this to your .env.local file:');
         console.log(`NEXT_PUBLIC_HEDERA_TOKEN_ID=${result.tokenId}\n`);
-        
+
         console.log('💡 Next steps:');
         console.log('1. Copy the token ID above and add it to .env.local');
         console.log('2. Restart your dev server (npm run dev)');

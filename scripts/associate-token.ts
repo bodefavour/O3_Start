@@ -36,7 +36,7 @@ async function main() {
             console.log('🎉 You can now send and receive BPUSD tokens!\n');
         } else {
             console.error(`❌ Association failed: ${result.error}`);
-            
+
             if (result.error?.includes('TOKEN_ALREADY_ASSOCIATED')) {
                 console.log('\n✅ Token is already associated with this account!');
                 console.log('You\'re good to go! 🎉\n');

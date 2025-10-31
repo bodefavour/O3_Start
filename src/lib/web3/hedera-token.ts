@@ -44,10 +44,10 @@ export async function createStablecoin(
 
         // Sign with the operator's private key from environment
         const operatorPrivateKeyString = process.env.HEDERA_OPERATOR_KEY!;
-        const keyString = operatorPrivateKeyString.startsWith('0x') 
-            ? operatorPrivateKeyString.slice(2) 
+        const keyString = operatorPrivateKeyString.startsWith('0x')
+            ? operatorPrivateKeyString.slice(2)
             : operatorPrivateKeyString;
-        
+
         let operatorPrivateKey: PrivateKey;
         try {
             operatorPrivateKey = PrivateKey.fromStringECDSA(keyString);
@@ -189,7 +189,7 @@ export async function associateToken(
         };
     } catch (error: any) {
         console.error('Token association error:', error);
-        
+
         // Check if already associated
         if (error.message?.includes('TOKEN_ALREADY_ASSOCIATED')) {
             return {
@@ -197,7 +197,7 @@ export async function associateToken(
                 error: 'TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT',
             };
         }
-        
+
         return {
             success: false,
             error: error.message,
@@ -227,10 +227,10 @@ export async function mintTokens(
 
         // Handle hex-encoded private key
         const operatorPrivateKeyString = process.env.HEDERA_OPERATOR_KEY!;
-        const keyString = operatorPrivateKeyString.startsWith('0x') 
-            ? operatorPrivateKeyString.slice(2) 
+        const keyString = operatorPrivateKeyString.startsWith('0x')
+            ? operatorPrivateKeyString.slice(2)
             : operatorPrivateKeyString;
-        
+
         let privKey: PrivateKey;
         try {
             privKey = PrivateKey.fromStringECDSA(keyString);

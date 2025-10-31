@@ -14,7 +14,7 @@ async function main() {
     console.log('🔍 Checking Hedera Testnet Account...\n');
 
     const operatorId = process.env.HEDERA_OPERATOR_ID;
-    
+
     if (!operatorId) {
         console.error('❌ HEDERA_OPERATOR_ID not found in environment variables');
         process.exit(1);
@@ -22,7 +22,7 @@ async function main() {
 
     try {
         const client = Client.forTestnet();
-        
+
         const accountId = AccountId.fromString(operatorId);
         const balance = await new AccountBalanceQuery()
             .setAccountId(accountId)

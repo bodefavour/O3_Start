@@ -29,7 +29,7 @@ export function getHederaClient(): Client {
   // Handle hex-encoded private key (remove 0x prefix if present)
   let privateKey: PrivateKey;
   const keyString = operatorKey.startsWith('0x') ? operatorKey.slice(2) : operatorKey;
-  
+
   try {
     // Try ECDSA first (most common for EVM-compatible accounts)
     privateKey = PrivateKey.fromStringECDSA(keyString);
