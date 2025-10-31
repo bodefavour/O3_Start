@@ -229,7 +229,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             const sessions = dAppConnector.signers;
             if (!sessions || sessions.length === 0) {
                 addLog("No session created - user may have cancelled or rejected");
-                
+
                 // Check for specific error messages
                 if (msg.includes('No applicable accounts') || msg.includes('no accounts')) {
                     toast.error("No Hedera testnet account found in HashPack", {
@@ -321,7 +321,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                         : "Connect using HashPack, Kabila, Blade, or any Hedera wallet."
                     }
                 </p>
-                
+
                 {/* Important notice for testnet */}
                 <div className="mb-3 rounded-lg bg-amber-50 border border-amber-200 p-3">
                     <div className="flex items-start gap-2">
