@@ -14,7 +14,7 @@ export async function GET(
     try {
         // Await params in Next.js 15+
         const { id } = await params;
-        
+
         // Decode URL-encoded transaction ID (e.g., %40 becomes @)
         const transactionId = decodeURIComponent(id);
 
