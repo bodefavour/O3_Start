@@ -10,11 +10,24 @@ import {
     HederaChainId,
 } from '@hashgraph/hedera-wallet-connect';
 import { LedgerId } from '@hashgraph/sdk';
+import { QRCodeSVG } from 'qrcode.react';
+import {
+    initHashConnect,
+    disconnectHashPack,
+    isHashPackInstalled,
+} from '@/lib/web3/hashconnect';
 
 interface HashPackConnectProps {
     onConnect?: (accountId: string) => void;
     onDisconnect?: () => void;
 }
+
+type WalletEnvironment =
+    | 'detecting'
+    | 'hashpack_in_app'
+    | 'desktop_extension'
+    | 'mobile_browser'
+    | 'desktop_browser';
 
 export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProps) {
     const [connected, setConnected] = useState(false);
@@ -24,11 +37,40 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     const [showDebug, setShowDebug] = useState(false);
     const [dAppConnector, setDAppConnector] = useState<DAppConnector | null>(null);
     const [lastWcUri, setLastWcUri] = useState<string | null>(null);
+    const [walletEnv, setWalletEnv] = useState<WalletEnvironment>('detecting');
+    const [showDesktopQr, setShowDesktopQr] = useState(false);
 
     const addLog = (message: string) => {
         console.log(message);
         setDebugLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
     };
+
+    // Detect runtime environment (desktop extension, mobile browser, etc.)
+    useEffect(() => {
+        const detectEnvironment = () => {
+            if (typeof window === 'undefined') return;
+            const ua = navigator.userAgent || '';
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+            const hasHashPackExtension = isHashPackInstalled();
+            const isHashPackBrowser = /HashPack/i.test(ua) || window.location.href.includes('hashpack://');
+
+            if (isHashPackBrowser) {
+                setWalletEnv('hashpack_in_app');
+                addLog('Environment detected: HashPack in-app browser');
+            } else if (hasHashPackExtension && !isMobileDevice) {
+                setWalletEnv('desktop_extension');
+                addLog('Environment detected: Desktop with HashPack extension');
+            } else if (isMobileDevice) {
+                setWalletEnv('mobile_browser');
+                addLog('Environment detected: Mobile browser');
+            } else {
+                setWalletEnv('desktop_browser');
+                addLog('Environment detected: Desktop browser (no extension)');
+            }
+        };
+
+        detectEnvironment();
+    }, []);
 
     // Initialize DAppConnector
     useEffect(() => {
@@ -157,7 +199,17 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 addLog(`Received WalletConnect URI (length: ${uri.length})`);
                 setLastWcUri(uri);
 
-                // Always try deep link first - works for mobile and in-app browser
+                if (walletEnv === 'hashpack_in_app') {
+                    addLog('Running inside HashPack in-app browser - no redirect needed');
+                    return;
+                }
+
+                if (walletEnv === 'desktop_browser') {
+                    addLog('Desktop browser without extension - showing QR modal');
+                    setShowDesktopQr(true);
+                    return;
+                }
+
                 const hashpackDeepLink = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
                 addLog(`Launching HashPack: ${hashpackDeepLink.substring(0, 50)}...`);
 
@@ -184,6 +236,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                         clearInterval(pollInterval);
                         clearTimeout(timeout);
                         window.removeEventListener('hedera-connect', handleConnectEvent);
+                        setShowDesktopQr(false);
                         resolve();
                     }
                 };
@@ -207,6 +260,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                             clearInterval(pollInterval);
                             clearTimeout(timeout);
                             window.removeEventListener('hedera-connect', handleConnectEvent);
+                            setShowDesktopQr(false);
                             resolve();
                         }
                     }
@@ -254,12 +308,49 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         } finally {
             setConnecting(false);
         }
-    }; const handleDisconnect = async () => {
+    };
+
+    const handleHashConnectFlow = async () => {
+        setConnecting(true);
+        addLog('Starting HashConnect flow for desktop extension...');
+
+        try {
+            const { isConnected, accountId: hashConnectAccount } = await initHashConnect();
+
+            if (isConnected && hashConnectAccount) {
+                addLog(`HashConnect paired successfully: ${hashConnectAccount}`);
+                setAccountId(hashConnectAccount);
+                setConnected(true);
+                window.dispatchEvent(new CustomEvent('hedera-connect', {
+                    detail: { accountId: hashConnectAccount },
+                }));
+                onConnect?.(hashConnectAccount);
+                toast.success(`Connected: ${hashConnectAccount}`);
+            } else {
+                addLog('HashConnect pairing pending - open HashPack extension to approve');
+                toast.info('Open HashPack extension and approve the connection');
+                setShowDebug(true);
+            }
+        } catch (error: any) {
+            addLog(`HashConnect error: ${error?.message || error}`);
+            toast.error(error?.message || 'Failed to connect with HashPack extension');
+        } finally {
+            setConnecting(false);
+        }
+    };
+
+    const handleDisconnect = async () => {
+        if (walletEnv === 'desktop_extension') {
+            await disconnectHashPack();
+        }
+
         if (dAppConnector) {
             await dAppConnector.disconnectAll();
         }
         setConnected(false);
         setAccountId("");
+        setLastWcUri(null);
+        setShowDesktopQr(false);
         // Dispatch disconnect event for auth context
         window.dispatchEvent(new CustomEvent('hedera-disconnect'));
         toast.success("Disconnected from wallet");
@@ -316,7 +407,13 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     </div>
                 </div>
                 <p className="mb-4 text-xs text-gray-600">
-                    Connect your Hedera wallet via WalletConnect. Works with HashPack, Kabila, Blade and more.
+                    {walletEnv === 'desktop_extension'
+                        ? 'HashPack extension detected. Click connect and approve in the extension popup.'
+                        : walletEnv === 'hashpack_in_app'
+                            ? 'HashPack in-app browser detected. Tap connect and approve inside HashPack.'
+                            : walletEnv === 'desktop_browser'
+                                ? 'No HashPack extension detected. Scan the QR code with HashPack mobile or open the desktop app.'
+                                : 'Connect your Hedera wallet via WalletConnect. Works with HashPack, Kabila, Blade & more.'}
                 </p>
 
                 {/* Important notice for testnet */}
@@ -332,8 +429,14 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 </div>
 
                 <Button
-                    onClick={handleConnect}
-                    disabled={connecting || !dAppConnector}
+                    onClick={() => {
+                        if (walletEnv === 'desktop_extension') {
+                            void handleHashConnectFlow();
+                        } else {
+                            void handleConnect();
+                        }
+                    }}
+                    disabled={connecting || (!dAppConnector && walletEnv !== 'desktop_extension')}
                     className="w-full bg-[#5D4FF4] hover:bg-[#4D3FE4] h-12 text-base font-semibold"
                 >
                     {connecting ? (
@@ -342,12 +445,14 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                             </svg>
-                            Connecting...
+                            {walletEnv === 'desktop_extension' ? 'Waiting for HashPack…' : 'Connecting...'}
                         </>
+                    ) : walletEnv === 'desktop_extension' ? (
+                        'Connect HashPack Extension'
                     ) : !dAppConnector ? (
-                        "Initializing..."
+                        'Initializing...'
                     ) : (
-                        "Connect Wallet"
+                        'Connect Wallet'
                     )}
                 </Button>
 
@@ -359,6 +464,62 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     {showDebug ? "Hide" : "Show"} Debug Info
                 </button>
             </div>
+
+            {showDesktopQr && lastWcUri && (
+                <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-md">
+                    <h4 className="mb-2 text-sm font-semibold text-[#0b1f3a]">Scan with HashPack</h4>
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="rounded-lg border border-gray-100 bg-white p-3">
+                            <QRCodeSVG value={lastWcUri} size={180} level="M" includeMargin={false} />
+                        </div>
+                        <p className="text-xs text-gray-500 text-center">
+                            Open HashPack on your phone → Tap WalletConnect → Scan this QR to finish pairing.
+                        </p>
+                        <div className="flex flex-wrap gap-2 text-xs">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={() => {
+                                    try {
+                                        const deepLink = `hashpack://wc?uri=${encodeURIComponent(lastWcUri)}`;
+                                        window.location.href = deepLink;
+                                    } catch (e) {
+                                        addLog('Failed to open deep link from QR panel');
+                                    }
+                                }}
+                            >
+                                Open in HashPack
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={() => {
+                                    try {
+                                        navigator.clipboard.writeText(lastWcUri);
+                                        toast.success('WalletConnect URI copied');
+                                    } catch (err) {
+                                        toast.error('Failed to copy WalletConnect link');
+                                    }
+                                }}
+                            >
+                                Copy Link
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={() => {
+                                    setShowDesktopQr(false);
+                                }}
+                            >
+                                Hide QR
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Debug logs panel */}
             {showDebug && debugLogs.length > 0 && (
