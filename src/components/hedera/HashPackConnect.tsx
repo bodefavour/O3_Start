@@ -290,6 +290,51 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         onDisconnect?.();
     };
 
+        // HashPack-only connect button: always deep-links to HashPack
+        const handleConnectHashPack = async () => {
+            addLog("=== Starting HashPack-only connection ===");
+            if (!dAppConnector) {
+                addLog("ERROR: DAppConnector not initialized");
+                toast.error("Wallet connector not initialized. Please refresh the page.");
+                setShowDebug(true);
+                return;
+            }
+            setConnecting(true);
+            try {
+                const session = await dAppConnector.connect((uri: string) => {
+                    addLog(`HashPack-only: launching deep link (len=${uri?.length})`);
+                    setLastWcUri(uri);
+                    // HashPack native scheme first
+                    const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
+                    try { window.location.href = hashpackNative; } catch { /* no-op */ }
+                    // Fallback to wc: scheme
+                    setTimeout(() => { try { window.location.href = uri; } catch { } }, 150);
+                    // Final fallback to universal https link
+                    setTimeout(() => { try { window.open(`https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`, '_blank'); } catch { } }, 300);
+                });
+
+                const signer = dAppConnector.signers?.[0];
+                const account = signer?.getAccountId()?.toString();
+                if (account) {
+                    addLog(`✅ SUCCESS! HashPack connected: ${account}`);
+                    setAccountId(account);
+                    setConnected(true);
+                    window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
+                    toast.success(`Connected to HashPack: ${account}`);
+                    onConnect?.(account);
+                } else {
+                    addLog("No account ID received from HashPack session");
+                }
+            } catch (error: any) {
+                const msg = String(error?.message || error);
+                addLog(`HashPack-only ERROR: ${msg}`);
+                toast.error(msg || 'Failed to connect HashPack');
+                setShowDebug(true);
+            } finally {
+                setConnecting(false);
+            }
+        };
+
     if (connected) {
         return (
             <div className="space-y-3">
@@ -345,40 +390,35 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                         : "Connect using HashPack, Kabila, Blade, or any Hedera wallet."
                     }
                 </p>
-                <Button
-                    onClick={handleConnect}
-                    disabled={connecting || !dAppConnector}
-                    className="w-full bg-[#5D4FF4] hover:bg-[#4D3FE4] h-12 text-base font-semibold"
-                >
-                    {connecting ? (
-                        <>
-                            <svg
-                                className="mr-2 h-5 w-5 animate-spin"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                />
-                                <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                />
-                            </svg>
-                            Connecting...
-                        </>
-                    ) : !dAppConnector ? (
-                        "Initializing..."
-                    ) : (
-                        "Connect Hedera Wallet"
-                    )}
-                </Button>
+                                <div className="flex flex-col gap-2">
+                                    <Button
+                                        onClick={handleConnectHashPack}
+                                        disabled={connecting || !dAppConnector}
+                                        className="w-full bg-[#5D4FF4] hover:bg-[#4D3FE4] h-12 text-base font-semibold"
+                                    >
+                                        {connecting ? (
+                                            <>
+                                                <svg className="mr-2 h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                </svg>
+                                                Connecting to HashPack...
+                                            </>
+                                        ) : !dAppConnector ? (
+                                            "Initializing..."
+                                        ) : (
+                                            "Connect with HashPack"
+                                        )}
+                                    </Button>
+                                    <Button
+                                        onClick={handleConnect}
+                                        variant="outline"
+                                        disabled={connecting || !dAppConnector}
+                                        className="w-full h-10 text-sm"
+                                    >
+                                        Other wallets
+                                    </Button>
+                                </div>
 
                 {/* Show debug toggle button */}
                 <button
