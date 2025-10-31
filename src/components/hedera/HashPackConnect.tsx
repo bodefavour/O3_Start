@@ -35,7 +35,12 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
     // Check if HashPack is available (extension or mobile app)
     const isHashPackAvailable = () => {
-        const available = typeof window !== "undefined" && !!(window as any).hashpack;
+        return typeof window !== "undefined" && !!(window as any).hashpack;
+    };
+
+    // Log HashPack availability (only called in effects/handlers)
+    const logHashPackAvailability = () => {
+        const available = isHashPackAvailable();
         if (available) {
             const hashpack = (window as any).hashpack;
             const methods = Object.keys(hashpack).filter(k => typeof hashpack[k] === 'function');
@@ -49,11 +54,12 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     // Check existing connection on mount
     useEffect(() => {
         const checkConnection = async () => {
-            if (!isHashPackAvailable()) {
+            // Log availability check
+            if (!logHashPackAvailability()) {
                 // If in mobile and no hashpack object, try to auto-connect after short delay
                 if (isMobile) {
                     setTimeout(() => {
-                        if (isHashPackAvailable()) {
+                        if (logHashPackAvailability()) {
                             attemptConnection();
                         }
                     }, 1000);
@@ -105,8 +111,8 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
     const attemptConnection = async () => {
         addLog("=== Starting connection attempt ===");
-
-        if (!isHashPackAvailable()) {
+        
+        if (!logHashPackAvailability()) {
             addLog("ERROR: HashPack not available");
             if (isMobile) {
                 toast.error("Please open this app from within the HashPack mobile app's browser.");
@@ -115,9 +121,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             }
             setShowDebug(true);
             return;
-        }
-
-        setConnecting(true);
+        }        setConnecting(true);
 
         try {
             const hashpack = (window as any).hashpack;
