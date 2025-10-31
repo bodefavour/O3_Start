@@ -1,6 +1,6 @@
 /**
  * Wallet Hook - Fetch and manage wallet data
- */
+ *///
 
 'use client';
 
