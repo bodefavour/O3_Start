@@ -1,6 +1,6 @@
 "use client";
 import { useActiveAccount, useActiveWallet } from "thirdweb/react";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useMemo, useState, useEffect } from "react";
 import { toast as sonnerToast } from "sonner";
 
 import type { AuthContext } from "@/lib/types";
@@ -14,20 +14,58 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
     const activeAccount = useActiveAccount();
     const activeWallet = useActiveWallet();
+    const [hederaAccount, setHederaAccount] = useState<string | null>(null);
+
+    // Listen for Hedera wallet connections (from localStorage or custom event)
+    useEffect(() => {
+        // Check localStorage for Hedera account
+        const storedAccount = localStorage.getItem('hedera_account_id');
+        if (storedAccount) {
+            setHederaAccount(storedAccount);
+        }
+
+        // Listen for custom Hedera connection events
+        const handleHederaConnect = (event: CustomEvent) => {
+            const accountId = event.detail?.accountId;
+            if (accountId) {
+                setHederaAccount(accountId);
+                localStorage.setItem('hedera_account_id', accountId);
+            }
+        };
+
+        const handleHederaDisconnect = () => {
+            setHederaAccount(null);
+            localStorage.removeItem('hedera_account_id');
+        };
+
+        window.addEventListener('hedera-connect' as any, handleHederaConnect);
+        window.addEventListener('hedera-disconnect' as any, handleHederaDisconnect);
+
+        return () => {
+            window.removeEventListener('hedera-connect' as any, handleHederaConnect);
+            window.removeEventListener('hedera-disconnect' as any, handleHederaDisconnect);
+        };
+    }, []);
 
     // Check if connected via thirdweb (in-app wallet)
     const isThirdwebConnected = !!activeAccount?.address && !!activeWallet?.id;
-    const isAuthenticated = isThirdwebConnected;
-    const address = activeAccount?.address as
-        | `0x${string}`
-        | undefined;
+    
+    // Check if connected via Hedera wallet
+    const isHederaConnected = !!hederaAccount;
+    
+    // User is authenticated if connected via either method
+    const isAuthenticated = isThirdwebConnected || isHederaConnected;
+    
+    // Use Hedera account if available, otherwise use Thirdweb address
+    const address = (hederaAccount || activeAccount?.address) as string | undefined;
 
     const authValue = useMemo<AuthContext>(
         () => ({
             isAuthenticated,
             address,
+            isHederaWallet: isHederaConnected,
         }),
-        [isAuthenticated, address],
+        [isAuthenticated, address, isHederaConnected],
     );
 
     return (

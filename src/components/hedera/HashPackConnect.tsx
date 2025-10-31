@@ -77,6 +77,10 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                         addLog(`Found existing session: ${account}`);
                         setAccountId(account);
                         setConnected(true);
+                        // Dispatch event for auth context
+                        window.dispatchEvent(new CustomEvent('hedera-connect', { 
+                            detail: { accountId: account } 
+                        }));
                         onConnect?.(account);
                     }
                 }
@@ -118,6 +122,10 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     addLog(`✅ SUCCESS! Connected: ${account}`);
                     setAccountId(account);
                     setConnected(true);
+                    // Dispatch event for auth context
+                    window.dispatchEvent(new CustomEvent('hedera-connect', { 
+                        detail: { accountId: account } 
+                    }));
                     toast.success(`Connected to Hedera wallet: ${account}`);
                     onConnect?.(account);
                 } else {
@@ -142,6 +150,8 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         }
         setConnected(false);
         setAccountId("");
+        // Dispatch disconnect event for auth context
+        window.dispatchEvent(new CustomEvent('hedera-disconnect'));
         toast.success("Disconnected from wallet");
         onDisconnect?.();
     };
