@@ -11,11 +11,6 @@ import {
 } from '@hashgraph/hedera-wallet-connect';
 import { LedgerId } from '@hashgraph/sdk';
 import { QRCodeSVG } from 'qrcode.react';
-import {
-    initHashConnect,
-    disconnectHashPack,
-    isHashPackInstalled,
-} from '@/lib/web3/hashconnect';
 
 interface HashPackConnectProps {
     onConnect?: (accountId: string) => void;
@@ -45,19 +40,30 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         setDebugLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
     };
 
+    const loadHashConnectModule = async () => {
+        return import('@/lib/web3/hashconnect');
+    };
+
+    const hasHashPackExtension = () => {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+        return Boolean((window as any).hashpack);
+    };
+
     // Detect runtime environment (desktop extension, mobile browser, etc.)
     useEffect(() => {
         const detectEnvironment = () => {
             if (typeof window === 'undefined') return;
             const ua = navigator.userAgent || '';
             const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-            const hasHashPackExtension = isHashPackInstalled();
+            const extensionDetected = hasHashPackExtension();
             const isHashPackBrowser = /HashPack/i.test(ua) || window.location.href.includes('hashpack://');
 
             if (isHashPackBrowser) {
                 setWalletEnv('hashpack_in_app');
                 addLog('Environment detected: HashPack in-app browser');
-            } else if (hasHashPackExtension && !isMobileDevice) {
+            } else if (extensionDetected && !isMobileDevice) {
                 setWalletEnv('desktop_extension');
                 addLog('Environment detected: Desktop with HashPack extension');
             } else if (isMobileDevice) {
@@ -315,6 +321,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         addLog('Starting HashConnect flow for desktop extension...');
 
         try {
+            const { initHashConnect } = await loadHashConnectModule();
             const { isConnected, accountId: hashConnectAccount } = await initHashConnect();
 
             if (isConnected && hashConnectAccount) {
@@ -341,7 +348,12 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
     const handleDisconnect = async () => {
         if (walletEnv === 'desktop_extension') {
-            await disconnectHashPack();
+            try {
+                const { disconnectHashPack } = await loadHashConnectModule();
+                await disconnectHashPack();
+            } catch (error) {
+                addLog(`Failed to disconnect HashConnect: ${String(error)}`);
+            }
         }
 
         if (dAppConnector) {
