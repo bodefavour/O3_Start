@@ -201,7 +201,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
                 // On desktop, generate WalletConnect URI and show QR code
                 setShowQR(true);
-                
+
                 await dAppConnector.connect((uri: string) => {
                     addLog(`Generated WalletConnect URI for QR code (length: ${uri.length})`);
                     setLastWcUri(uri);
@@ -216,6 +216,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     addLog(`✅ SUCCESS! Connected: ${account}`);
                     setAccountId(account);
                     setConnected(true);
+                    setShowQR(false); // Close QR modal
                     window.dispatchEvent(new CustomEvent('hedera-connect', {
                         detail: { accountId: account }
                     }));
@@ -231,6 +232,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                             const account = event.detail?.accountId;
                             if (account && !resolved) {
                                 resolved = true;
+                                setShowQR(false); // Close QR modal
                                 addLog(`✅ SUCCESS! Connected: ${account}`);
                                 toast.success(`Connected: ${account}`);
                                 clearInterval(pollInterval);
@@ -248,6 +250,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                                 const account = session.getAccountId()?.toString();
                                 if (account) {
                                     resolved = true;
+                                    setShowQR(false); // Close QR modal
                                     addLog(`✅ SUCCESS! Connected via polling: ${account}`);
                                     setAccountId(account);
                                     setConnected(true);
@@ -432,20 +435,20 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                                 ×
                             </button>
                         </div>
-                        
+
                         <div className="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4">
-                            <QRCodeSVG 
+                            <QRCodeSVG
                                 value={lastWcUri}
                                 size={256}
                                 level="H"
                                 className="w-full h-auto"
                             />
                         </div>
-                        
+
                         <p className="text-sm text-gray-600 text-center mb-4">
                             Open HashPack on your mobile device and scan this QR code to connect
                         </p>
-                        
+
                         <div className="flex gap-2">
                             <button
                                 onClick={() => {
