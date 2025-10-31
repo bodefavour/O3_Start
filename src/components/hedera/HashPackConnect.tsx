@@ -47,7 +47,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             try {
                 addLog("Initializing Hedera DAppConnector...");
 
-                const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '08c4b07e3ad25f1a27c14a4e8cecb6f0';
+                const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '43e334ab6f14b190d4fed10ec2d9dc0d';
                 const obfuscated = projectId ? `${projectId.slice(0, 4)}…${projectId.slice(-4)}` : 'undefined';
                 addLog(`Using WalletConnect Project ID: ${obfuscated}`);
                 addLog(`Network: ${LedgerId.TESTNET.toString()} | Origin: ${window.location.origin}`);
@@ -154,124 +154,45 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         }
 
         setConnecting(true);
+        
+        // 10 second timeout
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Connection timeout')), 10000)
+        );
 
         try {
-            if (isMobile) {
-                addLog("Mobile detected — using deep link connect flow...");
-                // Use direct connect with deep-link callback for mobile
-                const session = await dAppConnector.connect((uri: string) => {
-                    addLog(`Launching wallet deep link (len=${uri?.length})`);
-                    setLastWcUri(uri);
-                    // Prefer HashPack native deep link first
-                    const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
-                    try {
-                        window.location.href = hashpackNative;
-                    } catch (e) {
-                        addLog('hashpack:// redirect failed, trying wc: then universal');
-                    }
-                    // Fallback to wc: scheme
-                    try {
-                        setTimeout(() => {
-                            window.location.href = uri;
-                        }, 150);
-                    } catch (e) {
-                        addLog('wc: redirect failed');
-                    }
-                    // Final fallback to universal https link
-                    const hashpackUniversal = `https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`;
-                    setTimeout(() => {
-                        try {
-                            window.open(hashpackUniversal, '_blank');
-                        } catch (e) {
-                            addLog('universal link open failed');
-                        }
-                    }, 300);
-                });
+            await Promise.race([
+                dAppConnector.openModal(),
+                timeoutPromise
+            ]);
 
-                const signer = dAppConnector.signers?.[0];
-                const account = signer?.getAccountId()?.toString();
+            // Wait briefly for connection
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const sessions = dAppConnector.signers;
+            if (sessions && sessions.length > 0) {
+                const session = sessions[0];
+                const account = session.getAccountId()?.toString();
+
                 if (account) {
-                    addLog(`✅ SUCCESS! Connected (mobile): ${account}`);
+                    addLog(`✅ SUCCESS! Connected: ${account}`);
                     setAccountId(account);
                     setConnected(true);
-                    window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
-                    toast.success(`Connected to Hedera wallet: ${account}`);
+                    window.dispatchEvent(new CustomEvent('hedera-connect', {
+                        detail: { accountId: account }
+                    }));
+                    toast.success(`Connected: ${account}`);
                     onConnect?.(account);
                 } else {
-                    addLog("No account ID received from mobile wallet session");
+                    addLog("No account ID received from wallet");
                 }
             } else {
-                addLog("Opening wallet selection modal...");
-                await dAppConnector.openModal();
-
-                // Wait a bit for connection to establish
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                // Check for connection
-                const sessions = dAppConnector.signers;
-                if (sessions && sessions.length > 0) {
-                    const session = sessions[0];
-                    const account = session.getAccountId()?.toString();
-
-                    if (account) {
-                        addLog(`✅ SUCCESS! Connected: ${account}`);
-                        setAccountId(account);
-                        setConnected(true);
-                        // Dispatch event for auth context
-                        window.dispatchEvent(new CustomEvent('hedera-connect', {
-                            detail: { accountId: account }
-                        }));
-                        toast.success(`Connected to Hedera wallet: ${account}`);
-                        onConnect?.(account);
-                    } else {
-                        addLog("No account ID received from wallet");
-                    }
-                } else {
-                    addLog("No session created - user may have cancelled");
-                }
+                addLog("No session created - user cancelled");
             }
         } catch (error: any) {
             const msg = String(error?.message || error);
             addLog(`ERROR: ${msg}`);
-            console.error("Wallet connection error:", error);
-
-            // Specific recovery for WalletConnect relay publish failures on mobile
-            if (isMobile && /Failed to publish custom payload/i.test(msg)) {
-                try {
-                    addLog('Attempting quick retry after relay publish failure...');
-                    await dAppConnector.disconnectAll().catch(() => { });
-                    const session = await dAppConnector.connect((uri: string) => {
-                        addLog(`Retry deep link (len=${uri?.length})`);
-                        setLastWcUri(uri);
-                        const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
-                        try { window.location.href = hashpackNative; } catch { }
-                        setTimeout(() => { try { window.location.href = uri; } catch { } }, 150);
-                        setTimeout(() => { try { window.open(`https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`, '_blank'); } catch { } }, 300);
-                    });
-                    const signer = dAppConnector.signers?.[0];
-                    const account = signer?.getAccountId()?.toString();
-                    if (account) {
-                        addLog(`✅ SUCCESS! Connected after retry: ${account}`);
-                        setAccountId(account);
-                        setConnected(true);
-                        window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
-                        toast.success(`Connected to Hedera wallet: ${account}`);
-                        onConnect?.(account);
-                        return;
-                    }
-                } catch (e2: any) {
-                    addLog(`Retry failed: ${e2?.message || e2}`);
-                    // As a final fallback, open the modal (QR + wallet list)
-                    try {
-                        addLog('Opening WalletConnect modal as fallback...');
-                        await dAppConnector.openModal();
-                    } catch (e3: any) {
-                        addLog(`Modal fallback also failed: ${e3?.message || e3}`);
-                    }
-                }
-            }
-
-            toast.error(msg || "Failed to connect wallet");
+            toast.error(msg || "Failed to connect");
             setShowDebug(true);
         } finally {
             setConnecting(false);
@@ -290,52 +211,68 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         onDisconnect?.();
     };
 
-    // HashPack-only connect button: always deep-links to HashPack
-    const handleConnectHashPack = async () => {
-        addLog("=== Starting HashPack-only connection ===");
-        if (!dAppConnector) {
-            addLog("ERROR: DAppConnector not initialized");
-            toast.error("Wallet connector not initialized. Please refresh the page.");
-            setShowDebug(true);
-            return;
-        }
-        setConnecting(true);
-        try {
-            const session = await dAppConnector.connect((uri: string) => {
-                addLog(`HashPack-only: launching deep link (len=${uri?.length})`);
-                setLastWcUri(uri);
-                // HashPack native scheme first
-                const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
-                try { window.location.href = hashpackNative; } catch { /* no-op */ }
-                // Fallback to wc: scheme
-                setTimeout(() => { try { window.location.href = uri; } catch { } }, 150);
-                // Final fallback to universal https link
-                setTimeout(() => { try { window.open(`https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`, '_blank'); } catch { } }, 300);
-            });
+  // HashPack-only connect button: fast connection
+  const handleConnectHashPack = async () => {
+    addLog("=== Starting HashPack-only connection ===");
+    if (!dAppConnector) {
+      addLog("ERROR: DAppConnector not initialized");
+      toast.error("Wallet connector not initialized. Please refresh the page.");
+      setShowDebug(true);
+      return;
+    }
+    setConnecting(true);
+    
+    // 10 second timeout
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Connection timeout - please try again')), 10000)
+    );
 
-            const signer = dAppConnector.signers?.[0];
-            const account = signer?.getAccountId()?.toString();
-            if (account) {
-                addLog(`✅ SUCCESS! HashPack connected: ${account}`);
-                setAccountId(account);
-                setConnected(true);
-                window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
-                toast.success(`Connected to HashPack: ${account}`);
-                onConnect?.(account);
-            } else {
-                addLog("No account ID received from HashPack session");
-            }
-        } catch (error: any) {
-            const msg = String(error?.message || error);
-            addLog(`HashPack-only ERROR: ${msg}`);
-            toast.error(msg || 'Failed to connect HashPack');
-            setShowDebug(true);
-        } finally {
-            setConnecting(false);
-        }
-    };
+    try {
+      // Check for extension first (in-app browser)
+      const hashpackExtension = dAppConnector.extensions?.find(ext => 
+        ext.name?.toLowerCase().includes('hashpack') && ext.available
+      );
 
-    if (connected) {
+      let session;
+      if (hashpackExtension) {
+        addLog(`Using HashPack extension: ${hashpackExtension.id}`);
+        session = await Promise.race([
+          dAppConnector.connectExtension(hashpackExtension.id),
+          timeoutPromise
+        ]);
+      } else {
+        addLog("Using deep link (no extension found)");
+        session = await Promise.race([
+          dAppConnector.connect((uri: string) => {
+            setLastWcUri(uri);
+            const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
+            window.location.href = hashpackNative;
+          }),
+          timeoutPromise
+        ]);
+      }
+
+      const signer = dAppConnector.signers?.[0];
+      const account = signer?.getAccountId()?.toString();
+      if (account) {
+        addLog(`✅ SUCCESS! Connected: ${account}`);
+        setAccountId(account);
+        setConnected(true);
+        window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
+        toast.success(`Connected: ${account}`);
+        onConnect?.(account);
+      } else {
+        throw new Error("No account received");
+      }
+    } catch (error: any) {
+      const msg = String(error?.message || error);
+      addLog(`ERROR: ${msg}`);
+      toast.error(msg || 'Failed to connect');
+      setShowDebug(true);
+    } finally {
+      setConnecting(false);
+    }
+  };    if (connected) {
         return (
             <div className="space-y-3">
                 <div className="rounded-lg border border-[#00c48c] bg-[#00c48c]/10 p-4">
