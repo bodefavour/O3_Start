@@ -179,8 +179,6 @@ export default function DashboardPage() {
     setSwapModalOpen(false);
   };
 
-  const maxAmount = Math.max(...weeklyData.map((d) => d.amount));
-
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -372,30 +370,14 @@ export default function DashboardPage() {
 
           {/* Transaction Analytics & Recent Transactions */}
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Transaction Analytics */}
+            {/* Transaction Analytics - TODO: Implement real analytics */}
             <Card>
               <CardContent className="p-6">
                 <h3 className="mb-6 text-lg font-bold text-[#0b1f3a]">
                   Transaction Analytics
                 </h3>
-                <div className="flex items-end justify-between gap-2">
-                  {weeklyData.map((data, index) => {
-                    const height = (data.amount / maxAmount) * 200;
-                    return (
-                      <div
-                        key={index}
-                        className="flex flex-1 flex-col items-center gap-2"
-                      >
-                        <div
-                          className="w-full rounded-t-lg bg-[#00c48c] transition-all hover:opacity-80"
-                          style={{ height: `${height}px` }}
-                        />
-                        <span className="text-xs font-medium text-gray-600">
-                          {data.week}
-                        </span>
-                      </div>
-                    );
-                  })}
+                <div className="flex items-center justify-center h-48 text-gray-500">
+                  <p>Analytics data will be available soon</p>
                 </div>
               </CardContent>
             </Card>
