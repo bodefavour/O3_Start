@@ -11,7 +11,6 @@ import {
     type ExtensionData,
 } from "@hashgraph/hedera-wallet-connect";
 import { LedgerId } from "@hashgraph/sdk";
-import { QRCodeSVG } from "qrcode.react";
 
 interface HashPackConnectProps {
     onConnect?: (accountId: string) => void;
@@ -34,7 +33,6 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     const [connectedAccountId, setConnectedAccountId] = useState<string | null>(null);
     const [walletEnv, setWalletEnv] = useState<WalletEnvironment>("detecting");
     const [lastWcUri, setLastWcUri] = useState<string | null>(null);
-    const [showQr, setShowQr] = useState(false);
     const [debugLogs, setDebugLogs] = useState<string[]>([]);
     const [showDebug, setShowDebug] = useState(false);
     const [hashpackExtension, setHashpackExtension] = useState<ExtensionData | null>(null);
@@ -100,7 +98,6 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 const account = signer.getAccountId().toString();
                 addLog(`Active signer detected: ${account}`);
                 updateConnectedAccount(account);
-                setShowQr(false);
                 setLastWcUri(null);
             } else {
                 addLog("No active signer present");
@@ -174,7 +171,6 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     const handleSessionDelete = () => {
                         addLog("Session deleted by wallet");
                         updateConnectedAccount(null);
-                        setShowQr(false);
                         setLastWcUri(null);
                         toast.info("Wallet disconnected");
                     };
@@ -303,8 +299,10 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 setLastWcUri(uri);
 
                 if (walletEnv === "desktop_browser") {
-                    setShowQr(true);
-                    addLog("Showing QR modal for desktop browser");
+                    const universal = `https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`;
+                    window.open(universal, "_blank");
+                    addLog("Opened hashpack.app universal link for desktop browser");
+                    toast.info("Approve the session in the HashPack tab that just opened");
                     return;
                 }
 
@@ -371,7 +369,6 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         } finally {
             setConnecting(false);
             updateConnectedAccount(null);
-            setShowQr(false);
             setLastWcUri(null);
             toast.success("Disconnected from Hedera wallet");
         }
@@ -434,7 +431,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             case "hashpack_in_app":
                 return "HashPack in-app browser detected. Tap connect and approve the request in HashPack.";
             case "desktop_browser":
-                return "No HashPack extension detected. Scan the QR code with HashPack mobile or open the desktop app.";
+                return "No HashPack extension detected. We'll open hashpack.app in a new tab so you can approve the WalletConnect session.";
             case "mobile_browser":
                 return "Use HashPack, Blade, Kabila, or any WalletConnect-compatible Hedera wallet on your device.";
             default:
@@ -500,50 +497,6 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     {showDebug ? "Hide" : "Show"} Debug Info
                 </button>
             </div>
-
-            {showQr && lastWcUri && (
-                <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-md">
-                    <h4 className="mb-2 text-sm font-semibold text-[#0b1f3a]">Scan with HashPack</h4>
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="rounded-lg border border-gray-100 bg-white p-3">
-                            <QRCodeSVG value={lastWcUri} size={180} level="M" includeMargin={false} />
-                        </div>
-                        <p className="text-center text-xs text-gray-500">
-                            Open HashPack on your phone → WalletConnect → Scan this QR code to finish pairing.
-                        </p>
-                        <div className="flex flex-wrap gap-2 text-xs">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                    try {
-                                        window.location.href = `hashpack://wc?uri=${encodeURIComponent(lastWcUri)}`;
-                                    } catch {
-                                        addLog("Failed to trigger HashPack deep link from QR panel");
-                                    }
-                                }}
-                            >
-                                Open in HashPack
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                    navigator.clipboard
-                                        .writeText(lastWcUri)
-                                        .then(() => toast.success("WalletConnect URI copied"))
-                                        .catch(() => toast.error("Failed to copy WalletConnect link"));
-                                }}
-                            >
-                                Copy Link
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={() => setShowQr(false)}>
-                                Hide QR
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {showDebug && debugLogs.length > 0 && (
                 <div className="max-h-60 overflow-y-auto rounded-lg bg-gray-900 p-3 text-xs font-mono text-white">
