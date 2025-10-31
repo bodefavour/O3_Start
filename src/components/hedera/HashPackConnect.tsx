@@ -228,10 +228,27 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             // Check if user just cancelled
             const sessions = dAppConnector.signers;
             if (!sessions || sessions.length === 0) {
-                addLog("No session created - user may have cancelled");
-                toast.info("Connection cancelled");
+                addLog("No session created - user may have cancelled or rejected");
+                
+                // Check for specific error messages
+                if (msg.includes('No applicable accounts') || msg.includes('no accounts')) {
+                    toast.error("No Hedera testnet account found in HashPack", {
+                        description: "Please create or import a testnet account in HashPack first",
+                        duration: 6000,
+                    });
+                } else if (msg.includes('rejected') || msg.includes('denied')) {
+                    toast.info("Connection rejected in wallet");
+                } else if (msg.includes('timeout')) {
+                    toast.error("Connection timeout", {
+                        description: "Please try again and approve the connection in HashPack within 60 seconds",
+                    });
+                } else {
+                    toast.info("Connection cancelled");
+                }
             } else {
-                toast.error(msg || "Failed to connect");
+                toast.error(msg || "Failed to connect", {
+                    description: "Please check the debug logs for more details",
+                });
             }
             setShowDebug(true);
         } finally {
@@ -304,6 +321,19 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                         : "Connect using HashPack, Kabila, Blade, or any Hedera wallet."
                     }
                 </p>
+                
+                {/* Important notice for testnet */}
+                <div className="mb-3 rounded-lg bg-amber-50 border border-amber-200 p-3">
+                    <div className="flex items-start gap-2">
+                        <svg className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-xs text-amber-800">
+                            <strong>Testnet Required:</strong> Make sure you have a Hedera testnet account in your wallet. Create one in HashPack settings if needed.
+                        </p>
+                    </div>
+                </div>
+
                 <div className="flex flex-col gap-2">
                     <Button
                         onClick={handleConnect}
