@@ -49,13 +49,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Check if connected via thirdweb (in-app wallet)
     const isThirdwebConnected = !!activeAccount?.address && !!activeWallet?.id;
-    
+
     // Check if connected via Hedera wallet
     const isHederaConnected = !!hederaAccount;
-    
+
     // User is authenticated if connected via either method
     const isAuthenticated = isThirdwebConnected || isHederaConnected;
-    
+
     // Use Hedera account if available, otherwise use Thirdweb address
     const address = (hederaAccount || activeAccount?.address) as string | undefined;
 
