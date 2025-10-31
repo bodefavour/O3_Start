@@ -139,7 +139,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 </div>
             );
         }
-        
+
         return (
             <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
                 <div className="flex items-start gap-3">
@@ -222,7 +222,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 </h3>
             </div>
             <p className="mb-4 text-xs text-gray-600">
-                {isMobile 
+                {isMobile
                     ? "Tap below to connect your HashPack wallet."
                     : "Connect your Hedera wallet using HashPack."
                 }
