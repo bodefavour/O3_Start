@@ -52,7 +52,11 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     name: 'BorderlessPay',
                     description: 'Global Payment Platform powered by Hedera',
                     url: window.location.origin,
-                    icons: [`${window.location.origin}/favicon.svg`],
+                    icons: [String(`${window.location.origin}/favicon.svg`)],
+                    // Redirect helps deep-linking on mobile wallets
+                    redirect: {
+                        universal: window.location.origin,
+                    },
                 };
 
                 const connector = new DAppConnector(
@@ -106,38 +110,70 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         setConnecting(true);
 
         try {
-            addLog("Opening wallet selection modal...");
-            await dAppConnector.openModal();
+            if (isMobile) {
+                addLog("Mobile detected — using deep link connect flow...");
+                // Use direct connect with deep-link callback for mobile
+                const session = await dAppConnector.connect((uri: string) => {
+                    addLog(`Launching wallet with wc uri length=${uri?.length}`);
+                    // 1) Try native wc: scheme (handled by many wallets when in-app)
+                    try {
+                        window.location.href = uri;
+                    } catch (e) {
+                        addLog("wc: scheme redirect failed, trying universal link fallback");
+                    }
+                    // 2) Fallback to HashPack universal link
+                    const hashpackUniversal = `https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`;
+                    setTimeout(() => {
+                        window.open(hashpackUniversal, "_blank");
+                    }, 250);
+                });
 
-            // Wait a bit for connection to establish
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Check for connection
-            const sessions = dAppConnector.signers;
-            if (sessions && sessions.length > 0) {
-                const session = sessions[0];
-                const account = session.getAccountId()?.toString();
-
+                const signer = dAppConnector.signers?.[0];
+                const account = signer?.getAccountId()?.toString();
                 if (account) {
-                    addLog(`✅ SUCCESS! Connected: ${account}`);
+                    addLog(`✅ SUCCESS! Connected (mobile): ${account}`);
                     setAccountId(account);
                     setConnected(true);
-                    // Dispatch event for auth context
-                    window.dispatchEvent(new CustomEvent('hedera-connect', {
-                        detail: { accountId: account }
-                    }));
+                    window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
                     toast.success(`Connected to Hedera wallet: ${account}`);
                     onConnect?.(account);
                 } else {
-                    addLog("No account ID received from wallet");
+                    addLog("No account ID received from mobile wallet session");
                 }
             } else {
-                addLog("No session created - user may have cancelled");
+                addLog("Opening wallet selection modal...");
+                await dAppConnector.openModal();
+
+                // Wait a bit for connection to establish
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Check for connection
+                const sessions = dAppConnector.signers;
+                if (sessions && sessions.length > 0) {
+                    const session = sessions[0];
+                    const account = session.getAccountId()?.toString();
+
+                    if (account) {
+                        addLog(`✅ SUCCESS! Connected: ${account}`);
+                        setAccountId(account);
+                        setConnected(true);
+                        // Dispatch event for auth context
+                        window.dispatchEvent(new CustomEvent('hedera-connect', { 
+                            detail: { accountId: account } 
+                        }));
+                        toast.success(`Connected to Hedera wallet: ${account}`);
+                        onConnect?.(account);
+                    } else {
+                        addLog("No account ID received from wallet");
+                    }
+                } else {
+                    addLog("No session created - user may have cancelled");
+                }
             }
         } catch (error: any) {
-            addLog(`ERROR: ${error.message}`);
+            addLog(`ERROR: ${error?.message || error}`);
             console.error("Wallet connection error:", error);
-            toast.error(error.message || "Failed to connect wallet");
+            toast.error(error?.message || "Failed to connect wallet");
             setShowDebug(true);
         } finally {
             setConnecting(false);
