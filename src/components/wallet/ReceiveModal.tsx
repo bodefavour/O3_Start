@@ -69,7 +69,7 @@ export function ReceiveModal({
                     {/* QR Code */}
                     <div className="mb-6 flex flex-col items-center">
                         <div className="mb-3 flex items-center justify-center rounded-xl bg-white border-2 border-gray-200 p-4">
-                            <QRCodeSVG 
+                            <QRCodeSVG
                                 value={walletAddress}
                                 size={160}
                                 level="H"
