@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         });
     } catch (error: any) {
         console.error('Price fetch error:', error);
-        
+
         // Return fallback price on error
         return NextResponse.json({
             success: true,

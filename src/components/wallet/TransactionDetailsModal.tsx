@@ -151,11 +151,10 @@ export function TransactionDetailsModal({
                                         Status
                                     </label>
                                     <p className="mt-1 text-sm">
-                                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                                            details.result === 'SUCCESS'
+                                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${details.result === 'SUCCESS'
                                                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                                                 : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                        }`}>
+                                            }`}>
                                             {details.result}
                                         </span>
                                     </p>
@@ -246,11 +245,10 @@ export function TransactionDetailsModal({
                                                 <span className="font-mono text-gray-600 dark:text-gray-400 text-xs">
                                                     {transfer.account}
                                                 </span>
-                                                <span className={`font-mono ${
-                                                    parseFloat(transfer.amount) >= 0
+                                                <span className={`font-mono ${parseFloat(transfer.amount) >= 0
                                                         ? 'text-green-600 dark:text-green-400'
                                                         : 'text-red-600 dark:text-red-400'
-                                                }`}>
+                                                    }`}>
                                                     {transfer.amount} ℏ
                                                 </span>
                                             </div>

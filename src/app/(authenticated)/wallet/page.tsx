@@ -1380,6 +1380,13 @@ export default function WalletPage() {
                 isOpen={swapModalOpen}
                 onClose={handleCloseSwapModal}
             />
+
+            {/* Transaction Details Modal */}
+            <TransactionDetailsModal
+                transactionId={selectedTransactionId}
+                isOpen={transactionDetailsModalOpen}
+                onClose={handleCloseTransactionDetails}
+            />
         </div >
     );
 }
