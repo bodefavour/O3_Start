@@ -158,8 +158,8 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                         setAccountId(account);
                         setConnected(true);
                         // Dispatch event for auth context
-                        window.dispatchEvent(new CustomEvent('hedera-connect', { 
-                            detail: { accountId: account } 
+                        window.dispatchEvent(new CustomEvent('hedera-connect', {
+                            detail: { accountId: account }
                         }));
                         toast.success(`Connected to Hedera wallet: ${account}`);
                         onConnect?.(account);
