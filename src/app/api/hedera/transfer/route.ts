@@ -68,24 +68,31 @@ export async function POST(request: NextRequest) {
             txId = result.transactionId;
         }
 
-        // Store transaction in database
+        // Store transaction in database (optional - don't block on failure)
         if (userId) {
-            await db.insert(transactions).values({
-                userId,
-                type: 'outgoing',
-                status: 'completed',
-                amount: amount.toString(),
-                currency: 'BPUSD',
-                fromAddress: fromAccountId,
-                toAddress: toAccountId,
-                note: memo,
-                hash: txId,
-                metadata: {
-                    tokenId,
-                    hederaTransaction: true,
-                    walletSigned,
-                },
-            });
+            try {
+                await db.insert(transactions).values({
+                    userId,
+                    type: 'outgoing',
+                    status: 'completed',
+                    amount: amount.toString(),
+                    currency: 'BPUSD',
+                    fromAddress: fromAccountId,
+                    toAddress: toAccountId,
+                    note: memo,
+                    hash: txId,
+                    metadata: {
+                        tokenId,
+                        hederaTransaction: true,
+                        walletSigned,
+                    },
+                });
+                console.log('✅ Transaction stored in database');
+            } catch (dbError: any) {
+                // Don't fail the transaction if database storage fails
+                console.warn('⚠️ Failed to store transaction in database:', dbError.message);
+                console.log('Transaction succeeded on Hedera blockchain - database storage is optional');
+            }
         }
 
         const network = process.env.HEDERA_NETWORK || 'testnet';

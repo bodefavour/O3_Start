@@ -54,6 +54,12 @@ export function SendModal({
         setSending(true);
 
         try {
+            // Validate recipient address format
+            const accountIdRegex = /^0\.0\.\d+$/;
+            if (!accountIdRegex.test(recipientAddress)) {
+                throw new Error('Invalid recipient address format. Must be in format: 0.0.123456');
+            }
+
             // Check if backend signing is enabled (bypasses wallet entirely)
             const backendSigningEnabled = process.env.NEXT_PUBLIC_BACKEND_SIGNING_ENABLED === 'true';
             const operatorId = process.env.NEXT_PUBLIC_HEDERA_OPERATOR_ID;
@@ -62,6 +68,7 @@ export function SendModal({
             // ALWAYS use backend signing if enabled - no wallet needed!
             if (backendSigningEnabled && operatorId) {
                 console.log('✅ Using backend signing - no wallet required!');
+                console.log('From:', operatorId, 'To:', recipientAddress, 'Amount:', amount);
 
                 const response = await fetch('/api/hedera/transfer', {
                     method: 'POST',
@@ -83,7 +90,20 @@ export function SendModal({
                     showToast("✅ Transaction sent via backend!", "success");
                     setStep(3);
                 } else {
-                    throw new Error(result.error || 'Transaction failed');
+                    // Provide helpful error messages
+                    let errorMessage = result.error || 'Transaction failed';
+                    
+                    if (errorMessage.includes('INVALID_ACCOUNT_ID')) {
+                        errorMessage = `Recipient account ${recipientAddress} does not exist on Hedera testnet. Please use a valid testnet account.`;
+                    } else if (errorMessage.includes('INSUFFICIENT_PAYER_BALANCE')) {
+                        errorMessage = 'Insufficient HBAR balance to pay for transaction fees. Please fund your account.';
+                    } else if (errorMessage.includes('INSUFFICIENT_TOKEN_BALANCE')) {
+                        errorMessage = 'Insufficient token balance. Please ensure your account has enough tokens.';
+                    } else if (errorMessage.includes('TOKEN_NOT_ASSOCIATED')) {
+                        errorMessage = 'Recipient has not associated this token. They need to associate it first.';
+                    }
+                    
+                    throw new Error(errorMessage);
                 }
 
                 setSending(false);
@@ -275,15 +295,18 @@ export function SendModal({
                             {/* Recipient Address */}
                             <div className="mb-6">
                                 <label className="mb-2 block text-base font-semibold text-gray-900">
-                                    Recipient Address <span className="text-red-500">*</span>
+                                    Recipient Hedera Account ID <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={recipientAddress}
                                     onChange={(e) => setRecipientAddress(e.target.value)}
-                                    placeholder="0x4Fabb145d64652a948d72533023f6E7A623C7C2"
+                                    placeholder="0.0.1234567"
                                     className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#00c48c] focus:outline-none focus:ring-1 focus:ring-[#00c48c]"
                                 />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Format: 0.0.XXXXXXX (e.g., 0.0.1234567)
+                                </p>
                             </div>
 
                             {/* Amount */}
@@ -473,16 +496,60 @@ export function SendModal({
                                 Your transaction has been submitted to Hedera network and will be confirmed shortly
                             </p>
 
-                            {/* Transaction Hash with Link to Mirror Node */}
-                            <div className="w-full rounded-lg bg-gray-100 px-6 py-4 mb-6">
-                                <p className="mb-3 text-center text-sm font-semibold text-gray-700">
-                                    Transaction ID
-                                </p>
-                                <div className="flex justify-center">
-                                    <TransactionLink
-                                        transactionId={transactionHash}
-                                        network={process.env.HEDERA_NETWORK as 'testnet' | 'mainnet' || 'testnet'}
-                                    />
+                            {/* Transaction Hash with Links to Verify */}
+                            <div className="w-full space-y-4 mb-6">
+                                <div className="rounded-lg bg-gray-100 px-6 py-4">
+                                    <p className="mb-3 text-center text-sm font-semibold text-gray-700">
+                                        Transaction ID
+                                    </p>
+                                    <div className="flex justify-center">
+                                        <TransactionLink
+                                            transactionId={transactionHash}
+                                            network={process.env.NEXT_PUBLIC_HEDERA_NETWORK as 'testnet' | 'mainnet' || 'testnet'}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Verification Links */}
+                                <div className="rounded-lg border-2 border-[#00c48c] bg-green-50 px-6 py-4">
+                                    <p className="mb-3 text-center text-sm font-bold text-green-800">
+                                        ✅ Verify on Hedera Blockchain
+                                    </p>
+                                    <div className="space-y-2">
+                                        <a
+                                            href={`https://hashscan.io/testnet/transaction/${transactionHash}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-between w-full px-4 py-2 bg-white rounded-lg hover:bg-gray-50 transition-colors group"
+                                        >
+                                            <span className="text-sm font-medium text-gray-700">
+                                                📊 HashScan Explorer
+                                            </span>
+                                            <span className="text-xs text-gray-500 group-hover:text-[#00c48c]">
+                                                View Details →
+                                            </span>
+                                        </a>
+                                        <a
+                                            href={`https://testnet.mirrornode.hedera.com/api/v1/transactions/${transactionHash}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-between w-full px-4 py-2 bg-white rounded-lg hover:bg-gray-50 transition-colors group"
+                                        >
+                                            <span className="text-sm font-medium text-gray-700">
+                                                🔗 Mirror Node API
+                                            </span>
+                                            <span className="text-xs text-gray-500 group-hover:text-[#00c48c]">
+                                                Raw JSON →
+                                            </span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {/* Transaction Summary */}
+                                <div className="text-xs text-gray-600 text-center space-y-1">
+                                    <p>✅ Transaction confirmed on Hedera network</p>
+                                    <p>⚡ Consensus time: ~3-5 seconds</p>
+                                    <p>💰 Fee: ~$0.001 USD</p>
                                 </div>
                             </div>
 
