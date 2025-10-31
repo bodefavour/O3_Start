@@ -18,11 +18,11 @@ async function associateToken() {
     console.log("Token:", tokenId);
 
     const client = Client.forTestnet();
-    
+
     // Handle hex-encoded private key
     const keyString = operatorKey.startsWith('0x') ? operatorKey.slice(2) : operatorKey;
     let privKey;
-    
+
     try {
         privKey = PrivateKey.fromStringECDSA(keyString);
     } catch {
@@ -32,7 +32,7 @@ async function associateToken() {
             privKey = PrivateKey.fromString(operatorKey);
         }
     }
-    
+
     client.setOperator(operatorId, privKey);
 
     try {
@@ -52,7 +52,7 @@ async function associateToken() {
         console.log(`https://hashscan.io/testnet/transaction/${txResponse.transactionId.toString()}`);
         console.log("\n💰 Check your token balance:");
         console.log(`https://hashscan.io/testnet/account/${operatorId}`);
-        
+
     } catch (error) {
         if (error.message && error.message.includes("TOKEN_ALREADY_ASSOCIATED")) {
             console.log("\n✅ Token already associated with this account!");

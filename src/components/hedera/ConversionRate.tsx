@@ -105,7 +105,7 @@ export function ConversionCalculator({ amount, fromCurrency, toCurrency }: Conve
         const key = `${fromCurrency}-${toCurrency}`;
         const rate = rates[key] || 1;
         const result = parseFloat(amount) * rate;
-        
+
         setConvertedAmount(result.toFixed(4));
     }, [amount, fromCurrency, toCurrency]);
 

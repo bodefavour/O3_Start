@@ -92,7 +92,7 @@ export function SendModal({
                 } else {
                     // Provide helpful error messages
                     let errorMessage = result.error || 'Transaction failed';
-                    
+
                     if (errorMessage.includes('INVALID_ACCOUNT_ID')) {
                         errorMessage = `Recipient account ${recipientAddress} does not exist on Hedera testnet. Please use a valid testnet account.`;
                     } else if (errorMessage.includes('INSUFFICIENT_PAYER_BALANCE')) {
@@ -102,7 +102,7 @@ export function SendModal({
                     } else if (errorMessage.includes('TOKEN_NOT_ASSOCIATED')) {
                         errorMessage = 'Recipient has not associated this token. They need to associate it first.';
                     }
-                    
+
                     throw new Error(errorMessage);
                 }
 
