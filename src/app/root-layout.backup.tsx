@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import '../src/styles/globals.css'
-import { UserProvider, ToastProvider } from '@/contexts/auth-provider'
+import { AuthProvider } from '@/contexts/auth-provider'
 
 export const metadata: Metadata = {
   title: 'BorderlessPay - Global Payment Platform',
@@ -15,11 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <UserProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </UserProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )
