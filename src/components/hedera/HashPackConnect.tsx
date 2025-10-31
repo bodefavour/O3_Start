@@ -278,12 +278,24 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         addLog(`Starting connection flow (${walletEnv})`);
 
         try {
-            if (walletEnv === "desktop_extension" && hashpackExtension) {
+            if (
+                walletEnv === "desktop_extension" &&
+                hashpackExtension &&
+                hashpackExtension.availableInIframe === false
+            ) {
                 addLog(`Connecting via HashPack extension (${hashpackExtension.id})`);
-                await connector.connectExtension(hashpackExtension.id);
-                syncSignerState(connector);
-                toast.success("HashPack extension connected");
-                return;
+                try {
+                    await connector.connectExtension(hashpackExtension.id);
+                    syncSignerState(connector);
+                    toast.success("HashPack extension connected");
+                    return;
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : String(error);
+                    addLog(`HashPack extension connect failed: ${message}`);
+                    toast.warning("HashPack extension handshake failed", {
+                        description: "Falling back to WalletConnect link flow.",
+                    });
+                }
             }
 
             const session = await connector.connect((uri) => {
