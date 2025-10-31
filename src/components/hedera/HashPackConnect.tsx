@@ -211,68 +211,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         onDisconnect?.();
     };
 
-    // HashPack-only connect button: fast connection
-    const handleConnectHashPack = async () => {
-        addLog("=== Starting HashPack-only connection ===");
-        if (!dAppConnector) {
-            addLog("ERROR: DAppConnector not initialized");
-            toast.error("Wallet connector not initialized. Please refresh the page.");
-            setShowDebug(true);
-            return;
-        }
-        setConnecting(true);
-
-        // 10 second timeout
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Connection timeout - please try again')), 10000)
-        );
-
-        try {
-            // Check for extension first (in-app browser)
-            const hashpackExtension = dAppConnector.extensions?.find(ext =>
-                ext.name?.toLowerCase().includes('hashpack') && ext.available
-            );
-
-            let session;
-            if (hashpackExtension) {
-                addLog(`Using HashPack extension: ${hashpackExtension.id}`);
-                session = await Promise.race([
-                    dAppConnector.connectExtension(hashpackExtension.id),
-                    timeoutPromise
-                ]);
-            } else {
-                addLog("Using deep link (no extension found)");
-                session = await Promise.race([
-                    dAppConnector.connect((uri: string) => {
-                        setLastWcUri(uri);
-                        const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
-                        window.location.href = hashpackNative;
-                    }),
-                    timeoutPromise
-                ]);
-            }
-
-            const signer = dAppConnector.signers?.[0];
-            const account = signer?.getAccountId()?.toString();
-            if (account) {
-                addLog(`✅ SUCCESS! Connected: ${account}`);
-                setAccountId(account);
-                setConnected(true);
-                window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
-                toast.success(`Connected: ${account}`);
-                onConnect?.(account);
-            } else {
-                throw new Error("No account received");
-            }
-        } catch (error: any) {
-            const msg = String(error?.message || error);
-            addLog(`ERROR: ${msg}`);
-            toast.error(msg || 'Failed to connect');
-            setShowDebug(true);
-        } finally {
-            setConnecting(false);
-        }
-    }; if (connected) {
+    if (connected) {
         return (
             <div className="space-y-3">
                 <div className="rounded-lg border border-[#00c48c] bg-[#00c48c]/10 p-4">
