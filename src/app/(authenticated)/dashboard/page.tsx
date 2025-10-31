@@ -40,16 +40,9 @@ function getTimeAgo(date: Date): string {
   return `${Math.floor(seconds / 86400)} days ago`;
 }
 
-const weeklyData = [
-  { week: "Week1", amount: 45000 },
-  { week: "Week2", amount: 32000 },
-  { week: "Week3", amount: 38000 },
-  { week: "Week4", amount: 52000 },
-];
-
 export default function DashboardPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, address, isHederaWallet } = useAuthContext();
 
   const { userId } = useCurrentUser();
   const [balance, setBalance] = useState("0");
@@ -78,20 +71,14 @@ export default function DashboardPage() {
     }, 1000);
   }, [isAuthenticated, router]);
 
-  // Mock wallet data for modals - will be replaced with first real wallet
-  const defaultWallet = wallets.length > 0 ? {
-    currency: wallets[0].currency,
-    symbol: wallets[0].currency,
-    address: wallets[0].address || "0x742a35Cc8634C0532925a3b848cBe97595f0bEb",
-    balance: wallets[0].balance,
-    name: wallets[0].currency,
-  } : {
-    currency: "USD Coin",
-    symbol: "USDC",
-    address: "0x742a35Cc8634C0532925a3b848cBe97595f0bEb",
-    balance: "0",
-    name: "USD Coin",
-  };
+  // Use connected wallet address for modals
+  const defaultWallet = address ? {
+    currency: isHederaWallet ? "Hedera" : "USD Coin",
+    symbol: isHederaWallet ? "HBAR" : "USDC",
+    address: address,
+    balance: balance,
+    name: isHederaWallet ? "Hedera Account" : "USD Coin",
+  } : null;
 
   // useEffect(() => {
   //   // Check authentication
@@ -497,24 +484,28 @@ export default function DashboardPage() {
       </main>
 
       {/* Send Modal */}
-      <SendModal
-        isOpen={sendModalOpen}
-        onClose={handleCloseSendModal}
-        currency={defaultWallet.currency}
-        currencySymbol={defaultWallet.symbol}
-        // walletAddress={defaultWallet.address}
-        availableBalance={defaultWallet.balance}
-        walletName={defaultWallet.name}
-      />
+      {defaultWallet && (
+        <SendModal
+          isOpen={sendModalOpen}
+          onClose={handleCloseSendModal}
+          currency={defaultWallet.currency}
+          currencySymbol={defaultWallet.symbol}
+          // walletAddress={defaultWallet.address}
+          availableBalance={defaultWallet.balance}
+          walletName={defaultWallet.name}
+        />
+      )}
 
       {/* Receive Modal */}
-      <ReceiveModal
-        isOpen={receiveModalOpen}
-        onClose={handleCloseReceiveModal}
-        currency={defaultWallet.currency}
-        currencySymbol={defaultWallet.symbol}
-        walletAddress={defaultWallet.address}
-      />
+      {defaultWallet && (
+        <ReceiveModal
+          isOpen={receiveModalOpen}
+          onClose={handleCloseReceiveModal}
+          currency={defaultWallet.currency}
+          currencySymbol={defaultWallet.symbol}
+          walletAddress={defaultWallet.address}
+        />
+      )}
 
       {/* Swap Modal */}
       <SwapModal

@@ -33,55 +33,6 @@ import { invoiceApi } from "@/lib/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useToast } from "@/contexts/auth-provider";
 
-// Mock invoice data
-const mockInvoices = [
-    {
-        id: "INV-001",
-        description: "Web Development Services",
-        client: "Acme Corporation",
-        amount: "$15,750 USD",
-        status: "Paid",
-        date: "2024-01-15",
-        color: "green",
-    },
-    {
-        id: "INV-002",
-        description: "Mobile App Development",
-        client: "TechStart Ltd",
-        amount: "$8,900 USD",
-        status: "Sent",
-        date: "2024-01-20",
-        color: "blue",
-    },
-    {
-        id: "INV-003",
-        description: "Consulting Services",
-        client: "Global Ventures",
-        amount: "$12,300 USD",
-        status: "Overdue",
-        date: "2024-01-10",
-        color: "red",
-    },
-    {
-        id: "INV-004",
-        description: "UI/UX Design Services",
-        client: "Innovation Hub",
-        amount: "$5,670 USD",
-        status: "Draft",
-        date: "2024-01-25",
-        color: "cyan",
-    },
-    {
-        id: "INV-005",
-        description: "Software Integration",
-        client: "Digital Solutions",
-        amount: "$9,800 USD",
-        status: "Sent",
-        date: "2024-01-30",
-        color: "blue",
-    },
-];
-
 export default function InvoicingPage() {
     const router = useRouter();
     const { user, logout, isAuthenticated } = useUser();
