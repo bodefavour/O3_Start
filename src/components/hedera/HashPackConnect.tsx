@@ -157,7 +157,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
         try {
             addLog("Opening WalletConnect modal...");
-            
+
             // Create a promise that resolves when connection succeeds
             const connectionPromise = new Promise<string>((resolve, reject) => {
                 // Set up one-time listener for successful connection
@@ -169,7 +169,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     }
                 };
                 window.addEventListener('hedera-connect', handleConnectEvent);
-                
+
                 // Timeout after 60 seconds
                 setTimeout(() => {
                     window.removeEventListener('hedera-connect', handleConnectEvent);
@@ -179,17 +179,17 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
             // Open the modal (returns immediately, doesn't wait for connection)
             dAppConnector.openModal();
-            
+
             // Wait for either connection success or timeout
             const account = await connectionPromise;
-            
+
             addLog(`✅ SUCCESS! Connected: ${account}`);
             toast.success(`Connected: ${account}`);
-            
+
         } catch (error: any) {
             const msg = String(error?.message || error);
             addLog(`ERROR: ${msg}`);
-            
+
             // Check if user just cancelled (no sessions created)
             const sessions = dAppConnector.signers;
             if (!sessions || sessions.length === 0) {
