@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { X, Copy, QrCode, Share2, Mail } from "lucide-react";
+import { X, Copy, Share2, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { QRCodeSVG } from "qrcode.react";
 
 interface ReceiveModalProps {
     isOpen: boolean;
@@ -67,8 +68,13 @@ export function ReceiveModal({
                 <div className="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
                     {/* QR Code */}
                     <div className="mb-6 flex flex-col items-center">
-                        <div className="mb-3 flex h-40 w-40 items-center justify-center rounded-xl bg-white border-2 border-gray-200">
-                            <QrCode className="h-32 w-32 text-gray-800" />
+                        <div className="mb-3 flex items-center justify-center rounded-xl bg-white border-2 border-gray-200 p-4">
+                            <QRCodeSVG 
+                                value={walletAddress}
+                                size={160}
+                                level="H"
+                                includeMargin={false}
+                            />
                         </div>
                         <p className="text-sm text-gray-600">
                             Scan this QR code to send {currencySymbol} to this wallet
