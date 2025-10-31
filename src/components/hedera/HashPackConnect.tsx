@@ -107,6 +107,11 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 setDAppConnector(connector);
                 addLog("✅ DAppConnector initialized successfully");
 
+                // Store connector globally for other components to use
+                if (typeof window !== 'undefined') {
+                    (window as any).hederaDAppConnector = connector;
+                }
+
                 // Check for existing sessions
                 const sessions = connector.signers;
                 if (sessions && sessions.length > 0) {

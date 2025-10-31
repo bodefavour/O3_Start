@@ -19,6 +19,8 @@ export async function POST(request: NextRequest) {
             decimals = 2,
             memo,
             userId,
+            transactionId, // Optional: If transaction was already signed by wallet
+            walletSigned = false, // Flag to indicate wallet-signed transaction
         } = body;
 
         // Validate inputs
@@ -32,24 +34,38 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Execute transfer on Hedera
-        const result = await transferToken(
-            tokenId,
-            fromAccountId,
-            toAccountId,
-            amount,
-            decimals,
-            memo
-        );
+        let txId = transactionId;
+        let result;
 
-        if (!result.success) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: result.error || 'Transfer failed',
-                },
-                { status: 500 }
+        // If transaction was already signed and executed by wallet, skip execution
+        if (walletSigned && transactionId) {
+            console.log('Wallet-signed transaction detected:', transactionId);
+            result = {
+                success: true,
+                transactionId,
+            };
+        } else {
+            // Execute transfer on Hedera using operator account (backend signing)
+            result = await transferToken(
+                tokenId,
+                fromAccountId,
+                toAccountId,
+                amount,
+                decimals,
+                memo
             );
+
+            if (!result.success) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error: result.error || 'Transfer failed',
+                    },
+                    { status: 500 }
+                );
+            }
+
+            txId = result.transactionId;
         }
 
         // Store transaction in database
@@ -63,10 +79,11 @@ export async function POST(request: NextRequest) {
                 fromAddress: fromAccountId,
                 toAddress: toAccountId,
                 note: memo,
-                hash: result.transactionId,
+                hash: txId,
                 metadata: {
                     tokenId,
                     hederaTransaction: true,
+                    walletSigned,
                 },
             });
         }
@@ -76,13 +93,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             data: {
-                transactionId: result.transactionId,
+                transactionId: txId,
                 fromAccountId,
                 toAccountId,
                 amount,
                 tokenId,
-                explorerUrl: getExplorerUrl(result.transactionId!, network),
-                mirrorNodeUrl: `https://${network}.mirrornode.hedera.com/api/v1/transactions/${result.transactionId}`,
+                explorerUrl: getExplorerUrl(txId!, network),
+                mirrorNodeUrl: `https://${network}.mirrornode.hedera.com/api/v1/transactions/${txId}`,
             },
         });
     } catch (error: any) {

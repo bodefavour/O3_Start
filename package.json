@@ -12,7 +12,10 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/db/seed.ts",
-    "db:setup": "node scripts/setup-db.js"
+    "db:setup": "node scripts/setup-db.js",
+    "hedera:check": "tsx scripts/check-hedera-account.ts",
+    "hedera:create-token": "tsx scripts/create-hedera-token.ts",
+    "hedera:associate": "tsx scripts/associate-token.ts"
   },
   "dependencies": {
     "@hashgraph/hedera-wallet-connect": "^2.0.3",

@@ -26,9 +26,26 @@ export function getHederaClient(): Client {
     client = Client.forTestnet();
   }
 
+  // Handle hex-encoded private key (remove 0x prefix if present)
+  let privateKey: PrivateKey;
+  const keyString = operatorKey.startsWith('0x') ? operatorKey.slice(2) : operatorKey;
+  
+  try {
+    // Try ECDSA first (most common for EVM-compatible accounts)
+    privateKey = PrivateKey.fromStringECDSA(keyString);
+  } catch {
+    try {
+      // Fallback to ED25519
+      privateKey = PrivateKey.fromStringED25519(keyString);
+    } catch {
+      // Last resort: use the generic fromString
+      privateKey = PrivateKey.fromString(operatorKey);
+    }
+  }
+
   client.setOperator(
     AccountId.fromString(operatorId),
-    PrivateKey.fromString(operatorKey)
+    privateKey
   );
 
   return client;

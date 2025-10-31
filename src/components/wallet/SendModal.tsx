@@ -53,16 +53,14 @@ export function SendModal({
     const handleSendNow = async () => {
         setSending(true);
 
-        toast.success("Transaction sent successfully!");
-        setStep(3);
-        // Don't auto-close anymore, let user see the success screen
         try {
-            // Get Hedera token ID from environment
+            // Check if user has a Hedera wallet connected
+            const isHederaWallet = localStorage.getItem('isHederaWallet') === 'true';
             const tokenId = process.env.NEXT_PUBLIC_HEDERA_TOKEN_ID;
 
-            if (!tokenId) {
+            if (!tokenId && !isHederaWallet) {
                 // Fallback to mock for demo if not configured
-                console.warn('Hedera token not configured, using mock transaction');
+                console.warn('Hedera not configured, using mock transaction');
                 const mockHash = `0.0.${Date.now()}@${Math.random().toString(36).substring(7)}`;
                 setTransactionHash(mockHash);
                 showToast("Demo transaction created!", "success");
@@ -71,28 +69,88 @@ export function SendModal({
                 return;
             }
 
-            // Call Hedera transfer API
-            const response = await fetch('/api/hedera/transfer', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    tokenId,
-                    fromAccountId: user?.accountId || '0.0.0', // Will use operator account
-                    toAccountId: recipientAddress,
-                    amount: parseFloat(amount),
-                    memo: note || `Send ${amount} ${currencySymbol}`,
-                    userId: user?.accountId,
-                }),
-            });
+            // For Hedera wallets: Use WalletConnect to sign the transaction
+            if (isHederaWallet && user?.accountId) {
+                // Import DAppConnector dynamically to avoid SSR issues
+                const { DAppConnector, HederaJsonRpcMethod } = await import('@hashgraph/hedera-wallet-connect');
+                const { TransferTransaction, AccountId, TokenId } = await import('@hashgraph/sdk');
+                
+                // Get existing DAppConnector instance from window
+                const dAppConnector = (window as any).hederaDAppConnector;
+                
+                if (!dAppConnector || !dAppConnector.signers || dAppConnector.signers.length === 0) {
+                    showToast("Please connect your Hedera wallet first", "error");
+                    setSending(false);
+                    return;
+                }
 
-            const result = await response.json();
+                const signer = dAppConnector.signers[0];
 
-            if (result.success) {
-                setTransactionHash(result.data.transactionId);
+                // Create the transfer transaction
+                const transferTx = new TransferTransaction()
+                    .addTokenTransfer(
+                        tokenId!,
+                        user.accountId,
+                        -parseFloat(amount) * 100 // Assuming 2 decimals
+                    )
+                    .addTokenTransfer(
+                        tokenId!,
+                        recipientAddress,
+                        parseFloat(amount) * 100
+                    )
+                    .setTransactionMemo(note || `Send ${amount} ${currencySymbol}`);
+
+                // Sign and execute via HashPack
+                const response = await signer.call(
+                    transferTx,
+                    HederaJsonRpcMethod.SignAndExecuteTransaction
+                );
+
+                const txId = response.transactionId.toString();
+                setTransactionHash(txId);
+
+                // Store transaction in database
+                await fetch('/api/hedera/transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tokenId,
+                        fromAccountId: user.accountId,
+                        toAccountId: recipientAddress,
+                        amount: parseFloat(amount),
+                        memo: note || `Send ${amount} ${currencySymbol}`,
+                        userId: user.accountId,
+                        transactionId: txId,
+                        walletSigned: true, // Indicate this was signed by user's wallet
+                    }),
+                });
+
                 showToast("Transaction sent successfully!", "success");
                 setStep(3);
             } else {
-                showToast(result.error || "Transaction failed", "error");
+                // For non-Hedera wallets or fallback: Use operator account (backend signing)
+                const response = await fetch('/api/hedera/transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tokenId,
+                        fromAccountId: user?.accountId || '0.0.0',
+                        toAccountId: recipientAddress,
+                        amount: parseFloat(amount),
+                        memo: note || `Send ${amount} ${currencySymbol}`,
+                        userId: user?.accountId,
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    setTransactionHash(result.data.transactionId);
+                    showToast("Transaction sent successfully!", "success");
+                    setStep(3);
+                } else {
+                    showToast(result.error || "Transaction failed", "error");
+                }
             }
         } catch (error: any) {
             console.error('Send error:', error);

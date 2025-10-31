@@ -42,9 +42,24 @@ export async function createStablecoin(
             .setMaxTransactionFee(new Hbar(30))
             .freezeWith(client);
 
-        const tokenCreateSign = await tokenCreateTx.sign(
-            PrivateKey.fromString(process.env.HEDERA_OPERATOR_KEY!)
-        );
+        // Sign with the operator's private key from environment
+        const operatorPrivateKeyString = process.env.HEDERA_OPERATOR_KEY!;
+        const keyString = operatorPrivateKeyString.startsWith('0x') 
+            ? operatorPrivateKeyString.slice(2) 
+            : operatorPrivateKeyString;
+        
+        let operatorPrivateKey: PrivateKey;
+        try {
+            operatorPrivateKey = PrivateKey.fromStringECDSA(keyString);
+        } catch {
+            try {
+                operatorPrivateKey = PrivateKey.fromStringED25519(keyString);
+            } catch {
+                operatorPrivateKey = PrivateKey.fromString(operatorPrivateKeyString);
+            }
+        }
+
+        const tokenCreateSign = await tokenCreateTx.sign(operatorPrivateKey);
         const tokenCreateSubmit = await tokenCreateSign.execute(client);
         const tokenCreateRx = await tokenCreateSubmit.getReceipt(client);
         const tokenId = tokenCreateRx.tokenId!.toString();
@@ -149,7 +164,20 @@ export async function associateToken(
             .setTokenIds([tokenId])
             .freezeWith(client);
 
-        const signTx = await transaction.sign(PrivateKey.fromString(privateKey));
+        // Handle hex-encoded private key
+        const keyString = privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey;
+        let privKey: PrivateKey;
+        try {
+            privKey = PrivateKey.fromStringECDSA(keyString);
+        } catch {
+            try {
+                privKey = PrivateKey.fromStringED25519(keyString);
+            } catch {
+                privKey = PrivateKey.fromString(privateKey);
+            }
+        }
+
+        const signTx = await transaction.sign(privKey);
         const txResponse = await signTx.execute(client);
         const receipt = await txResponse.getReceipt(client);
 
@@ -161,6 +189,15 @@ export async function associateToken(
         };
     } catch (error: any) {
         console.error('Token association error:', error);
+        
+        // Check if already associated
+        if (error.message?.includes('TOKEN_ALREADY_ASSOCIATED')) {
+            return {
+                success: true,
+                error: 'TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT',
+            };
+        }
+        
         return {
             success: false,
             error: error.message,
@@ -188,9 +225,24 @@ export async function mintTokens(
             .setAmount(mintAmount)
             .freezeWith(client);
 
-        const signTx = await transaction.sign(
-            PrivateKey.fromString(process.env.HEDERA_OPERATOR_KEY!)
-        );
+        // Handle hex-encoded private key
+        const operatorPrivateKeyString = process.env.HEDERA_OPERATOR_KEY!;
+        const keyString = operatorPrivateKeyString.startsWith('0x') 
+            ? operatorPrivateKeyString.slice(2) 
+            : operatorPrivateKeyString;
+        
+        let privKey: PrivateKey;
+        try {
+            privKey = PrivateKey.fromStringECDSA(keyString);
+        } catch {
+            try {
+                privKey = PrivateKey.fromStringED25519(keyString);
+            } catch {
+                privKey = PrivateKey.fromString(operatorPrivateKeyString);
+            }
+        }
+
+        const signTx = await transaction.sign(privKey);
         const txResponse = await signTx.execute(client);
         const receipt = await txResponse.getReceipt(client);
 
