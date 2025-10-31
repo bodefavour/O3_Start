@@ -199,21 +199,21 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
                 // Check if HashPack extension is available
                 const extensions = dAppConnector.extensions || [];
-                const hashpackExtension = extensions.find(ext => 
+                const hashpackExtension = extensions.find(ext =>
                     ext.name?.toLowerCase().includes('hashpack') && ext.available
                 );
 
                 if (hashpackExtension) {
                     addLog(`Found HashPack extension: ${hashpackExtension.name}`);
                     addLog("Connecting via browser extension...");
-                    
+
                     // Connect directly to extension (much faster!)
                     await dAppConnector.connectExtension(hashpackExtension.id);
-                    
+
                     // Get account from session
                     const signer = dAppConnector.signers?.[0];
                     const account = signer?.getAccountId()?.toString();
-                    
+
                     if (account) {
                         addLog(`✅ SUCCESS! Connected via extension: ${account}`);
                         setAccountId(account);
@@ -235,7 +235,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     // Poll for connection and listen for events
                     await new Promise<void>((resolve, reject) => {
                         let resolved = false;
-                        
+
                         // Listen for custom event from session lifecycle hooks
                         const handleConnectEvent = (event: any) => {
                             const account = event.detail?.accountId;
