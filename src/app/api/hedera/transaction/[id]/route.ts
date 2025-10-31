@@ -45,7 +45,7 @@ export async function GET(
         // Fetch transaction from Mirror Node
         const fetchUrl = `${mirrorNodeUrl}/api/v1/transactions/${formattedId}`;
         console.log('🌐 Fetching from Mirror Node:', fetchUrl);
-        
+
         const response = await fetch(fetchUrl);
 
         if (!response.ok) {
@@ -56,9 +56,9 @@ export async function GET(
                 body: errorData
             });
             return NextResponse.json(
-                { 
-                    success: false, 
-                    error: 'Transaction not found on Mirror Node', 
+                {
+                    success: false,
+                    error: 'Transaction not found on Mirror Node',
                     details: errorData,
                     transactionId,
                     formattedId,
