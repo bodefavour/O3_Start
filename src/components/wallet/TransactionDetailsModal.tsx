@@ -60,7 +60,11 @@ export function TransactionDetailsModal({
         setError(null);
 
         try {
-            const response = await fetch(`/api/hedera/transaction/${transactionId}`);
+            // URL encode the transaction ID to handle @ and . characters
+            const encodedId = encodeURIComponent(transactionId);
+            console.log('🔍 Fetching transaction:', { transactionId, encodedId });
+            
+            const response = await fetch(`/api/hedera/transaction/${encodedId}`);
             const data = await response.json();
 
             if (!response.ok || !data.success) {

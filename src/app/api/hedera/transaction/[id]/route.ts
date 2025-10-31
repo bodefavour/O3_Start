@@ -43,15 +43,27 @@ export async function GET(
         });
 
         // Fetch transaction from Mirror Node
-        const response = await fetch(
-            `${mirrorNodeUrl}/api/v1/transactions/${formattedId}`
-        );
+        const fetchUrl = `${mirrorNodeUrl}/api/v1/transactions/${formattedId}`;
+        console.log('🌐 Fetching from Mirror Node:', fetchUrl);
+        
+        const response = await fetch(fetchUrl);
 
         if (!response.ok) {
             const errorData = await response.text();
-            console.error('Mirror Node error:', errorData);
+            console.error('❌ Mirror Node error:', {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorData
+            });
             return NextResponse.json(
-                { success: false, error: 'Transaction not found', details: errorData },
+                { 
+                    success: false, 
+                    error: 'Transaction not found on Mirror Node', 
+                    details: errorData,
+                    transactionId,
+                    formattedId,
+                    attemptedUrl: fetchUrl
+                },
                 { status: response.status }
             );
         }
