@@ -1,0 +1,201 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+interface HashPackConnectProps {
+  onConnect?: (accountId: string) => void;
+  onDisconnect?: () => void;
+}
+
+export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProps) {
+  const [connected, setConnected] = useState(false);
+  const [accountId, setAccountId] = useState<string>("");
+  const [connecting, setConnecting] = useState(false);
+
+  // Check if HashPack is installed
+  const isHashPackInstalled = () => {
+    return typeof window !== "undefined" && !!(window as any).hashpack;
+  };
+
+  // Check existing connection on mount
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (!isHashPackInstalled()) return;
+
+      try {
+        const hashpack = (window as any).hashpack;
+        const data = await hashpack.getAccountInfo();
+        
+        if (data?.accountId) {
+          setAccountId(data.accountId);
+          setConnected(true);
+          onConnect?.(data.accountId);
+        }
+      } catch (error) {
+        console.log("No existing HashPack connection");
+      }
+    };
+
+    checkConnection();
+  }, [onConnect]);
+
+  const handleConnect = async () => {
+    if (!isHashPackInstalled()) {
+      toast.error("HashPack wallet not detected. Please install the HashPack extension.");
+      window.open("https://www.hashpack.app/", "_blank");
+      return;
+    }
+
+    setConnecting(true);
+
+    try {
+      const hashpack = (window as any).hashpack;
+      
+      // Request connection
+      const data = await hashpack.connectToExtension();
+      
+      if (data?.accountId) {
+        setAccountId(data.accountId);
+        setConnected(true);
+        toast.success(`Connected to HashPack: ${data.accountId}`);
+        onConnect?.(data.accountId);
+      } else {
+        throw new Error("Failed to get account information");
+      }
+    } catch (error: any) {
+      console.error("HashPack connection error:", error);
+      toast.error(error.message || "Failed to connect to HashPack");
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  const handleDisconnect = () => {
+    setConnected(false);
+    setAccountId("");
+    toast.success("Disconnected from HashPack");
+    onDisconnect?.();
+  };
+
+  if (!isHashPackInstalled()) {
+    return (
+      <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0">
+            <svg
+              className="h-5 w-5 text-orange-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-orange-900">
+              HashPack Not Installed
+            </h3>
+            <p className="mt-1 text-sm text-orange-700">
+              Install the HashPack browser extension to connect your Hedera wallet.
+            </p>
+            <Button
+              onClick={() => window.open("https://www.hashpack.app/", "_blank")}
+              className="mt-3 bg-orange-500 hover:bg-orange-600"
+              size="sm"
+            >
+              Install HashPack
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (connected) {
+    return (
+      <div className="rounded-lg border border-[#00c48c] bg-[#00c48c]/10 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-[#00c48c]" />
+              <p className="text-xs font-medium text-gray-600">Connected to HashPack</p>
+            </div>
+            <p className="mt-1 font-mono text-sm font-semibold text-[#0b1f3a]">
+              {accountId}
+            </p>
+          </div>
+          <Button
+            onClick={handleDisconnect}
+            variant="outline"
+            size="sm"
+            className="border-[#00c48c] text-[#00c48c] hover:bg-[#00c48c]/10"
+          >
+            Disconnect
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-gray-300 bg-white p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none">
+          <rect width="24" height="24" rx="4" fill="#5D4FF4" />
+          <path
+            d="M12 7L7 12L12 17M17 12H7"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <h3 className="text-sm font-semibold text-[#0b1f3a]">
+          Connect HashPack Wallet
+        </h3>
+      </div>
+      <p className="mb-4 text-xs text-gray-600">
+        Connect your Hedera wallet using the HashPack browser extension.
+      </p>
+      <Button
+        onClick={handleConnect}
+        disabled={connecting}
+        className="w-full bg-[#5D4FF4] hover:bg-[#4D3FE4]"
+      >
+        {connecting ? (
+          <>
+            <svg
+              className="mr-2 h-4 w-4 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+            Connecting...
+          </>
+        ) : (
+          "Connect HashPack"
+        )}
+      </Button>
+    </div>
+  );
+}

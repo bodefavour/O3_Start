@@ -61,7 +61,9 @@ const SignInButton: React.FC<SignInButtonProps> = ({
       },
       hidePrivateKeyExport: false,
     }),
-    createWallet("com.hashpack.wallet"),
+    createWallet("io.metamask"),
+    createWallet("com.coinbase.wallet"),
+    createWallet("walletConnect"),
   ];
 
   const displayName = truncateAddress(activeAccount?.address);
@@ -154,7 +156,8 @@ const SignInForm: React.FC<SignInButtonProps> = () => {
       hidePrivateKeyExport: false,
     }),
     createWallet("io.metamask"),
-    createWallet("com.hashpack.wallet"),
+    createWallet("com.coinbase.wallet"),
+    createWallet("walletConnect"),
   ];
 
   return (
