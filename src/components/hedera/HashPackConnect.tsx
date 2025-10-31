@@ -168,30 +168,42 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
         try {
             if (isMobile) {
-                addLog("Mobile: Using connect() with deep link...");
+                addLog("Mobile/In-app browser: Using connect() with deep link...");
+
+                // Check if we're in HashPack in-app browser
+                // @ts-ignore
+                const isInHashPackBrowser = typeof window.hashpack !== 'undefined';
 
                 // Use connect() which provides the WalletConnect URI for deep linking
-                const session = await dAppConnector.connect((uri: string) => {
+                await dAppConnector.connect((uri: string) => {
                     addLog(`Received WalletConnect URI (length: ${uri.length})`);
                     setLastWcUri(uri);
 
-                    // Try HashPack deep link
-                    const hashpackDeepLink = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
-                    addLog(`Launching: ${hashpackDeepLink.substring(0, 50)}...`);
+                    if (isInHashPackBrowser) {
+                        // In-app browser: Don't redirect, let session lifecycle handle it
+                        addLog("In-app browser detected - waiting for automatic connection...");
+                    } else {
+                        // External mobile browser: Use deep link to open HashPack
+                        const hashpackDeepLink = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
+                        addLog(`Launching deep link: ${hashpackDeepLink.substring(0, 50)}...`);
 
-                    try {
-                        window.location.href = hashpackDeepLink;
-                    } catch (e) {
-                        addLog('Deep link failed, trying universal link...');
-                        // Fallback to universal link
-                        const universalLink = `https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`;
-                        window.open(universalLink, '_blank');
+                        try {
+                            window.location.href = hashpackDeepLink;
+                        } catch (e) {
+                            addLog('Deep link failed, trying universal link...');
+                            // Fallback to universal link
+                            const universalLink = `https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`;
+                            window.open(universalLink, '_blank');
+                        }
                     }
                 });
 
+                // Wait a bit for connection to establish
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
                 // Get account from session
-                const signer = dAppConnector.signers?.[0];
-                const account = signer?.getAccountId()?.toString();
+                let signer = dAppConnector.signers?.[0];
+                let account = signer?.getAccountId()?.toString();
 
                 if (account) {
                     addLog(`✅ SUCCESS! Connected: ${account}`);
@@ -202,6 +214,59 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     }));
                     toast.success(`Connected: ${account}`);
                     onConnect?.(account);
+                } else if (isInHashPackBrowser) {
+                    // In-app browser: Wait for session lifecycle hooks to fire
+                    addLog("Waiting for in-app browser connection via session hooks...");
+                    await new Promise<void>((resolve, reject) => {
+                        let resolved = false;
+
+                        const handleConnectEvent = (event: any) => {
+                            const account = event.detail?.accountId;
+                            if (account && !resolved) {
+                                resolved = true;
+                                addLog(`✅ SUCCESS! Connected via session hooks: ${account}`);
+                                toast.success(`Connected: ${account}`);
+                                clearInterval(pollInterval);
+                                clearTimeout(timeout);
+                                window.removeEventListener('hedera-connect', handleConnectEvent);
+                                resolve();
+                            }
+                        };
+                        window.addEventListener('hedera-connect', handleConnectEvent);
+
+                        // Poll for session
+                        const pollInterval = setInterval(() => {
+                            const sessions = dAppConnector.signers;
+                            if (sessions && sessions.length > 0 && !resolved) {
+                                const session = sessions[0];
+                                const account = session.getAccountId()?.toString();
+                                if (account) {
+                                    resolved = true;
+                                    addLog(`✅ SUCCESS! Connected via polling: ${account}`);
+                                    setAccountId(account);
+                                    setConnected(true);
+                                    window.dispatchEvent(new CustomEvent('hedera-connect', {
+                                        detail: { accountId: account }
+                                    }));
+                                    toast.success(`Connected: ${account}`);
+                                    onConnect?.(account);
+                                    clearInterval(pollInterval);
+                                    clearTimeout(timeout);
+                                    window.removeEventListener('hedera-connect', handleConnectEvent);
+                                    resolve();
+                                }
+                            }
+                        }, 500);
+
+                        // Timeout after 30 seconds for in-app browser
+                        const timeout = setTimeout(() => {
+                            if (!resolved) {
+                                window.removeEventListener('hedera-connect', handleConnectEvent);
+                                clearInterval(pollInterval);
+                                reject(new Error('Connection timeout - please try again'));
+                            }
+                        }, 30000);
+                    });
                 } else {
                     throw new Error("No account received from wallet");
                 }
