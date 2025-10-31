@@ -1,0 +1,14 @@
+{
+  "name": "BorderlessPay",
+  "description": "Global Payment Platform powered by Hedera",
+  "url": "https://borderlesspay.app",
+  "icon": "/favicon.svg",
+  "network": "testnet",
+  "supportedWallets": ["hashpack"],
+  "hederaCompatible": true,
+  "features": [
+    "payments",
+    "transfers",
+    "token-operations"
+  ]
+}

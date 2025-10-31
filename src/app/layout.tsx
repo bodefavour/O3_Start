@@ -10,6 +10,12 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "BorderlessPay - Global Payment Platform",
   description: "Fast, secure, and affordable cross-border payments powered by Hedera",
+  keywords: ["hedera", "hashgraph", "payments", "crypto", "blockchain", "dapp"],
+  other: {
+    "hedera:network": "testnet",
+    "hedera:compatible": "true",
+    "dapp:name": "BorderlessPay",
+  },
 };
 
 export default function RootLayout({

@@ -127,6 +127,22 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             const hashpack = (window as any).hashpack;
             addLog("HashPack object found");
 
+            // Initialize HashPack for dApp connection
+            // This tells HashPack that this is a Hedera dApp
+            if (typeof hashpack.init === 'function') {
+                addLog("Initializing HashPack for dApp...");
+                try {
+                    await hashpack.init({
+                        name: "BorderlessPay",
+                        description: "Global Payment Platform powered by Hedera",
+                        icon: window.location.origin + "/favicon.svg"
+                    });
+                    addLog("✅ HashPack initialized as Hedera dApp");
+                } catch (initError: any) {
+                    addLog(`Init warning: ${initError.message}`);
+                }
+            }
+
             // Try different connection methods based on what's available
             let data;
 
