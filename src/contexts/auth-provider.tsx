@@ -18,6 +18,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Listen for Hedera wallet connections (from localStorage or custom event)
     useEffect(() => {
+        // Check for dev bypass mode first
+        const devBypassAccount = process.env.NEXT_PUBLIC_DEV_BYPASS_ACCOUNT;
+        const backendSigningEnabled = process.env.NEXT_PUBLIC_BACKEND_SIGNING_ENABLED === 'true';
+        
+        if (devBypassAccount && backendSigningEnabled) {
+            console.log('🔧 Dev Bypass Mode: Using operator account', devBypassAccount);
+            setHederaAccount(devBypassAccount);
+            localStorage.setItem('hedera_account_id', devBypassAccount);
+            localStorage.setItem('isHederaWallet', 'true');
+            return; // Skip wallet connection entirely
+        }
+
         // Check localStorage for Hedera account
         const storedAccount = localStorage.getItem('hedera_account_id');
         if (storedAccount) {

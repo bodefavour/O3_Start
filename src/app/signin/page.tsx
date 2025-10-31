@@ -1,6 +1,7 @@
 "use client";
 import { SignInForm } from "@/components/thirdweb/signin-form";
 import { HashPackConnect } from "@/components/hedera/HashPackConnect";
+import { DirectHederaTransfer } from "@/components/hedera/DirectHederaTransfer";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/auth-provider";
@@ -76,6 +77,11 @@ export default function SignInPage() {
               router.push("/dashboard");
             }}
           />
+        </div>
+
+        {/* Direct Hedera Transfer (Dev Only) */}
+        <div className="mb-4">
+          <DirectHederaTransfer />
         </div>
 
         {/* Other Wallets */}

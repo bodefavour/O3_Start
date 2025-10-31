@@ -54,9 +54,44 @@ export function SendModal({
         setSending(true);
 
         try {
-            // Check if user has a Hedera wallet connected
-            const isHederaWallet = localStorage.getItem('isHederaWallet') === 'true';
+            // Check if backend signing is enabled (bypasses wallet entirely)
+            const backendSigningEnabled = process.env.NEXT_PUBLIC_BACKEND_SIGNING_ENABLED === 'true';
+            const operatorId = process.env.NEXT_PUBLIC_HEDERA_OPERATOR_ID;
             const tokenId = process.env.NEXT_PUBLIC_HEDERA_TOKEN_ID;
+
+            // ALWAYS use backend signing if enabled - no wallet needed!
+            if (backendSigningEnabled && operatorId) {
+                console.log('✅ Using backend signing - no wallet required!');
+                
+                const response = await fetch('/api/hedera/transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tokenId,
+                        fromAccountId: operatorId,
+                        toAccountId: recipientAddress,
+                        amount: parseFloat(amount),
+                        memo: note || `Send ${amount} ${currencySymbol}`,
+                        userId: operatorId,
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    setTransactionHash(result.data.transactionId);
+                    showToast("✅ Transaction sent via backend!", "success");
+                    setStep(3);
+                } else {
+                    throw new Error(result.error || 'Transaction failed');
+                }
+                
+                setSending(false);
+                return;
+            }
+
+            // Legacy wallet-based flow (only if backend signing is disabled)
+            const isHederaWallet = localStorage.getItem('isHederaWallet') === 'true';
 
             if (!tokenId && !isHederaWallet) {
                 // Fallback to mock for demo if not configured

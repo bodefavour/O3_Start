@@ -54,6 +54,26 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         [],
     );
 
+    const devBypassAccount = useMemo(() => {
+        if (typeof window === "undefined") {
+            return null;
+        }
+
+        const overrideAccount = (process.env.NEXT_PUBLIC_DEV_BYPASS_ACCOUNT ?? "").trim();
+        if (!overrideAccount) {
+            return null;
+        }
+
+        if (process.env.NODE_ENV !== "development") {
+            console.warn(
+                "NEXT_PUBLIC_DEV_BYPASS_ACCOUNT is set but ignored outside development mode.",
+            );
+            return null;
+        }
+
+        return overrideAccount;
+    }, []);
+
     const addLog = useCallback((message: string) => {
         const timestamp = new Date().toLocaleTimeString();
         console.log(`[HashPackConnect] ${message}`);
@@ -109,6 +129,13 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
     useEffect(() => {
         if (typeof window === "undefined") {
+            return;
+        }
+
+        if (devBypassAccount) {
+            addLog(`Development bypass active. Pretending to connect as ${devBypassAccount}.`);
+            updateConnectedAccount(devBypassAccount);
+            setConnector(null);
             return;
         }
 
@@ -258,6 +285,11 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     }, [connector]);
 
     const handleConnect = useCallback(async () => {
+        if (devBypassAccount) {
+            addLog("Connect ignored because development bypass is active");
+            return;
+        }
+
         if (!connector) {
             addLog("Connect attempt before DAppConnector ready");
             toast.error("Wallet connector not ready yet");
@@ -354,6 +386,11 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     }, [connector, walletEnv, hashpackExtension, syncSignerState, addLog, initError]);
 
     const handleDisconnect = useCallback(async () => {
+        if (devBypassAccount) {
+            addLog("Disconnect ignored because development bypass is active");
+            return;
+        }
+
         if (!connector) {
             return;
         }
@@ -406,6 +443,9 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     }
 
     const connectButtonLabel = (() => {
+        if (devBypassAccount) {
+            return "Connected (dev bypass)";
+        }
         if (connecting) {
             return walletEnv === "desktop_extension" ? "Waiting for HashPack…" : "Connecting…";
         }
@@ -422,6 +462,9 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     })();
 
     const statusText = (() => {
+        if (devBypassAccount) {
+            return "Development bypass active. Real wallet connection is skipped.";
+        }
         if (initError) {
             return initError;
         }
@@ -484,21 +527,23 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
                 <Button
                     onClick={() => void handleConnect()}
-                    disabled={connecting || !connector || !!initError}
+                    disabled={connecting || (!!initError && !devBypassAccount) || (!connector && !devBypassAccount)}
                     className="h-12 w-full bg-[#5D4FF4] text-base font-semibold hover:bg-[#4D3FE4]"
                 >
                     {connectButtonLabel}
                 </Button>
 
-                <button
-                    onClick={() => setShowDebug((prev) => !prev)}
-                    className="mt-2 w-full text-center text-xs text-gray-500 underline hover:text-gray-700"
-                >
-                    {showDebug ? "Hide" : "Show"} Debug Info
-                </button>
+                {!devBypassAccount && (
+                    <button
+                        onClick={() => setShowDebug((prev) => !prev)}
+                        className="mt-2 w-full text-center text-xs text-gray-500 underline hover:text-gray-700"
+                    >
+                        {showDebug ? "Hide" : "Show"} Debug Info
+                    </button>
+                )}
             </div>
 
-            {showDebug && debugLogs.length > 0 && (
+            {!devBypassAccount && showDebug && debugLogs.length > 0 && (
                 <div className="max-h-60 overflow-y-auto rounded-lg bg-gray-900 p-3 text-xs font-mono text-white">
                     <div className="mb-2 flex items-center justify-between">
                         <span className="font-semibold">Debug Logs</span>
