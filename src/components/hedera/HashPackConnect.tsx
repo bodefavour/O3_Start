@@ -48,7 +48,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 addLog("Initializing Hedera DAppConnector...");
 
                 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '08c4b07e3ad25f1a27c14a4e8cecb6f0';
-                const obfuscated = projectId ? `${projectId.slice(0,4)}…${projectId.slice(-4)}` : 'undefined';
+                const obfuscated = projectId ? `${projectId.slice(0, 4)}…${projectId.slice(-4)}` : 'undefined';
                 addLog(`Using WalletConnect Project ID: ${obfuscated}`);
                 addLog(`Network: ${LedgerId.TESTNET.toString()} | Origin: ${window.location.origin}`);
 
