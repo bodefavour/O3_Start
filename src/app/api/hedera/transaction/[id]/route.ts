@@ -9,11 +9,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        // Await params in Next.js 15+
+        const { id } = await params;
+        
         // Decode URL-encoded transaction ID (e.g., %40 becomes @)
-        const transactionId = decodeURIComponent(params.id);
+        const transactionId = decodeURIComponent(id);
 
         if (!transactionId) {
             return NextResponse.json(
