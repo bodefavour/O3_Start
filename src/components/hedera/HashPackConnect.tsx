@@ -195,64 +195,79 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     throw new Error("No account received from wallet");
                 }
             } else {
-                addLog("Desktop: Opening modal for wallet selection...");
+                addLog("Desktop: Initiating wallet connection...");
 
-                // On desktop, always open modal
-                // This shows available wallets (extension, QR code, etc.)
-                dAppConnector.openModal();
+                // On desktop, use connect() which automatically shows modal with options
+                await dAppConnector.connect();
 
-                // Poll for connection and listen for events
-                await new Promise<void>((resolve, reject) => {
-                    let resolved = false;
+                // Wait a bit for the connection to establish
+                await new Promise(resolve => setTimeout(resolve, 1000));
 
-                    // Listen for custom event from session lifecycle hooks
-                    const handleConnectEvent = (event: any) => {
-                        const account = event.detail?.accountId;
-                        if (account && !resolved) {
-                            resolved = true;
-                            addLog(`✅ SUCCESS! Connected: ${account}`);
-                            toast.success(`Connected: ${account}`);
-                            clearInterval(pollInterval);
-                            clearTimeout(timeout);
-                            window.removeEventListener('hedera-connect', handleConnectEvent);
-                            resolve();
-                        }
-                    };
-                    window.addEventListener('hedera-connect', handleConnectEvent);
+                // Check if connected
+                const signer = dAppConnector.signers?.[0];
+                const account = signer?.getAccountId()?.toString();
 
-                    // Also poll for session (in case event doesn't fire)
-                    const pollInterval = setInterval(() => {
-                        const sessions = dAppConnector.signers;
-                        if (sessions && sessions.length > 0 && !resolved) {
-                            const session = sessions[0];
-                            const account = session.getAccountId()?.toString();
-                            if (account) {
+                if (account) {
+                    addLog(`✅ SUCCESS! Connected: ${account}`);
+                    setAccountId(account);
+                    setConnected(true);
+                    window.dispatchEvent(new CustomEvent('hedera-connect', {
+                        detail: { accountId: account }
+                    }));
+                    toast.success(`Connected: ${account}`);
+                    onConnect?.(account);
+                } else {
+                    // If no immediate connection, wait for session events with polling
+                    addLog("Waiting for wallet approval...");
+                    await new Promise<void>((resolve, reject) => {
+                        let resolved = false;
+
+                        const handleConnectEvent = (event: any) => {
+                            const account = event.detail?.accountId;
+                            if (account && !resolved) {
                                 resolved = true;
-                                addLog(`✅ SUCCESS! Connected via polling: ${account}`);
-                                setAccountId(account);
-                                setConnected(true);
-                                window.dispatchEvent(new CustomEvent('hedera-connect', {
-                                    detail: { accountId: account }
-                                }));
+                                addLog(`✅ SUCCESS! Connected: ${account}`);
                                 toast.success(`Connected: ${account}`);
-                                onConnect?.(account);
                                 clearInterval(pollInterval);
                                 clearTimeout(timeout);
                                 window.removeEventListener('hedera-connect', handleConnectEvent);
                                 resolve();
                             }
-                        }
-                    }, 1000); // Check every second
+                        };
+                        window.addEventListener('hedera-connect', handleConnectEvent);
 
-                    // Timeout after 120 seconds (2 minutes)
-                    const timeout = setTimeout(() => {
-                        if (!resolved) {
-                            window.removeEventListener('hedera-connect', handleConnectEvent);
-                            clearInterval(pollInterval);
-                            reject(new Error('Connection timeout - please select a wallet and approve connection'));
-                        }
-                    }, 120000);
-                });
+                        const pollInterval = setInterval(() => {
+                            const sessions = dAppConnector.signers;
+                            if (sessions && sessions.length > 0 && !resolved) {
+                                const session = sessions[0];
+                                const account = session.getAccountId()?.toString();
+                                if (account) {
+                                    resolved = true;
+                                    addLog(`✅ SUCCESS! Connected via polling: ${account}`);
+                                    setAccountId(account);
+                                    setConnected(true);
+                                    window.dispatchEvent(new CustomEvent('hedera-connect', {
+                                        detail: { accountId: account }
+                                    }));
+                                    toast.success(`Connected: ${account}`);
+                                    onConnect?.(account);
+                                    clearInterval(pollInterval);
+                                    clearTimeout(timeout);
+                                    window.removeEventListener('hedera-connect', handleConnectEvent);
+                                    resolve();
+                                }
+                            }
+                        }, 1000);
+
+                        const timeout = setTimeout(() => {
+                            if (!resolved) {
+                                window.removeEventListener('hedera-connect', handleConnectEvent);
+                                clearInterval(pollInterval);
+                                reject(new Error('Connection timeout - please try again'));
+                            }
+                        }, 120000);
+                    });
+                }
             }
 
         } catch (error: any) {
