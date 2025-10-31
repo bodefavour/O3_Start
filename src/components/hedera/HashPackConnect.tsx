@@ -105,7 +105,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
     const attemptConnection = async () => {
         addLog("=== Starting connection attempt ===");
-        
+
         if (!isHashPackAvailable()) {
             addLog("ERROR: HashPack not available");
             if (isMobile) {
@@ -291,60 +291,93 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     }
 
     return (
-        <div className="rounded-lg border border-gray-300 bg-white p-4">
-            <div className="mb-3 flex items-center gap-2">
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none">
-                    <rect width="24" height="24" rx="4" fill="#5D4FF4" />
-                    <path
-                        d="M12 7L7 12L12 17M17 12H7"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </svg>
-                <h3 className="text-sm font-semibold text-[#0b1f3a]">
-                    Connect HashPack Wallet
-                </h3>
+        <div className="space-y-3">
+            <div className="rounded-lg border-2 border-[#5D4FF4] bg-white p-4 shadow-lg">
+                <div className="mb-3 flex items-center gap-2">
+                    <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none">
+                        <rect width="24" height="24" rx="4" fill="#5D4FF4" />
+                        <path
+                            d="M12 7L7 12L12 17M17 12H7"
+                            stroke="white"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    </svg>
+                    <div>
+                        <h3 className="text-base font-bold text-[#0b1f3a]">
+                            HashPack Wallet
+                        </h3>
+                        <p className="text-xs text-gray-500">Recommended for Hedera</p>
+                    </div>
+                </div>
+                <p className="mb-4 text-xs text-gray-600">
+                    {isMobile
+                        ? "Tap below to connect your HashPack wallet."
+                        : "Connect your Hedera wallet using HashPack."
+                    }
+                </p>
+                <Button
+                    onClick={handleConnect}
+                    disabled={connecting}
+                    className="w-full bg-[#5D4FF4] hover:bg-[#4D3FE4] h-12 text-base font-semibold"
+                >
+                    {connecting ? (
+                        <>
+                            <svg
+                                className="mr-2 h-5 w-5 animate-spin"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                />
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                            </svg>
+                            Connecting...
+                        </>
+                    ) : (
+                        "Connect HashPack"
+                    )}
+                </Button>
+                
+                {/* Show debug toggle button */}
+                <button
+                    onClick={() => setShowDebug(!showDebug)}
+                    className="mt-2 text-xs text-gray-500 hover:text-gray-700 underline w-full text-center"
+                >
+                    {showDebug ? "Hide" : "Show"} Debug Info
+                </button>
             </div>
-            <p className="mb-4 text-xs text-gray-600">
-                {isMobile
-                    ? "Tap below to connect your HashPack wallet."
-                    : "Connect your Hedera wallet using HashPack."
-                }
-            </p>
-            <Button
-                onClick={handleConnect}
-                disabled={connecting}
-                className="w-full bg-[#5D4FF4] hover:bg-[#4D3FE4]"
-            >
-                {connecting ? (
-                    <>
-                        <svg
-                            className="mr-2 h-4 w-4 animate-spin"
-                            fill="none"
-                            viewBox="0 0 24 24"
+
+            {/* Debug logs panel */}
+            {showDebug && debugLogs.length > 0 && (
+                <div className="rounded-lg bg-gray-900 p-3 text-white text-xs font-mono max-h-60 overflow-y-auto">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold">Debug Logs:</span>
+                        <button
+                            onClick={() => setDebugLogs([])}
+                            className="text-gray-400 hover:text-white text-xs"
                         >
-                            <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                            />
-                            <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            />
-                        </svg>
-                        Connecting...
-                    </>
-                ) : (
-                    "Connect HashPack"
-                )}
-            </Button>
+                            Clear
+                        </button>
+                    </div>
+                    {debugLogs.map((log, i) => (
+                        <div key={i} className="mb-1 break-all">
+                            {log}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
