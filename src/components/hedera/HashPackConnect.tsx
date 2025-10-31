@@ -236,14 +236,14 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             if (isMobile && /Failed to publish custom payload/i.test(msg)) {
                 try {
                     addLog('Attempting quick retry after relay publish failure...');
-                    await dAppConnector.disconnectAll().catch(() => {});
+                    await dAppConnector.disconnectAll().catch(() => { });
                     const session = await dAppConnector.connect((uri: string) => {
                         addLog(`Retry deep link (len=${uri?.length})`);
                         setLastWcUri(uri);
                         const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
-                        try { window.location.href = hashpackNative; } catch {}
-                        setTimeout(() => { try { window.location.href = uri; } catch {} }, 150);
-                        setTimeout(() => { try { window.open(`https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`, '_blank'); } catch {} }, 300);
+                        try { window.location.href = hashpackNative; } catch { }
+                        setTimeout(() => { try { window.location.href = uri; } catch { } }, 150);
+                        setTimeout(() => { try { window.open(`https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`, '_blank'); } catch { } }, 300);
                     });
                     const signer = dAppConnector.signers?.[0];
                     const account = signer?.getAccountId()?.toString();
@@ -409,25 +409,25 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                             <div className="flex flex-wrap gap-2">
                                 <button
                                     onClick={() => {
-                                        try { navigator.clipboard.writeText(lastWcUri); toast.success('WC URI copied'); } catch {}
+                                        try { navigator.clipboard.writeText(lastWcUri); toast.success('WC URI copied'); } catch { }
                                     }}
                                     className="rounded bg-gray-800 px-2 py-1 hover:bg-gray-700"
                                 >Copy WC URI</button>
                                 <button
                                     onClick={() => {
-                                        try { window.location.href = `hashpack://wc?uri=${encodeURIComponent(lastWcUri)}`; } catch {}
+                                        try { window.location.href = `hashpack://wc?uri=${encodeURIComponent(lastWcUri)}`; } catch { }
                                     }}
                                     className="rounded bg-gray-800 px-2 py-1 hover:bg-gray-700"
                                 >Open in HashPack (native)</button>
                                 <button
                                     onClick={() => {
-                                        try { window.location.href = lastWcUri; } catch {}
+                                        try { window.location.href = lastWcUri; } catch { }
                                     }}
                                     className="rounded bg-gray-800 px-2 py-1 hover:bg-gray-700"
                                 >Open wc: link</button>
                                 <button
                                     onClick={() => {
-                                        try { window.open(`https://hashpack.app/wc?uri=${encodeURIComponent(lastWcUri)}`, '_blank'); } catch {}
+                                        try { window.open(`https://hashpack.app/wc?uri=${encodeURIComponent(lastWcUri)}`, '_blank'); } catch { }
                                     }}
                                     className="rounded bg-gray-800 px-2 py-1 hover:bg-gray-700"
                                 >Open universal link</button>
