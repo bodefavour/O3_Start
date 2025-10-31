@@ -13,16 +13,36 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     const [connected, setConnected] = useState(false);
     const [accountId, setAccountId] = useState<string>("");
     const [connecting, setConnecting] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
-    // Check if HashPack is installed
-    const isHashPackInstalled = () => {
+    // Check if running on mobile
+    useEffect(() => {
+        const checkMobile = () => {
+            const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            setIsMobile(mobile);
+        };
+        checkMobile();
+    }, []);
+
+    // Check if HashPack is available (extension or mobile app)
+    const isHashPackAvailable = () => {
         return typeof window !== "undefined" && !!(window as any).hashpack;
     };
 
     // Check existing connection on mount
     useEffect(() => {
         const checkConnection = async () => {
-            if (!isHashPackInstalled()) return;
+            if (!isHashPackAvailable()) {
+                // If in mobile and no hashpack object, try to auto-connect after short delay
+                if (isMobile) {
+                    setTimeout(() => {
+                        if (isHashPackAvailable()) {
+                            attemptConnection();
+                        }
+                    }, 1000);
+                }
+                return;
+            }
 
             try {
                 const hashpack = (window as any).hashpack;
@@ -39,12 +59,19 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         };
 
         checkConnection();
-    }, [onConnect]);
+    }, [onConnect, isMobile]);
 
     const handleConnect = async () => {
-        if (!isHashPackInstalled()) {
-            toast.error("HashPack wallet not detected. Please install the HashPack extension.");
-            window.open("https://www.hashpack.app/", "_blank");
+        await attemptConnection();
+    };
+
+    const attemptConnection = async () => {
+        if (!isHashPackAvailable()) {
+            if (isMobile) {
+                toast.error("Please open this app from within the HashPack mobile app's browser.");
+            } else {
+                toast.error("HashPack extension not detected. Please install HashPack.");
+            }
             return;
         }
 
@@ -79,7 +106,40 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         onDisconnect?.();
     };
 
-    if (!isHashPackInstalled()) {
+    // Show message if HashPack not available
+    if (!isHashPackAvailable()) {
+        if (isMobile) {
+            return (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0">
+                            <svg
+                                className="h-5 w-5 text-blue-500"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-sm font-semibold text-blue-900">
+                                Open in HashPack App
+                            </h3>
+                            <p className="mt-1 text-sm text-blue-700">
+                                To use HashPack features, please open this website from within the HashPack mobile app's built-in browser.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        
         return (
             <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
                 <div className="flex items-start gap-3">
@@ -100,7 +160,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     </div>
                     <div className="flex-1">
                         <h3 className="text-sm font-semibold text-orange-900">
-                            HashPack Not Installed
+                            HashPack Extension Not Found
                         </h3>
                         <p className="mt-1 text-sm text-orange-700">
                             Install the HashPack browser extension to connect your Hedera wallet.
@@ -110,7 +170,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                             className="mt-3 bg-orange-500 hover:bg-orange-600"
                             size="sm"
                         >
-                            Install HashPack
+                            Get HashPack
                         </Button>
                     </div>
                 </div>
@@ -162,7 +222,10 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 </h3>
             </div>
             <p className="mb-4 text-xs text-gray-600">
-                Connect your Hedera wallet using the HashPack browser extension.
+                {isMobile 
+                    ? "Tap below to connect your HashPack wallet."
+                    : "Connect your Hedera wallet using HashPack."
+                }
             </p>
             <Button
                 onClick={handleConnect}
