@@ -36,7 +36,7 @@ export default function HashPackDebugPage() {
 
   const testConnection = async () => {
     addLog("Testing HashPack connection...");
-    
+
     if (!(window as any).hashpack) {
       addLog("❌ HashPack not detected");
       return;
@@ -48,7 +48,7 @@ export default function HashPackDebugPage() {
     // Try each method
     const methods = [
       'connectToExtension',
-      'connect', 
+      'connect',
       'getPairings',
       'requestPairing',
       'getAccountInfo',
@@ -74,7 +74,7 @@ export default function HashPackDebugPage() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="mx-auto max-w-4xl">
         <h1 className="mb-4 text-2xl font-bold">HashPack Debug Page</h1>
-        
+
         <div className="mb-4 rounded-lg bg-white p-4 shadow">
           <h2 className="mb-2 text-lg font-semibold">Environment Info</h2>
           <div className="space-y-1 text-sm">
@@ -92,7 +92,7 @@ export default function HashPackDebugPage() {
                 <li key={method} className="text-green-600">{method}</li>
               ))}
             </ul>
-            
+
             <h2 className="mt-4 mb-2 text-lg font-semibold">Available Properties</h2>
             <ul className="list-disc pl-5 text-sm">
               {debug.hashpackProperties?.map((prop: string) => (

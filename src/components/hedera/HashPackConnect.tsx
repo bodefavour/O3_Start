@@ -10,6 +10,7 @@ import {
     HederaChainId,
 } from '@hashgraph/hedera-wallet-connect';
 import { LedgerId } from '@hashgraph/sdk';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface HashPackConnectProps {
     onConnect?: (accountId: string) => void;
@@ -25,6 +26,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     const [showDebug, setShowDebug] = useState(false);
     const [dAppConnector, setDAppConnector] = useState<DAppConnector | null>(null);
     const [lastWcUri, setLastWcUri] = useState<string | null>(null);
+    const [showQR, setShowQR] = useState(false);
 
     const addLog = (message: string) => {
         console.log(message);
@@ -195,20 +197,18 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     throw new Error("No account received from wallet");
                 }
             } else {
-                addLog("Desktop: Initiating wallet connection...");
+                addLog("Desktop: Generating QR code for connection...");
 
-                // On desktop, use connect() with callback that just logs the URI
-                // The WalletConnect modal should display automatically
+                // On desktop, generate WalletConnect URI and show QR code
+                setShowQR(true);
+                
                 await dAppConnector.connect((uri: string) => {
-                    addLog(`WalletConnect modal displayed with URI (length: ${uri.length})`);
+                    addLog(`Generated WalletConnect URI for QR code (length: ${uri.length})`);
                     setLastWcUri(uri);
-                    // Don't redirect - let the modal show for user to scan/select
+                    // URI is captured, QR code will display it
                 });
 
-                // Wait a bit for the connection to establish
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                // Check if connected
+                // Wait for connection
                 const signer = dAppConnector.signers?.[0];
                 const account = signer?.getAccountId()?.toString();
 
@@ -418,6 +418,54 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     {showDebug ? "Hide" : "Show"} Debug Info
                 </button>
             </div>
+
+            {/* QR Code Modal for Desktop */}
+            {showQR && lastWcUri && !connected && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowQR(false)}>
+                    <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-900">Scan to Connect</h3>
+                            <button
+                                onClick={() => setShowQR(false)}
+                                className="text-gray-400 hover:text-gray-600 text-2xl"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4">
+                            <QRCodeSVG 
+                                value={lastWcUri}
+                                size={256}
+                                level="H"
+                                className="w-full h-auto"
+                            />
+                        </div>
+                        
+                        <p className="text-sm text-gray-600 text-center mb-4">
+                            Open HashPack on your mobile device and scan this QR code to connect
+                        </p>
+                        
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(lastWcUri);
+                                    toast.success('Connection URI copied!');
+                                }}
+                                className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700"
+                            >
+                                Copy URI
+                            </button>
+                            <button
+                                onClick={() => setShowQR(false)}
+                                className="flex-1 px-4 py-2 bg-[#5D4FF4] hover:bg-[#4D3FE4] rounded-lg text-sm font-medium text-white"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Debug logs panel */}
             {showDebug && debugLogs.length > 0 && (
