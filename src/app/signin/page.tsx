@@ -64,11 +64,11 @@ export default function SignInPage() {
             <span className="w-full border-t border-white/10" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-[#0d2438] px-2 text-white/40">Or continue with</span>
+            <span className="bg-[#0d2438] px-2 text-white/40">Or connect wallet</span>
           </div>
         </div>
 
-        {/* HashPack Connection */}
+        {/* HashPack Connection - First Priority */}
         <div className="mb-4">
           <HashPackConnect
             onConnect={(accountId) => {
@@ -78,16 +78,7 @@ export default function SignInPage() {
           />
         </div>
 
-        {/* Divider */}
-        <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-white/10" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-[#0d2438] px-2 text-white/40">Other wallets</span>
-          </div>
-        </div>
-
+        {/* Other Wallets */}
         <div>
           <SignInForm />
         </div>
