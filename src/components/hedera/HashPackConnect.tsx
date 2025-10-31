@@ -47,9 +47,9 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             try {
                 const hashpack = (window as any).hashpack;
                 console.log("Checking existing HashPack connection...");
-                
+
                 let data;
-                
+
                 // Try to get existing account info
                 if (typeof hashpack.getAccountInfo === 'function') {
                     data = await hashpack.getAccountInfo();
@@ -100,13 +100,13 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
         try {
             const hashpack = (window as any).hashpack;
-            
+
             console.log("HashPack object detected:", hashpack);
             console.log("Available methods:", Object.keys(hashpack));
 
             // Try different connection methods based on what's available
             let data;
-            
+
             // Method 1: Try connectToExtension (browser extension)
             if (typeof hashpack.connectToExtension === 'function') {
                 console.log("Attempting connectToExtension...");
