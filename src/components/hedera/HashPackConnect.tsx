@@ -69,6 +69,48 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 );
 
                 await connector.init({ logger: 'error' });
+
+                // Wire session lifecycle listeners so in-app browser connects automatically
+                connector.onSessionIframeCreated = (session) => {
+                    try {
+                        const acct = session?.namespaces?.hedera?.accounts?.[0]?.split(':')?.[2];
+                        const fallbackSigner = connector.signers?.[0];
+                        const account = acct || fallbackSigner?.getAccountId()?.toString();
+                        if (account) {
+                            addLog(`Iframe session created: ${account}`);
+                            setAccountId(account);
+                            setConnected(true);
+                            window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
+                            onConnect?.(account);
+                        } else {
+                            addLog('Iframe session created but no account parsed');
+                        }
+                    } catch (e: any) {
+                        addLog(`Error handling iframe session: ${e?.message || e}`);
+                    }
+                };
+
+                // Subscribe to session events
+                const client = connector.walletConnectClient;
+                client?.on('session_update', ({ topic }) => {
+                    addLog(`session_update for topic ${topic}`);
+                    const signer = connector.signers?.[0];
+                    const acct = signer?.getAccountId()?.toString();
+                    if (acct) {
+                        setAccountId(acct);
+                        setConnected(true);
+                        window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: acct } }));
+                    }
+                });
+                client?.on('session_delete', ({ topic }) => {
+                    addLog(`session_delete for topic ${topic}`);
+                    setConnected(false);
+                    setAccountId('');
+                    window.dispatchEvent(new CustomEvent('hedera-disconnect'));
+                });
+                client?.on('session_event', (args) => {
+                    addLog(`session_event: ${JSON.stringify(args?.params?.event || {})}`);
+                });
                 setDAppConnector(connector);
                 addLog("✅ DAppConnector initialized successfully");
 
@@ -114,18 +156,31 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 addLog("Mobile detected — using deep link connect flow...");
                 // Use direct connect with deep-link callback for mobile
                 const session = await dAppConnector.connect((uri: string) => {
-                    addLog(`Launching wallet with wc uri length=${uri?.length}`);
-                    // 1) Try native wc: scheme (handled by many wallets when in-app)
+                    addLog(`Launching wallet deep link (len=${uri?.length})`);
+                    // Prefer HashPack native deep link first
+                    const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
                     try {
-                        window.location.href = uri;
+                        window.location.href = hashpackNative;
                     } catch (e) {
-                        addLog("wc: scheme redirect failed, trying universal link fallback");
+                        addLog('hashpack:// redirect failed, trying wc: then universal');
                     }
-                    // 2) Fallback to HashPack universal link
+                    // Fallback to wc: scheme
+                    try {
+                        setTimeout(() => {
+                            window.location.href = uri;
+                        }, 150);
+                    } catch (e) {
+                        addLog('wc: redirect failed');
+                    }
+                    // Final fallback to universal https link
                     const hashpackUniversal = `https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`;
                     setTimeout(() => {
-                        window.open(hashpackUniversal, "_blank");
-                    }, 250);
+                        try {
+                            window.open(hashpackUniversal, '_blank');
+                        } catch (e) {
+                            addLog('universal link open failed');
+                        }
+                    }, 300);
                 });
 
                 const signer = dAppConnector.signers?.[0];
