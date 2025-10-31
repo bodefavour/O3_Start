@@ -349,7 +349,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                         "Connect HashPack"
                     )}
                 </Button>
-                
+
                 {/* Show debug toggle button */}
                 <button
                     onClick={() => setShowDebug(!showDebug)}
