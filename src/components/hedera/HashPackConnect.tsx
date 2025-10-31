@@ -78,6 +78,30 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         detectEnvironment();
     }, []);
 
+    // If the extension injects late, poll briefly to upgrade environment
+    useEffect(() => {
+        if (walletEnv !== 'desktop_browser') {
+            return;
+        }
+
+        let attempts = 0;
+        const maxAttempts = 12; // ~6 seconds
+        const timer = window.setInterval(() => {
+            attempts += 1;
+            if (hasHashPackExtension()) {
+                addLog('HashPack extension detected after initial load; updating environment.');
+                setWalletEnv('desktop_extension');
+                window.clearInterval(timer);
+            } else if (attempts >= maxAttempts) {
+                window.clearInterval(timer);
+            }
+        }, 500);
+
+        return () => {
+            window.clearInterval(timer);
+        };
+    }, [walletEnv]);
+
     // Initialize DAppConnector
     useEffect(() => {
         const initDAppConnector = async () => {
