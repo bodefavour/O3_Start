@@ -94,6 +94,291 @@ BETTER_AUTH_URL=http://localhost:3000
    - Enter your Account ID
    - Receive 10,000 test HBAR
 
+### 🚀 Backend Signing Mode (Recommended for Development)
+
+BorderlessPay includes a **backend signing mode** that bypasses wallet connection entirely - perfect for hackathons, demos, and rapid development!
+
+#### Why Backend Signing?
+
+**Traditional Wallet Flow** (Complex):
+```
+User clicks "Send" 
+  → Opens wallet popup
+  → User signs transaction
+  → Wallet submits to Hedera
+  → Wait for confirmation
+```
+
+**Backend Signing Flow** (Simple):
+```
+User clicks "Send"
+  → Backend signs with operator key
+  → Instant submission to Hedera
+  → Transaction complete ✅
+```
+
+**Benefits**:
+- ✅ No wallet installation required
+- ✅ No popup approvals
+- ✅ Instant transactions
+- ✅ Perfect for demos
+- ✅ Works on any device/browser
+- ✅ No WalletConnect setup needed
+
+#### Enable Backend Signing
+
+Add these variables to your `.env.local`:
+
+```env
+# Backend Signing Configuration
+NEXT_PUBLIC_BACKEND_SIGNING_ENABLED=true
+NEXT_PUBLIC_DEV_BYPASS_ACCOUNT=0.0.4826582
+
+# Operator Account (Your Hedera Account)
+NEXT_PUBLIC_HEDERA_OPERATOR_ID=0.0.4826582
+NEXT_PUBLIC_HEDERA_OPERATOR_KEY=0x913661cd84365d6aee62382e9a57710972539f173482fa35bc6ff9cac77f5905
+NEXT_PUBLIC_HEDERA_NETWORK=testnet
+```
+
+**⚠️ Important**: Backend signing is for **development/demo only**. Never expose private keys in production!
+
+#### How It Works
+
+1. **Auto-Login**: App automatically logs you in with the operator account
+2. **Direct Signing**: Transactions are signed server-side using Hedera SDK
+3. **Mirror Node Integration**: All data fetched directly from Hedera Mirror Node
+4. **Real Blockchain**: Uses real Hedera testnet (not simulated)
+
+**Architecture**:
+```
+User Action (Send $100 BPUSD)
+    ↓
+Frontend (SendModal.tsx)
+    ↓
+API Route (/api/hedera/transfer)
+    ↓
+Hedera SDK (Signs with operator key)
+    ↓
+Hedera Testnet (Transaction submitted)
+    ↓
+Mirror Node (Transaction confirmed)
+    ↓
+Frontend (Success + HashScan link)
+```
+
+#### API Endpoints (Backend Signing)
+
+**Balance Check**:
+```typescript
+GET /api/hedera/balance?accountId=0.0.4826582
+Response: {
+  success: true,
+  data: {
+    accountId: "0.0.4826582",
+    hbarBalance: "713.87",
+    tokens: [
+      {
+        tokenId: "0.0.7167755",
+        symbol: "BPUSD",
+        name: "BorderlessPay USD",
+        balance: "950.00",
+        decimals: 2
+      }
+    ]
+  }
+}
+```
+
+**Send Transaction**:
+```typescript
+POST /api/hedera/transfer
+Body: {
+  recipientId: "0.0.5555555",
+  amount: "100.00",
+  tokenId: "0.0.7167755", // Or "HBAR" for HBAR transfers
+  memo: "Payment for services"
+}
+
+Response: {
+  success: true,
+  data: {
+    transactionId: "0.0.4826582@1761929088.725746098",
+    explorerUrl: "https://hashscan.io/testnet/transaction/...",
+    status: "SUCCESS"
+  }
+}
+```
+
+**Transaction History**:
+```typescript
+GET /api/hedera/transactions?accountId=0.0.4826582&limit=20
+Response: {
+  success: true,
+  data: {
+    transactions: [
+      {
+        id: "0.0.4826582@1761929088.725746098",
+        type: "outgoing",
+        amount: "100.00",
+        currency: "BPUSD",
+        status: "completed",
+        createdAt: "2025-10-31T12:34:56.789Z"
+      }
+    ]
+  }
+}
+```
+
+**Real-Time HBAR Price**:
+```typescript
+GET /api/hedera/price
+Response: {
+  success: true,
+  data: {
+    hbarPrice: 0.0562,
+    source: "coingecko",
+    timestamp: "2025-10-31T12:34:56.789Z"
+  }
+}
+```
+
+#### Key Features
+
+**1. Live Blockchain Data**
+- All balances fetched from Mirror Node API
+- Real-time transaction history
+- Accurate token metadata (names, symbols, decimals)
+
+**2. Multi-Token Support**
+- HBAR transfers
+- HTS token transfers (BPUSD, USDC, etc.)
+- Automatic token discovery
+- Proper decimal handling
+
+**3. Smart Portfolio Calculation**
+```javascript
+Portfolio Value Algorithm:
+- HBAR: amount × real-time CoinGecko price (~$0.056)
+- Stablecoins (USD/USDC/USDT/BPUSD): amount × $1.00
+- Small test tokens (<10k): amount × $0.01
+- Large test tokens (>10k): excluded (worthless test tokens)
+```
+
+**4. Transaction Details Modal**
+- Click any transaction to view full details
+- Shows all token transfers
+- HBAR transfer breakdown
+- Links to HashScan explorer
+- Transaction fees and timestamps
+
+#### Testing Backend Signing
+
+```bash
+# 1. Ensure backend signing is enabled
+echo "NEXT_PUBLIC_BACKEND_SIGNING_ENABLED=true" >> .env.local
+
+# 2. Start the dev server
+npm run dev
+
+# 3. Visit the wallet page
+open http://localhost:3000/wallet
+
+# 4. Test send/receive
+# - No wallet connection needed!
+# - Click "Send" → Enter recipient → Amount → Send
+# - Transaction executes immediately
+# - View on HashScan explorer
+```
+
+#### File Structure (Backend Signing)
+
+```
+src/
+├── app/api/hedera/
+│   ├── balance/route.ts          # Fetch HBAR & token balances
+│   ├── transfer/route.ts         # Send HBAR/tokens (backend signing)
+│   ├── transactions/route.ts     # Transaction history from Mirror Node
+│   ├── transaction/[id]/route.ts # Single transaction details
+│   └── price/route.ts           # Real-time HBAR price (CoinGecko)
+├── components/wallet/
+│   ├── SendModal.tsx                    # Multi-token send modal
+│   ├── ReceiveModal.tsx                 # QR code receive modal
+│   ├── TransactionDetailsModal.tsx      # Transaction detail viewer
+│   └── SwapModal.tsx                    # Currency swap (coming soon)
+├── lib/web3/
+│   ├── hedera-token.ts          # HTS token utilities
+│   └── provider.ts              # Hedera client setup
+└── app/(authenticated)/wallet/page.tsx  # Main wallet interface
+```
+
+#### Environment Variables Explained
+
+```env
+# ============================================
+# BACKEND SIGNING MODE
+# ============================================
+
+# Enable backend signing (bypass wallet)
+NEXT_PUBLIC_BACKEND_SIGNING_ENABLED=true
+
+# Auto-login account (skip auth for demos)
+NEXT_PUBLIC_DEV_BYPASS_ACCOUNT=0.0.4826582
+
+# ============================================
+# HEDERA CONFIGURATION
+# ============================================
+
+# Your Hedera testnet account
+NEXT_PUBLIC_HEDERA_OPERATOR_ID=0.0.4826582
+
+# Your private key (NEVER commit to Git!)
+NEXT_PUBLIC_HEDERA_OPERATOR_KEY=0x913661cd84365d6aee62382e9a57710972539f173482fa35bc6ff9cac77f5905
+
+# Network (testnet or mainnet)
+NEXT_PUBLIC_HEDERA_NETWORK=testnet
+
+# Your HTS token (BPUSD)
+NEXT_PUBLIC_HEDERA_TOKEN_ID=0.0.7167755
+
+# ============================================
+# OPTIONAL: WALLET CONNECT (if using wallets)
+# ============================================
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
+```
+
+#### Production Considerations
+
+**⚠️ Security Warning**: Backend signing exposes your private key. Only use for:
+- ✅ Development
+- ✅ Hackathon demos
+- ✅ MVP prototypes
+- ✅ Testnet only
+
+**For Production**, implement proper wallet flow:
+
+```env
+# Disable backend signing
+NEXT_PUBLIC_BACKEND_SIGNING_ENABLED=false
+
+# Remove dev bypass
+# NEXT_PUBLIC_DEV_BYPASS_ACCOUNT=  # Comment out
+
+# Keep only public configs
+NEXT_PUBLIC_HEDERA_NETWORK=mainnet
+NEXT_PUBLIC_HEDERA_TOKEN_ID=0.0.XXXXXXX
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
+```
+
+**Production Architecture**:
+```
+User → HashPack Wallet (User signs) → Hedera Mainnet
+```
+
+**Development Architecture** (Current):
+```
+User → Backend API (Operator signs) → Hedera Testnet
+```
+
 ---
 
 ## 🪙 Create Your Stablecoin Token
