@@ -156,41 +156,76 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         setConnecting(true);
 
         try {
-            addLog("Opening WalletConnect modal...");
-
-            // Create a promise that resolves when connection succeeds
-            const connectionPromise = new Promise<string>((resolve, reject) => {
-                // Set up one-time listener for successful connection
-                const handleConnectEvent = (event: any) => {
-                    const account = event.detail?.accountId;
-                    if (account) {
-                        resolve(account);
-                        window.removeEventListener('hedera-connect', handleConnectEvent);
+            if (isMobile) {
+                addLog("Mobile: Using connect() with deep link...");
+                
+                // Use connect() which provides the WalletConnect URI for deep linking
+                const session = await dAppConnector.connect((uri: string) => {
+                    addLog(`Received WalletConnect URI (length: ${uri.length})`);
+                    setLastWcUri(uri);
+                    
+                    // Try HashPack deep link
+                    const hashpackDeepLink = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
+                    addLog(`Launching: ${hashpackDeepLink.substring(0, 50)}...`);
+                    
+                    try {
+                        window.location.href = hashpackDeepLink;
+                    } catch (e) {
+                        addLog('Deep link failed, trying universal link...');
+                        // Fallback to universal link
+                        const universalLink = `https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`;
+                        window.open(universalLink, '_blank');
                     }
-                };
-                window.addEventListener('hedera-connect', handleConnectEvent);
+                });
 
-                // Timeout after 60 seconds
-                setTimeout(() => {
-                    window.removeEventListener('hedera-connect', handleConnectEvent);
-                    reject(new Error('Connection timeout - please try again'));
-                }, 60000);
-            });
+                // Get account from session
+                const signer = dAppConnector.signers?.[0];
+                const account = signer?.getAccountId()?.toString();
 
-            // Open the modal (returns immediately, doesn't wait for connection)
-            dAppConnector.openModal();
-
-            // Wait for either connection success or timeout
-            const account = await connectionPromise;
-
-            addLog(`✅ SUCCESS! Connected: ${account}`);
-            toast.success(`Connected: ${account}`);
-
+                if (account) {
+                    addLog(`✅ SUCCESS! Connected: ${account}`);
+                    setAccountId(account);
+                    setConnected(true);
+                    window.dispatchEvent(new CustomEvent('hedera-connect', {
+                        detail: { accountId: account }
+                    }));
+                    toast.success(`Connected: ${account}`);
+                    onConnect?.(account);
+                } else {
+                    throw new Error("No account received from wallet");
+                }
+            } else {
+                addLog("Desktop: Opening modal with QR code...");
+                
+                // On desktop, open modal which shows QR code
+                dAppConnector.openModal();
+                
+                // Wait for connection via session events
+                await new Promise<void>((resolve, reject) => {
+                    const handleConnectEvent = (event: any) => {
+                        const account = event.detail?.accountId;
+                        if (account) {
+                            addLog(`✅ SUCCESS! Connected via QR: ${account}`);
+                            toast.success(`Connected: ${account}`);
+                            resolve();
+                            window.removeEventListener('hedera-connect', handleConnectEvent);
+                        }
+                    };
+                    window.addEventListener('hedera-connect', handleConnectEvent);
+                    
+                    // Timeout after 60 seconds
+                    setTimeout(() => {
+                        window.removeEventListener('hedera-connect', handleConnectEvent);
+                        reject(new Error('Connection timeout - please scan QR code with your wallet app'));
+                    }, 60000);
+                });
+            }
+            
         } catch (error: any) {
             const msg = String(error?.message || error);
             addLog(`ERROR: ${msg}`);
-
-            // Check if user just cancelled (no sessions created)
+            
+            // Check if user just cancelled
             const sessions = dAppConnector.signers;
             if (!sessions || sessions.length === 0) {
                 addLog("No session created - user may have cancelled");
@@ -202,9 +237,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         } finally {
             setConnecting(false);
         }
-    };
-
-    const handleDisconnect = async () => {
+    };    const handleDisconnect = async () => {
         if (dAppConnector) {
             await dAppConnector.disconnectAll();
         }
