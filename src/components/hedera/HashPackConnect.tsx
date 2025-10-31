@@ -195,30 +195,96 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     throw new Error("No account received from wallet");
                 }
             } else {
-                addLog("Desktop: Opening modal with QR code...");
+                addLog("Desktop: Checking for browser extension...");
 
-                // On desktop, open modal which shows QR code
-                dAppConnector.openModal();
+                // Check if HashPack extension is available
+                const extensions = dAppConnector.extensions || [];
+                const hashpackExtension = extensions.find(ext => 
+                    ext.name?.toLowerCase().includes('hashpack') && ext.available
+                );
 
-                // Wait for connection via session events
-                await new Promise<void>((resolve, reject) => {
-                    const handleConnectEvent = (event: any) => {
-                        const account = event.detail?.accountId;
-                        if (account) {
-                            addLog(`✅ SUCCESS! Connected via QR: ${account}`);
-                            toast.success(`Connected: ${account}`);
-                            resolve();
-                            window.removeEventListener('hedera-connect', handleConnectEvent);
-                        }
-                    };
-                    window.addEventListener('hedera-connect', handleConnectEvent);
+                if (hashpackExtension) {
+                    addLog(`Found HashPack extension: ${hashpackExtension.name}`);
+                    addLog("Connecting via browser extension...");
+                    
+                    // Connect directly to extension (much faster!)
+                    await dAppConnector.connectExtension(hashpackExtension.id);
+                    
+                    // Get account from session
+                    const signer = dAppConnector.signers?.[0];
+                    const account = signer?.getAccountId()?.toString();
+                    
+                    if (account) {
+                        addLog(`✅ SUCCESS! Connected via extension: ${account}`);
+                        setAccountId(account);
+                        setConnected(true);
+                        window.dispatchEvent(new CustomEvent('hedera-connect', {
+                            detail: { accountId: account }
+                        }));
+                        toast.success(`Connected via HashPack extension: ${account}`);
+                        onConnect?.(account);
+                    } else {
+                        throw new Error("No account received from extension");
+                    }
+                } else {
+                    addLog("No browser extension found, opening modal with QR code...");
 
-                    // Timeout after 60 seconds
-                    setTimeout(() => {
-                        window.removeEventListener('hedera-connect', handleConnectEvent);
-                        reject(new Error('Connection timeout - please scan QR code with your wallet app'));
-                    }, 60000);
-                });
+                    // Fallback: Open modal which shows QR code
+                    dAppConnector.openModal();
+
+                    // Poll for connection and listen for events
+                    await new Promise<void>((resolve, reject) => {
+                        let resolved = false;
+                        
+                        // Listen for custom event from session lifecycle hooks
+                        const handleConnectEvent = (event: any) => {
+                            const account = event.detail?.accountId;
+                            if (account && !resolved) {
+                                resolved = true;
+                                addLog(`✅ SUCCESS! Connected via QR: ${account}`);
+                                toast.success(`Connected: ${account}`);
+                                clearInterval(pollInterval);
+                                clearTimeout(timeout);
+                                window.removeEventListener('hedera-connect', handleConnectEvent);
+                                resolve();
+                            }
+                        };
+                        window.addEventListener('hedera-connect', handleConnectEvent);
+
+                        // Also poll for session (in case event doesn't fire)
+                        const pollInterval = setInterval(() => {
+                            const sessions = dAppConnector.signers;
+                            if (sessions && sessions.length > 0 && !resolved) {
+                                const session = sessions[0];
+                                const account = session.getAccountId()?.toString();
+                                if (account) {
+                                    resolved = true;
+                                    addLog(`✅ SUCCESS! Connected via polling: ${account}`);
+                                    setAccountId(account);
+                                    setConnected(true);
+                                    window.dispatchEvent(new CustomEvent('hedera-connect', {
+                                        detail: { accountId: account }
+                                    }));
+                                    toast.success(`Connected: ${account}`);
+                                    onConnect?.(account);
+                                    clearInterval(pollInterval);
+                                    clearTimeout(timeout);
+                                    window.removeEventListener('hedera-connect', handleConnectEvent);
+                                    resolve();
+                                }
+                            }
+                        }, 1000); // Check every second
+
+                        // Timeout after 120 seconds (2 minutes for QR scanning)
+                        const timeout = setTimeout(() => {
+                            if (!resolved) {
+                                window.removeEventListener('hedera-connect', handleConnectEvent);
+                                clearInterval(pollInterval);
+                                reject(new Error('Connection timeout - please scan QR code with your wallet app'));
+                            }
+                        }, 120000);
+                    });
+                }
             }
 
         } catch (error: any) {
@@ -318,7 +384,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 <p className="mb-4 text-xs text-gray-600">
                     {isMobile
                         ? "Connect your Hedera wallet via WalletConnect."
-                        : "Connect using HashPack, Kabila, Blade, or any Hedera wallet."
+                        : "Connect using HashPack browser extension (instant) or scan QR code with mobile app."
                     }
                 </p>
 
@@ -329,7 +395,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <p className="text-xs text-amber-800">
-                            <strong>Testnet Required:</strong> Make sure you have a Hedera testnet account in your wallet. Create one in HashPack settings if needed.
+                            <strong>Testnet Required:</strong> Make sure you have a Hedera testnet account in your wallet. {!isMobile && "Install HashPack extension for instant connection!"}
                         </p>
                     </div>
                 </div>
