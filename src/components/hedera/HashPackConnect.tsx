@@ -111,7 +111,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
     const attemptConnection = async () => {
         addLog("=== Starting connection attempt ===");
-        
+
         if (!logHashPackAvailability()) {
             addLog("ERROR: HashPack not available");
             if (isMobile) {
@@ -121,7 +121,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             }
             setShowDebug(true);
             return;
-        }        setConnecting(true);
+        } setConnecting(true);
 
         try {
             const hashpack = (window as any).hashpack;

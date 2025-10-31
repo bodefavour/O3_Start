@@ -1,22 +1,24 @@
 {
-  "name": "BorderlessPay",
-  "short_name": "BorderlessPay",
-  "description": "Global Payment Platform powered by Hedera",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#0a1929",
-  "theme_color": "#00c48c",
-  "orientation": "portrait-primary",
-  "icons": [
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+    "name": "BorderlessPay",
+    "short_name": "BorderlessPay",
+    "description": "Global Payment Platform powered by Hedera",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a1929",
+    "theme_color": "#00c48c",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ],
+    "hedera": {
+        "network": "testnet",
+        "compatible": true,
+        "wallets": [
+            "hashpack"
+        ]
     }
-  ],
-  "hedera": {
-    "network": "testnet",
-    "compatible": true,
-    "wallets": ["hashpack"]
-  }
 }
