@@ -197,10 +197,12 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             } else {
                 addLog("Desktop: Initiating wallet connection...");
 
-                // On desktop, use connect() with empty callback (shows modal automatically)
-                await dAppConnector.connect(() => {
-                    // Empty callback - allows modal to show QR code
-                    addLog("Modal should be displaying...");
+                // On desktop, use connect() with callback that just logs the URI
+                // The WalletConnect modal should display automatically
+                await dAppConnector.connect((uri: string) => {
+                    addLog(`WalletConnect modal displayed with URI (length: ${uri.length})`);
+                    setLastWcUri(uri);
+                    // Don't redirect - let the modal show for user to scan/select
                 });
 
                 // Wait a bit for the connection to establish
