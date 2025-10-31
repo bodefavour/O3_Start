@@ -419,7 +419,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                             "Connect Wallet"
                         )}
                     </Button>
-                    
+
                     {/* Manual override for HashPack in-app browser if not detected */}
                     {!isMobile && (
                         <button
