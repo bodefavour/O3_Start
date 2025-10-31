@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
                         const decimals = tokenInfo.decimals || 0;
                         const rawBalance = parseFloat(token.balance);
                         const formattedBalance = (rawBalance / Math.pow(10, decimals)).toFixed(decimals > 2 ? 2 : decimals);
-                        
+
                         return {
                             tokenId: token.token_id,
                             symbol: tokenInfo.symbol || 'Unknown',
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
                 const decimals = token.decimals || 0;
                 const rawBalance = parseFloat(token.balance);
                 const formattedBalance = (rawBalance / Math.pow(10, decimals)).toFixed(decimals > 2 ? 2 : decimals);
-                
+
                 return {
                     tokenId: token.token_id,
                     symbol: 'Unknown',

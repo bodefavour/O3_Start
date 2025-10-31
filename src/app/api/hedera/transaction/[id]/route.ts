@@ -12,7 +12,8 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const transactionId = params.id;
+        // Decode URL-encoded transaction ID (e.g., %40 becomes @)
+        const transactionId = decodeURIComponent(params.id);
 
         if (!transactionId) {
             return NextResponse.json(
@@ -25,10 +26,11 @@ export async function GET(
         const mirrorNodeUrl = `https://${network}.mirrornode.hedera.com`;
 
         // Convert transaction ID format for Mirror Node
-        // From: 0.0.4826582@1761927693.915611221
-        // To: 0.0.4826582-1761927693-915611221
-        // Replace @ with - and the last . with -
+        // From: 0.0.4826582@1761929088.725746098
+        // To: 0.0.4826582-1761929088-725746098
+        // Step 1: Replace @ with -
         let formattedId = transactionId.replace('@', '-');
+        // Step 2: Replace the last . (before nanoseconds) with -
         const lastDotIndex = formattedId.lastIndexOf('.');
         if (lastDotIndex !== -1) {
             formattedId = formattedId.substring(0, lastDotIndex) + '-' + formattedId.substring(lastDotIndex + 1);
@@ -36,7 +38,8 @@ export async function GET(
 
         console.log('🔍 Transaction ID conversion:', {
             original: transactionId,
-            formatted: formattedId
+            formatted: formattedId,
+            url: `${mirrorNodeUrl}/api/v1/transactions/${formattedId}`
         });
 
         // Fetch transaction from Mirror Node

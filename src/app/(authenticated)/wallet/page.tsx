@@ -196,17 +196,17 @@ export default function WalletPage() {
             const tokenSymbol = (token.symbol || '').toUpperCase();
             const tokenName = (token.name || '').toUpperCase();
 
-            console.log('🪙 Token:', { 
-                symbol: tokenSymbol, 
-                name: tokenName, 
+            console.log('🪙 Token:', {
+                symbol: tokenSymbol,
+                name: tokenName,
                 balance: tokenBalance,
-                tokenId: token.tokenId 
+                tokenId: token.tokenId
             });
 
             // Stablecoins are worth $1 each
-            if (tokenSymbol.includes('USD') || 
+            if (tokenSymbol.includes('USD') ||
                 tokenSymbol.includes('USDC') ||
-                tokenSymbol.includes('USDT') || 
+                tokenSymbol.includes('USDT') ||
                 tokenSymbol === 'BPUSD' ||
                 tokenName.includes('USD') ||
                 tokenName.includes('BORDERLESSPAY')) {
