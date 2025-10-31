@@ -37,18 +37,22 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     useEffect(() => {
         const checkMobile = () => {
             const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isHashPackBrowser = /HashPack/i.test(navigator.userAgent) || window.location.href.includes('hashpack');
-
+            
+            // Check for HashPack in-app browser by detecting HashPack extension object
+            // @ts-ignore - HashPack injects window.hashpack when in their browser
+            const hasHashPackExtension = typeof window.hashpack !== 'undefined';
+            const isHashPackBrowser = /HashPack/i.test(navigator.userAgent) || 
+                                     window.location.href.includes('hashpack') ||
+                                     hasHashPackExtension;
+            
             // Treat HashPack in-app browser (desktop or mobile) as mobile for connection flow
             const shouldUseMobileFlow = isMobileDevice || isHashPackBrowser;
-
+            
             setIsMobile(shouldUseMobileFlow);
-            addLog(`Mobile device: ${isMobileDevice} | HashPack browser: ${isHashPackBrowser} | Using mobile flow: ${shouldUseMobileFlow}`);
+            addLog(`Mobile device: ${isMobileDevice} | HashPack browser: ${isHashPackBrowser} | HashPack extension: ${hasHashPackExtension} | Using mobile flow: ${shouldUseMobileFlow}`);
         };
         checkMobile();
-    }, []);
-
-    // Initialize DAppConnector
+    }, []);    // Initialize DAppConnector
     useEffect(() => {
         const initDAppConnector = async () => {
             try {
