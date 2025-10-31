@@ -3,6 +3,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import {
+    HederaSessionEvent,
+    HederaJsonRpcMethod,
+    DAppConnector,
+    HederaChainId,
+} from '@hashgraph/hedera-wallet-connect';
+import { LedgerId } from '@hashgraph/sdk';
 
 interface HashPackConnectProps {
     onConnect?: (accountId: string) => void;
@@ -16,6 +23,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     const [isMobile, setIsMobile] = useState(false);
     const [debugLogs, setDebugLogs] = useState<string[]>([]);
     const [showDebug, setShowDebug] = useState(false);
+    const [dAppConnector, setDAppConnector] = useState<DAppConnector | null>(null);
 
     const addLog = (message: string) => {
         console.log(message);
@@ -28,283 +36,139 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
             const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             setIsMobile(mobile);
             addLog(`Mobile detected: ${mobile}`);
-            addLog(`User agent: ${navigator.userAgent.substring(0, 50)}...`);
         };
         checkMobile();
     }, []);
 
-    // Check if HashPack is available (extension or mobile app)
-    const isHashPackAvailable = () => {
-        return typeof window !== "undefined" && !!(window as any).hashpack;
-    };
-
-    // Log HashPack availability (only called in effects/handlers)
-    const logHashPackAvailability = () => {
-        const available = isHashPackAvailable();
-        if (available) {
-            const hashpack = (window as any).hashpack;
-            const methods = Object.keys(hashpack).filter(k => typeof hashpack[k] === 'function');
-            addLog(`HashPack available! Methods: ${methods.join(', ')}`);
-        } else {
-            addLog("HashPack NOT available");
-        }
-        return available;
-    };
-
-    // Check existing connection on mount
+    // Initialize DAppConnector
     useEffect(() => {
-        const checkConnection = async () => {
-            // Log availability check
-            if (!logHashPackAvailability()) {
-                // If in mobile and no hashpack object, try to auto-connect after short delay
-                if (isMobile) {
-                    setTimeout(() => {
-                        if (logHashPackAvailability()) {
-                            attemptConnection();
-                        }
-                    }, 1000);
-                }
-                return;
-            }
-
+        const initDAppConnector = async () => {
             try {
-                const hashpack = (window as any).hashpack;
-                console.log("Checking existing HashPack connection...");
+                addLog("Initializing Hedera DAppConnector...");
+                
+                const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '08c4b07e3ad25f1a27c14a4e8cecb6f0';
+                
+                const metadata = {
+                    name: 'BorderlessPay',
+                    description: 'Global Payment Platform powered by Hedera',
+                    url: window.location.origin,
+                    icons: [`${window.location.origin}/favicon.svg`],
+                };
 
-                let data;
+                const connector = new DAppConnector(
+                    metadata,
+                    LedgerId.TESTNET,
+                    projectId,
+                    Object.values(HederaJsonRpcMethod),
+                    [HederaSessionEvent.ChainChanged, HederaSessionEvent.AccountsChanged],
+                    [HederaChainId.Testnet],
+                );
 
-                // Try to get existing account info
-                if (typeof hashpack.getAccountInfo === 'function') {
-                    data = await hashpack.getAccountInfo();
-                } else if (typeof hashpack.getPairings === 'function') {
-                    const pairings = await hashpack.getPairings();
-                    if (pairings && pairings.length > 0) {
-                        data = { accountId: pairings[0].accountIds[0] };
+                await connector.init({ logger: 'error' });
+                setDAppConnector(connector);
+                addLog("✅ DAppConnector initialized successfully");
+
+                // Check for existing sessions
+                const sessions = connector.signers;
+                if (sessions && sessions.length > 0) {
+                    const session = sessions[0];
+                    const account = session.getAccountId()?.toString();
+                    if (account) {
+                        addLog(`Found existing session: ${account}`);
+                        setAccountId(account);
+                        setConnected(true);
+                        onConnect?.(account);
                     }
                 }
-
-                if (data?.accountId) {
-                    console.log("Found existing connection:", data.accountId);
-                    setAccountId(data.accountId);
-                    setConnected(true);
-                    onConnect?.(data.accountId);
-                } else if (data?.accountIds && data.accountIds.length > 0) {
-                    const account = data.accountIds[0];
-                    console.log("Found existing connection:", account);
-                    setAccountId(account);
-                    setConnected(true);
-                    onConnect?.(account);
-                } else {
-                    console.log("No existing HashPack connection found");
-                }
-            } catch (error) {
-                console.log("No existing HashPack connection:", error);
+            } catch (error: any) {
+                addLog(`ERROR initializing: ${error.message}`);
+                console.error("DAppConnector init error:", error);
             }
         };
 
-        checkConnection();
-    }, [onConnect, isMobile]);
+        initDAppConnector();
+    }, [onConnect]);
 
     const handleConnect = async () => {
-        await attemptConnection();
-    };
-
-    const attemptConnection = async () => {
         addLog("=== Starting connection attempt ===");
-
-        if (!logHashPackAvailability()) {
-            addLog("ERROR: HashPack not available");
-            if (isMobile) {
-                toast.error("Please open this app from within the HashPack mobile app's browser.");
-            } else {
-                toast.error("HashPack extension not detected. Please install HashPack.");
-            }
+        
+        if (!dAppConnector) {
+            addLog("ERROR: DAppConnector not initialized");
+            toast.error("Wallet connector not initialized. Please refresh the page.");
             setShowDebug(true);
             return;
-        } setConnecting(true);
+        }
+
+        setConnecting(true);
 
         try {
-            const hashpack = (window as any).hashpack;
-            addLog("HashPack object found");
-
-            // Initialize HashPack for dApp connection
-            // This tells HashPack that this is a Hedera dApp
-            if (typeof hashpack.init === 'function') {
-                addLog("Initializing HashPack for dApp...");
-                try {
-                    await hashpack.init({
-                        name: "BorderlessPay",
-                        description: "Global Payment Platform powered by Hedera",
-                        icon: window.location.origin + "/favicon.svg"
-                    });
-                    addLog("✅ HashPack initialized as Hedera dApp");
-                } catch (initError: any) {
-                    addLog(`Init warning: ${initError.message}`);
-                }
-            }
-
-            // Try different connection methods based on what's available
-            let data;
-
-            // Method 1: Try connectToExtension (browser extension)
-            if (typeof hashpack.connectToExtension === 'function') {
-                addLog("Trying connectToExtension...");
-                data = await hashpack.connectToExtension();
-                addLog(`connectToExtension result: ${JSON.stringify(data)}`);
-            }
-            // Method 2: Try pairings (mobile app)
-            else if (typeof hashpack.getPairings === 'function') {
-                addLog("Trying getPairings...");
-                const pairings = await hashpack.getPairings();
-                addLog(`Pairings: ${JSON.stringify(pairings)}`);
-                if (pairings && pairings.length > 0) {
-                    data = { accountId: pairings[0].accountIds[0] };
+            addLog("Opening wallet selection modal...");
+            await dAppConnector.openModal();
+            
+            // Wait a bit for connection to establish
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Check for connection
+            const sessions = dAppConnector.signers;
+            if (sessions && sessions.length > 0) {
+                const session = sessions[0];
+                const account = session.getAccountId()?.toString();
+                
+                if (account) {
+                    addLog(`✅ SUCCESS! Connected: ${account}`);
+                    setAccountId(account);
+                    setConnected(true);
+                    toast.success(`Connected to Hedera wallet: ${account}`);
+                    onConnect?.(account);
                 } else {
-                    addLog("No pairings found, requesting new pairing...");
-                    data = await hashpack.requestPairing();
-                    addLog(`requestPairing result: ${JSON.stringify(data)}`);
+                    addLog("No account ID received from wallet");
                 }
-            }
-            // Method 3: Try direct connection request
-            else if (typeof hashpack.connect === 'function') {
-                addLog("Trying connect...");
-                data = await hashpack.connect();
-                addLog(`connect result: ${JSON.stringify(data)}`);
-            }
-            // Method 4: Try getAccountInfo (already connected)
-            else if (typeof hashpack.getAccountInfo === 'function') {
-                addLog("Trying getAccountInfo...");
-                data = await hashpack.getAccountInfo();
-                addLog(`getAccountInfo result: ${JSON.stringify(data)}`);
-            }
-
-            if (data?.accountId) {
-                addLog(`SUCCESS! Connected: ${data.accountId}`);
-                setAccountId(data.accountId);
-                setConnected(true);
-                toast.success(`Connected to HashPack: ${data.accountId}`);
-                onConnect?.(data.accountId);
-            } else if (data?.accountIds && data.accountIds.length > 0) {
-                const account = data.accountIds[0];
-                addLog(`SUCCESS! Connected: ${account}`);
-                setAccountId(account);
-                setConnected(true);
-                toast.success(`Connected to HashPack: ${account}`);
-                onConnect?.(account);
             } else {
-                addLog("ERROR: No account information in response");
-                throw new Error("Failed to get account information from HashPack");
+                addLog("No session created - user may have cancelled");
             }
         } catch (error: any) {
             addLog(`ERROR: ${error.message}`);
-            console.error("HashPack connection error:", error);
-            toast.error(error.message || "Failed to connect to HashPack");
+            console.error("Wallet connection error:", error);
+            toast.error(error.message || "Failed to connect wallet");
             setShowDebug(true);
         } finally {
             setConnecting(false);
         }
     };
 
-    const handleDisconnect = () => {
+    const handleDisconnect = async () => {
+        if (dAppConnector) {
+            await dAppConnector.disconnectAll();
+        }
         setConnected(false);
         setAccountId("");
-        toast.success("Disconnected from HashPack");
+        toast.success("Disconnected from wallet");
         onDisconnect?.();
     };
 
-    // Show message if HashPack not available
-    if (!isHashPackAvailable()) {
-        if (isMobile) {
-            return (
-                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                    <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0">
-                            <svg
-                                className="h-5 w-5 text-blue-500"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                            </svg>
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="text-sm font-semibold text-blue-900">
-                                Open in HashPack App
-                            </h3>
-                            <p className="mt-1 text-sm text-blue-700">
-                                To use HashPack features, please open this website from within the HashPack mobile app's built-in browser.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        return (
-            <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
-                <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                        <svg
-                            className="h-5 w-5 text-orange-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                            />
-                        </svg>
-                    </div>
-                    <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-orange-900">
-                            HashPack Extension Not Found
-                        </h3>
-                        <p className="mt-1 text-sm text-orange-700">
-                            Install the HashPack browser extension to connect your Hedera wallet.
-                        </p>
-                        <Button
-                            onClick={() => window.open("https://www.hashpack.app/", "_blank")}
-                            className="mt-3 bg-orange-500 hover:bg-orange-600"
-                            size="sm"
-                        >
-                            Get HashPack
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     if (connected) {
         return (
-            <div className="rounded-lg border border-[#00c48c] bg-[#00c48c]/10 p-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-[#00c48c]" />
-                            <p className="text-xs font-medium text-gray-600">Connected to HashPack</p>
+            <div className="space-y-3">
+                <div className="rounded-lg border border-[#00c48c] bg-[#00c48c]/10 p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-[#00c48c]" />
+                                <p className="text-xs font-medium text-gray-600">Connected to Hedera</p>
+                            </div>
+                            <p className="mt-1 font-mono text-sm font-semibold text-[#0b1f3a]">
+                                {accountId}
+                            </p>
                         </div>
-                        <p className="mt-1 font-mono text-sm font-semibold text-[#0b1f3a]">
-                            {accountId}
-                        </p>
+                        <Button
+                            onClick={handleDisconnect}
+                            variant="outline"
+                            size="sm"
+                            className="border-[#00c48c] text-[#00c48c] hover:bg-[#00c48c]/10"
+                        >
+                            Disconnect
+                        </Button>
                     </div>
-                    <Button
-                        onClick={handleDisconnect}
-                        variant="outline"
-                        size="sm"
-                        className="border-[#00c48c] text-[#00c48c] hover:bg-[#00c48c]/10"
-                    >
-                        Disconnect
-                    </Button>
                 </div>
             </div>
         );
@@ -326,20 +190,20 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     </svg>
                     <div>
                         <h3 className="text-base font-bold text-[#0b1f3a]">
-                            HashPack Wallet
+                            Hedera Wallet
                         </h3>
-                        <p className="text-xs text-gray-500">Recommended for Hedera</p>
+                        <p className="text-xs text-gray-500">HashPack, Kabila, Blade & more</p>
                     </div>
                 </div>
                 <p className="mb-4 text-xs text-gray-600">
                     {isMobile
-                        ? "Tap below to connect your HashPack wallet."
-                        : "Connect your Hedera wallet using HashPack."
+                        ? "Connect your Hedera wallet via WalletConnect."
+                        : "Connect using HashPack, Kabila, Blade, or any Hedera wallet."
                     }
                 </p>
                 <Button
                     onClick={handleConnect}
-                    disabled={connecting}
+                    disabled={connecting || !dAppConnector}
                     className="w-full bg-[#5D4FF4] hover:bg-[#4D3FE4] h-12 text-base font-semibold"
                 >
                     {connecting ? (
@@ -365,11 +229,13 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                             </svg>
                             Connecting...
                         </>
+                    ) : !dAppConnector ? (
+                        "Initializing..."
                     ) : (
-                        "Connect HashPack"
+                        "Connect Hedera Wallet"
                     )}
                 </Button>
-
+                
                 {/* Show debug toggle button */}
                 <button
                     onClick={() => setShowDebug(!showDebug)}

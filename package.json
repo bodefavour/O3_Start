@@ -15,13 +15,15 @@
     "db:setup": "node scripts/setup-db.js"
   },
   "dependencies": {
-    "@hashgraph/sdk": "^2.75.0",
+    "@hashgraph/hedera-wallet-connect": "^2.0.3",
+    "@hashgraph/sdk": "^2.76.0",
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.0.2",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
+    "@walletconnect/modal": "^2.7.0",
     "better-auth": "^1.3.27",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
