@@ -14,19 +14,36 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     const [accountId, setAccountId] = useState<string>("");
     const [connecting, setConnecting] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [debugLogs, setDebugLogs] = useState<string[]>([]);
+    const [showDebug, setShowDebug] = useState(false);
+
+    const addLog = (message: string) => {
+        console.log(message);
+        setDebugLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
+    };
 
     // Check if running on mobile
     useEffect(() => {
         const checkMobile = () => {
             const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             setIsMobile(mobile);
+            addLog(`Mobile detected: ${mobile}`);
+            addLog(`User agent: ${navigator.userAgent.substring(0, 50)}...`);
         };
         checkMobile();
     }, []);
 
     // Check if HashPack is available (extension or mobile app)
     const isHashPackAvailable = () => {
-        return typeof window !== "undefined" && !!(window as any).hashpack;
+        const available = typeof window !== "undefined" && !!(window as any).hashpack;
+        if (available) {
+            const hashpack = (window as any).hashpack;
+            const methods = Object.keys(hashpack).filter(k => typeof hashpack[k] === 'function');
+            addLog(`HashPack available! Methods: ${methods.join(', ')}`);
+        } else {
+            addLog("HashPack NOT available");
+        }
+        return available;
     };
 
     // Check existing connection on mount
