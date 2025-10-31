@@ -155,44 +155,49 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
 
         setConnecting(true);
 
-        // 10 second timeout
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Connection timeout')), 10000)
-        );
-
         try {
-            await Promise.race([
-                dAppConnector.openModal(),
-                timeoutPromise
-            ]);
+            addLog("Opening WalletConnect modal...");
+            
+            // Create a promise that resolves when connection succeeds
+            const connectionPromise = new Promise<string>((resolve, reject) => {
+                // Set up one-time listener for successful connection
+                const handleConnectEvent = (event: any) => {
+                    const account = event.detail?.accountId;
+                    if (account) {
+                        resolve(account);
+                        window.removeEventListener('hedera-connect', handleConnectEvent);
+                    }
+                };
+                window.addEventListener('hedera-connect', handleConnectEvent);
+                
+                // Timeout after 60 seconds
+                setTimeout(() => {
+                    window.removeEventListener('hedera-connect', handleConnectEvent);
+                    reject(new Error('Connection timeout - please try again'));
+                }, 60000);
+            });
 
-            // Wait briefly for connection
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            const sessions = dAppConnector.signers;
-            if (sessions && sessions.length > 0) {
-                const session = sessions[0];
-                const account = session.getAccountId()?.toString();
-
-                if (account) {
-                    addLog(`✅ SUCCESS! Connected: ${account}`);
-                    setAccountId(account);
-                    setConnected(true);
-                    window.dispatchEvent(new CustomEvent('hedera-connect', {
-                        detail: { accountId: account }
-                    }));
-                    toast.success(`Connected: ${account}`);
-                    onConnect?.(account);
-                } else {
-                    addLog("No account ID received from wallet");
-                }
-            } else {
-                addLog("No session created - user cancelled");
-            }
+            // Open the modal (returns immediately, doesn't wait for connection)
+            dAppConnector.openModal();
+            
+            // Wait for either connection success or timeout
+            const account = await connectionPromise;
+            
+            addLog(`✅ SUCCESS! Connected: ${account}`);
+            toast.success(`Connected: ${account}`);
+            
         } catch (error: any) {
             const msg = String(error?.message || error);
             addLog(`ERROR: ${msg}`);
-            toast.error(msg || "Failed to connect");
+            
+            // Check if user just cancelled (no sessions created)
+            const sessions = dAppConnector.signers;
+            if (!sessions || sessions.length === 0) {
+                addLog("No session created - user may have cancelled");
+                toast.info("Connection cancelled");
+            } else {
+                toast.error(msg || "Failed to connect");
+            }
             setShowDebug(true);
         } finally {
             setConnecting(false);
