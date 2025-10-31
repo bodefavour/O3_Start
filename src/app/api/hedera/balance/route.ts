@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
                     const tokenInfoResponse = await fetch(
                         `${mirrorNodeUrl}/api/v1/tokens/${token.token_id}`
                     );
-                    
+
                     if (tokenInfoResponse.ok) {
                         const tokenInfo = await tokenInfoResponse.json();
                         return {
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
                 } catch (error) {
                     console.warn(`Failed to fetch info for token ${token.token_id}:`, error);
                 }
-                
+
                 // Fallback to basic info if token info fetch fails
                 return {
                     tokenId: token.token_id,

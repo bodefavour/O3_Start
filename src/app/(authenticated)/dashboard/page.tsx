@@ -136,25 +136,25 @@ export default function DashboardPage() {
             const priceResponse = await fetch('/api/hedera/price');
             const priceResult = await priceResponse.json();
             const hbarPrice = priceResult.success ? priceResult.data.hbarPrice : 0.05;
-            
+
             console.log('✅ HBAR Price for dashboard:', hbarPrice, 'USD');
 
             // Fetch Hedera balance
             const balanceResponse = await fetch(`/api/hedera/balance?accountId=${operatorId}`);
             const balanceResult = await balanceResponse.json();
-            
+
             if (balanceResult.success) {
               const hbarAmount = parseFloat(balanceResult.data.hbarBalance || '0');
               let totalValue = hbarAmount * hbarPrice;
-              
+
               // Calculate token values properly
               balanceResult.data.tokens?.forEach((token: any) => {
                 const tokenBalance = parseFloat(token.balance || '0');
                 const tokenSymbol = token.symbol.toUpperCase();
-                
+
                 // Stablecoins are worth $1 each
-                if (tokenSymbol.includes('USD') || tokenSymbol.includes('USDC') || 
-                    tokenSymbol.includes('USDT') || tokenSymbol === 'BPUSD') {
+                if (tokenSymbol.includes('USD') || tokenSymbol.includes('USDC') ||
+                  tokenSymbol.includes('USDT') || tokenSymbol === 'BPUSD') {
                   totalValue += tokenBalance;
                 } else {
                   // Other tokens: only add value if balance is reasonable
@@ -164,14 +164,14 @@ export default function DashboardPage() {
                   // Ignore huge balances (test tokens)
                 }
               });
-              
+
               setBalance(totalValue.toFixed(2));
             }
 
             // Fetch Hedera transactions
             const txResponse = await fetch(`/api/hedera/transactions?accountId=${operatorId}&limit=10`);
             const txResult = await txResponse.json();
-            
+
             if (txResult.success) {
               fetchedTransactions = [...(txResult.data.transactions || []), ...fetchedTransactions];
               console.log('✅ Fetched Hedera transactions for dashboard:', txResult.data.transactions.length);
@@ -193,10 +193,10 @@ export default function DashboardPage() {
         // Calculate monthly volume from transactions
         const now = new Date();
         const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-        const monthlyTx = fetchedTransactions.filter((tx: any) => 
+        const monthlyTx = fetchedTransactions.filter((tx: any) =>
           new Date(tx.createdAt) >= oneMonthAgo
         );
-        const volume = monthlyTx.reduce((sum: number, tx: any) => 
+        const volume = monthlyTx.reduce((sum: number, tx: any) =>
           sum + parseFloat(tx.amount || '0'), 0
         );
         setMonthlyVolume(volume.toFixed(2));

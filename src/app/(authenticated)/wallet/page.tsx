@@ -85,7 +85,7 @@ export default function WalletPage() {
                 // Fetch balance
                 const balanceResponse = await fetch(`/api/hedera/balance?accountId=${operatorId}`);
                 const balanceResult = await balanceResponse.json();
-                
+
                 if (balanceResult.success) {
                     setHederaBalance(balanceResult.data);
                     console.log('✅ Fetched Hedera balance:', balanceResult.data);
@@ -94,24 +94,24 @@ export default function WalletPage() {
                 // Fetch transactions from Mirror Node
                 const txResponse = await fetch(`/api/hedera/transactions?accountId=${operatorId}&limit=20`);
                 const txResult = await txResponse.json();
-                
+
                 if (txResult.success) {
                     const hederaTx = txResult.data.transactions || [];
                     console.log('✅ Fetched Hedera transactions from Mirror Node:', hederaTx.length);
-                    
+
                     // In backend signing mode, prioritize Mirror Node transactions
                     setTransactions((prevTx) => {
                         // Merge and deduplicate by hash, preferring Mirror Node data
                         const txMap = new Map();
-                        
+
                         // Add database transactions first
                         prevTx.forEach(tx => txMap.set(tx.hash, tx));
-                        
+
                         // Override/add Mirror Node transactions (more authoritative)
                         hederaTx.forEach((tx: any) => txMap.set(tx.hash, tx));
-                        
+
                         // Convert back to array and sort by date (newest first)
-                        return Array.from(txMap.values()).sort((a, b) => 
+                        return Array.from(txMap.values()).sort((a, b) =>
                             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
                         );
                     });
@@ -131,10 +131,10 @@ export default function WalletPage() {
 
             try {
                 setLoadingData(true);
-                
+
                 // Fetch HBAR price first
                 await fetchHbarPrice();
-                
+
                 // Fetch wallets and transactions separately to handle errors gracefully
                 let fetchedWallets = [];
                 let fetchedTransactions = [];
@@ -157,7 +157,7 @@ export default function WalletPage() {
 
                 setWallets(fetchedWallets);
                 setTransactions(fetchedTransactions);
-                
+
                 // Also fetch live Hedera balances
                 await fetchHederaBalance();
             } catch (error) {
@@ -187,14 +187,14 @@ export default function WalletPage() {
         // Add HBAR value in USD using real-time price
         const hbarAmount = parseFloat(hederaBalance.hbarBalance || '0');
         totalPortfolioValue += hbarAmount * hbarPrice;
-        
+
         // For HTS tokens, check if they're stablecoins
         hederaBalance.tokens?.forEach((token: any) => {
             const tokenBalance = parseFloat(token.balance || '0');
             const tokenSymbol = token.symbol.toUpperCase();
-            
+
             // Stablecoins are worth $1 each
-            if (tokenSymbol.includes('USD') || tokenSymbol.includes('USDC') || 
+            if (tokenSymbol.includes('USD') || tokenSymbol.includes('USDC') ||
                 tokenSymbol.includes('USDT') || tokenSymbol === 'BPUSD') {
                 totalPortfolioValue += tokenBalance;
             } else {
@@ -606,9 +606,9 @@ export default function WalletPage() {
                                                             const tokenBalance = parseFloat(token.balance);
                                                             const tokenSymbol = token.symbol.toUpperCase();
                                                             let usdValue = 0;
-                                                            
+
                                                             // Stablecoins worth $1 each
-                                                            if (tokenSymbol.includes('USD') || tokenSymbol.includes('USDC') || 
+                                                            if (tokenSymbol.includes('USD') || tokenSymbol.includes('USDC') ||
                                                                 tokenSymbol.includes('USDT') || tokenSymbol === 'BPUSD') {
                                                                 usdValue = tokenBalance;
                                                             } else if (tokenBalance < 10000) {
@@ -618,7 +618,7 @@ export default function WalletPage() {
                                                                 // Large amounts: likely test token
                                                                 return 'Test Token (No USD Value)';
                                                             }
-                                                            
+
                                                             return `≈ $${usdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
                                                         })()}
                                                     </p>

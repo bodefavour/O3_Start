@@ -53,12 +53,12 @@ export async function GET(request: NextRequest) {
                 // Token transfer - fetch token info for proper decimals and name
                 currency = tokenTransfer.token_id;
                 isCredit = parseInt(tokenTransfer.amount) > 0;
-                
+
                 try {
                     const tokenInfoResponse = await fetch(
                         `${mirrorNodeUrl}/api/v1/tokens/${currency}`
                     );
-                    
+
                     if (tokenInfoResponse.ok) {
                         const tokenInfo = await tokenInfoResponse.json();
                         decimals = tokenInfo.decimals || 0;
@@ -69,11 +69,11 @@ export async function GET(request: NextRequest) {
                     console.warn(`Failed to fetch token info for ${currency}`);
                     decimals = 0;
                 }
-                
+
                 amount = Math.abs(parseInt(tokenTransfer.amount)) / Math.pow(10, decimals);
             } else {
                 // HBAR transfer
-                const accountTransfer = tx.transfers?.find((transfer: any) => 
+                const accountTransfer = tx.transfers?.find((transfer: any) =>
                     transfer.account === accountId
                 );
                 if (accountTransfer) {
@@ -88,11 +88,11 @@ export async function GET(request: NextRequest) {
             // Get counterparty (the other account in the transfer)
             let counterparty = 'Unknown';
             if (tokenTransfer) {
-                counterparty = tx.token_transfers?.find((transfer: any) => 
+                counterparty = tx.token_transfers?.find((transfer: any) =>
                     transfer.account !== accountId && transfer.token_id === currency
                 )?.account || 'Unknown';
             } else {
-                counterparty = tx.transfers?.find((transfer: any) => 
+                counterparty = tx.transfers?.find((transfer: any) =>
                     transfer.account !== accountId && parseInt(transfer.amount) !== 0
                 )?.account || 'Unknown';
             }

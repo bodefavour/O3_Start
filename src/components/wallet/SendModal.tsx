@@ -178,7 +178,7 @@ export function SendModal({
                     setTransactionHash(result.data.transactionId);
                     showToast("✅ Transaction sent via backend!", "success");
                     setStep(3);
-                    
+
                     // Refresh wallet data after successful transaction
                     if (onTransactionSuccess) {
                         onTransactionSuccess();
