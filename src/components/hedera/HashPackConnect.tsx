@@ -158,16 +158,16 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         try {
             if (isMobile) {
                 addLog("Mobile: Using connect() with deep link...");
-                
+
                 // Use connect() which provides the WalletConnect URI for deep linking
                 const session = await dAppConnector.connect((uri: string) => {
                     addLog(`Received WalletConnect URI (length: ${uri.length})`);
                     setLastWcUri(uri);
-                    
+
                     // Try HashPack deep link
                     const hashpackDeepLink = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
                     addLog(`Launching: ${hashpackDeepLink.substring(0, 50)}...`);
-                    
+
                     try {
                         window.location.href = hashpackDeepLink;
                     } catch (e) {
@@ -196,10 +196,10 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 }
             } else {
                 addLog("Desktop: Opening modal with QR code...");
-                
+
                 // On desktop, open modal which shows QR code
                 dAppConnector.openModal();
-                
+
                 // Wait for connection via session events
                 await new Promise<void>((resolve, reject) => {
                     const handleConnectEvent = (event: any) => {
@@ -212,7 +212,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                         }
                     };
                     window.addEventListener('hedera-connect', handleConnectEvent);
-                    
+
                     // Timeout after 60 seconds
                     setTimeout(() => {
                         window.removeEventListener('hedera-connect', handleConnectEvent);
@@ -220,11 +220,11 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                     }, 60000);
                 });
             }
-            
+
         } catch (error: any) {
             const msg = String(error?.message || error);
             addLog(`ERROR: ${msg}`);
-            
+
             // Check if user just cancelled
             const sessions = dAppConnector.signers;
             if (!sessions || sessions.length === 0) {
@@ -237,7 +237,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         } finally {
             setConnecting(false);
         }
-    };    const handleDisconnect = async () => {
+    }; const handleDisconnect = async () => {
         if (dAppConnector) {
             await dAppConnector.disconnectAll();
         }
