@@ -21,7 +21,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Check for dev bypass mode first
         const devBypassAccount = process.env.NEXT_PUBLIC_DEV_BYPASS_ACCOUNT;
         const backendSigningEnabled = process.env.NEXT_PUBLIC_BACKEND_SIGNING_ENABLED === 'true';
-        
+
         if (devBypassAccount && backendSigningEnabled) {
             console.log('🔧 Dev Bypass Mode: Using operator account', devBypassAccount);
             setHederaAccount(devBypassAccount);

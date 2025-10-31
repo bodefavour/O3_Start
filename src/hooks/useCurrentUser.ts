@@ -1,15 +1,24 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/db';
-import { users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 
-// For demo purposes, we'll use the seeded user
+// For demo purposes, we'll use the operator account or demo user
 // In production, this would come from Better Auth session
 export function useCurrentUser() {
     const [userId, setUserId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Check if backend signing is enabled
+        const backendSigningEnabled = process.env.NEXT_PUBLIC_BACKEND_SIGNING_ENABLED === 'true';
+        const operatorId = process.env.NEXT_PUBLIC_HEDERA_OPERATOR_ID;
+
+        if (backendSigningEnabled && operatorId) {
+            // Use operator account as userId in dev mode
+            console.log('🔧 Using operator account as userId:', operatorId);
+            setUserId(operatorId);
+            setLoading(false);
+            return;
+        }
+
         // Fetch the demo user from database
         async function fetchUser() {
             try {

@@ -62,7 +62,7 @@ export function SendModal({
             // ALWAYS use backend signing if enabled - no wallet needed!
             if (backendSigningEnabled && operatorId) {
                 console.log('✅ Using backend signing - no wallet required!');
-                
+
                 const response = await fetch('/api/hedera/transfer', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -85,7 +85,7 @@ export function SendModal({
                 } else {
                     throw new Error(result.error || 'Transaction failed');
                 }
-                
+
                 setSending(false);
                 return;
             }

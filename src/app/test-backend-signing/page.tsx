@@ -23,7 +23,7 @@ export default function TestBackendSigningPage() {
             // Use direct-signer to check balance
             const { getAccountBalance } = await import('@/lib/hedera/direct-signer');
             const result = await getAccountBalance(operatorId!);
-            
+
             if (result.balance !== undefined) {
                 setBalance(result.balance.toFixed(2));
                 toast.success(`Balance: ${result.balance.toFixed(2)} HBAR`);
@@ -120,8 +120,8 @@ export default function TestBackendSigningPage() {
 
                         {/* Balance Check */}
                         <div className="flex items-center gap-4">
-                            <Button 
-                                onClick={handleCheckBalance} 
+                            <Button
+                                onClick={handleCheckBalance}
                                 disabled={checkingBalance}
                                 variant="outline"
                             >

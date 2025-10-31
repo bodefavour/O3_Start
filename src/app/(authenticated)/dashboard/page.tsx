@@ -103,25 +103,60 @@ export default function DashboardPage() {
     const fetchData = async () => {
       if (!userId) return;
 
-      // setLoadingData(true);
       try {
-        const [walletsRes, transactionsRes] = await Promise.all([
-          walletApi.getAll(userId),
-          transactionApi.getAll(userId)
-        ]);
+        // Fetch wallets and transactions separately to handle errors individually
+        let fetchedWallets = [];
+        let fetchedTransactions = [];
 
-        const fetchedWallets = walletsRes.wallets || [];
-        const fetchedTransactions = transactionsRes.transactions || [];
+        // Try to fetch wallets
+        try {
+          const walletsRes = await walletApi.getAll(userId);
+          fetchedWallets = walletsRes.wallets || [];
+        } catch (walletError) {
+          console.warn('No wallets found for user, starting fresh');
+          fetchedWallets = [];
+        }
+
+        // Try to fetch transactions
+        try {
+          const transactionsRes = await transactionApi.getAll(userId);
+          fetchedTransactions = transactionsRes.transactions || [];
+        } catch (txError) {
+          console.warn('No transactions found for user, starting fresh');
+          fetchedTransactions = [];
+        }
 
         setWallets(fetchedWallets);
         setTransactions(fetchedTransactions);
 
-        // Calculate total balance across all wallets
+        // Calculate total balance from database wallets
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const totalBalance = fetchedWallets.reduce((sum: number, w: any) => {
-          return sum + parseFloat(w.balance);
+          return sum + parseFloat(w.balance || '0');
         }, 0);
-        setBalance(totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+        // If no database balance and we're using backend signing, fetch from Hedera
+        if (totalBalance === 0 && process.env.NEXT_PUBLIC_BACKEND_SIGNING_ENABLED === 'true') {
+          const operatorId = process.env.NEXT_PUBLIC_HEDERA_OPERATOR_ID;
+          if (operatorId) {
+            try {
+              const { getAccountBalance } = await import('@/lib/hedera/direct-signer');
+              const result = await getAccountBalance(operatorId);
+              if (result.balance !== undefined) {
+                setBalance(result.balance.toFixed(2));
+              } else {
+                setBalance('0.00');
+              }
+            } catch (balanceError) {
+              console.warn('Could not fetch Hedera balance:', balanceError);
+              setBalance('0.00');
+            }
+          } else {
+            setBalance(totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          }
+        } else {
+          setBalance(totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        }
 
         // Calculate monthly volume (sum of all transactions this month)
         const now = new Date();
@@ -130,20 +165,23 @@ export default function DashboardPage() {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const monthlyTxns = fetchedTransactions.filter((t: any) => {
-          const txDate = new Date(t.timestamp);
+          const txDate = new Date(t.createdAt || t.timestamp);
           return txDate.getMonth() === thisMonth && txDate.getFullYear() === thisYear;
         });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const monthlyVol = monthlyTxns.reduce((sum: number, t: any) => {
-          return sum + Math.abs(parseFloat(t.amount));
+          return sum + Math.abs(parseFloat(t.amount || '0'));
         }, 0);
         setMonthlyVolume(monthlyVol.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }));
 
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-      } finally {
-        // setLoadingData(false);
+        // Set defaults on error
+        setBalance('0.00');
+        setMonthlyVolume('0');
+        setWallets([]);
+        setTransactions([]);
       }
     };
 

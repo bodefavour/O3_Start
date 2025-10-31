@@ -64,16 +64,33 @@ export default function WalletPage() {
 
             try {
                 setLoadingData(true);
-                const [walletsRes, transactionsRes] = await Promise.all([
-                    walletApi.getAll(userId),
-                    transactionApi.getAll(userId, { limit: 20 }),
-                ]);
+                
+                // Fetch wallets and transactions separately to handle errors gracefully
+                let fetchedWallets = [];
+                let fetchedTransactions = [];
 
-                setWallets(walletsRes.wallets || []);
-                setTransactions(transactionsRes.transactions || []);
+                try {
+                    const walletsRes = await walletApi.getAll(userId);
+                    fetchedWallets = walletsRes.wallets || [];
+                } catch (walletError) {
+                    console.warn('No wallets found for user');
+                    fetchedWallets = [];
+                }
+
+                try {
+                    const transactionsRes = await transactionApi.getAll(userId, { limit: 20 });
+                    fetchedTransactions = transactionsRes.transactions || [];
+                } catch (txError) {
+                    console.warn('No transactions found for user');
+                    fetchedTransactions = [];
+                }
+
+                setWallets(fetchedWallets);
+                setTransactions(fetchedTransactions);
             } catch (error) {
                 console.error('Error fetching data:', error);
-                toast.error('Failed to load wallet data');
+                setWallets([]);
+                setTransactions([]);
             } finally {
                 setLoadingData(false);
             }
