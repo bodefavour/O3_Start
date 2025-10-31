@@ -41,6 +41,9 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "drizzle.config.ts",
+    "drizzle.config.mts",
+    "drizzle.config.js"
   ]
 }
