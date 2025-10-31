@@ -24,6 +24,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
     const [debugLogs, setDebugLogs] = useState<string[]>([]);
     const [showDebug, setShowDebug] = useState(false);
     const [dAppConnector, setDAppConnector] = useState<DAppConnector | null>(null);
+    const [lastWcUri, setLastWcUri] = useState<string | null>(null);
 
     const addLog = (message: string) => {
         console.log(message);
@@ -157,6 +158,7 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 // Use direct connect with deep-link callback for mobile
                 const session = await dAppConnector.connect((uri: string) => {
                     addLog(`Launching wallet deep link (len=${uri?.length})`);
+                    setLastWcUri(uri);
                     // Prefer HashPack native deep link first
                     const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
                     try {
@@ -226,9 +228,47 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                 }
             }
         } catch (error: any) {
-            addLog(`ERROR: ${error?.message || error}`);
+            const msg = String(error?.message || error);
+            addLog(`ERROR: ${msg}`);
             console.error("Wallet connection error:", error);
-            toast.error(error?.message || "Failed to connect wallet");
+
+            // Specific recovery for WalletConnect relay publish failures on mobile
+            if (isMobile && /Failed to publish custom payload/i.test(msg)) {
+                try {
+                    addLog('Attempting quick retry after relay publish failure...');
+                    await dAppConnector.disconnectAll().catch(() => {});
+                    const session = await dAppConnector.connect((uri: string) => {
+                        addLog(`Retry deep link (len=${uri?.length})`);
+                        setLastWcUri(uri);
+                        const hashpackNative = `hashpack://wc?uri=${encodeURIComponent(uri)}`;
+                        try { window.location.href = hashpackNative; } catch {}
+                        setTimeout(() => { try { window.location.href = uri; } catch {} }, 150);
+                        setTimeout(() => { try { window.open(`https://hashpack.app/wc?uri=${encodeURIComponent(uri)}`, '_blank'); } catch {} }, 300);
+                    });
+                    const signer = dAppConnector.signers?.[0];
+                    const account = signer?.getAccountId()?.toString();
+                    if (account) {
+                        addLog(`✅ SUCCESS! Connected after retry: ${account}`);
+                        setAccountId(account);
+                        setConnected(true);
+                        window.dispatchEvent(new CustomEvent('hedera-connect', { detail: { accountId: account } }));
+                        toast.success(`Connected to Hedera wallet: ${account}`);
+                        onConnect?.(account);
+                        return;
+                    }
+                } catch (e2: any) {
+                    addLog(`Retry failed: ${e2?.message || e2}`);
+                    // As a final fallback, open the modal (QR + wallet list)
+                    try {
+                        addLog('Opening WalletConnect modal as fallback...');
+                        await dAppConnector.openModal();
+                    } catch (e3: any) {
+                        addLog(`Modal fallback also failed: ${e3?.message || e3}`);
+                    }
+                }
+            }
+
+            toast.error(msg || "Failed to connect wallet");
             setShowDebug(true);
         } finally {
             setConnecting(false);
@@ -363,6 +403,37 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
                             {log}
                         </div>
                     ))}
+                    {lastWcUri && (
+                        <div className="mt-3 space-y-2">
+                            <div className="text-gray-400">WalletConnect URI detected. If the app didn’t open, try one of these:</div>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => {
+                                        try { navigator.clipboard.writeText(lastWcUri); toast.success('WC URI copied'); } catch {}
+                                    }}
+                                    className="rounded bg-gray-800 px-2 py-1 hover:bg-gray-700"
+                                >Copy WC URI</button>
+                                <button
+                                    onClick={() => {
+                                        try { window.location.href = `hashpack://wc?uri=${encodeURIComponent(lastWcUri)}`; } catch {}
+                                    }}
+                                    className="rounded bg-gray-800 px-2 py-1 hover:bg-gray-700"
+                                >Open in HashPack (native)</button>
+                                <button
+                                    onClick={() => {
+                                        try { window.location.href = lastWcUri; } catch {}
+                                    }}
+                                    className="rounded bg-gray-800 px-2 py-1 hover:bg-gray-700"
+                                >Open wc: link</button>
+                                <button
+                                    onClick={() => {
+                                        try { window.open(`https://hashpack.app/wc?uri=${encodeURIComponent(lastWcUri)}`, '_blank'); } catch {}
+                                    }}
+                                    className="rounded bg-gray-800 px-2 py-1 hover:bg-gray-700"
+                                >Open universal link</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
