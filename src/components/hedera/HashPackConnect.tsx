@@ -38,10 +38,10 @@ export function HashPackConnect({ onConnect, onDisconnect }: HashPackConnectProp
         const checkMobile = () => {
             const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             const isHashPackBrowser = /HashPack/i.test(navigator.userAgent) || window.location.href.includes('hashpack');
-            
+
             // Treat HashPack in-app browser (desktop or mobile) as mobile for connection flow
             const shouldUseMobileFlow = isMobileDevice || isHashPackBrowser;
-            
+
             setIsMobile(shouldUseMobileFlow);
             addLog(`Mobile device: ${isMobileDevice} | HashPack browser: ${isHashPackBrowser} | Using mobile flow: ${shouldUseMobileFlow}`);
         };
