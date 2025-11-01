@@ -724,7 +724,21 @@ This project is licensed under the MIT License.
 
 ---
 
-## 👨‍💻 Author
+## � Demo & Documentation
+
+**Video Demo & Screenshots**: [View on Google Drive](https://drive.google.com/drive/folders/1fwKfSIVmGTDtNHgnCfMq3JzShdB39MAn?usp=drive_link)
+
+Check out our complete demo showing:
+- Live transaction flow
+- Backend signing in action
+- Multi-token support
+- Real-time Mirror Node integration
+- Portfolio management
+- Transaction details modal
+
+---
+
+## �👨‍💻 Author
 
 **Bode Favour**
 - GitHub: [@bodefavour](https://github.com/bodefavour)
